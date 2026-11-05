@@ -4,11 +4,24 @@ import {
   type QuotaSortMode,
   type QuotaTabId,
 } from './constants';
+import {
+  BURN_WINDOW_HOURS,
+  FUTURE_USAGE_OPTIONS,
+  POOL_MODES,
+  type BurnWindowHours,
+  type FutureUsage,
+  type PoolMode,
+} from './pool/poolModel';
 
 /** 额度页 UI 偏好：会话级持久化（sessionStorage），跨会话不携带。 */
 export type QuotaUiState = {
   tab?: QuotaTabId;
   sortMode?: QuotaSortMode;
+  mode?: PoolMode;
+  burnWindowHours?: BurnWindowHours;
+  futureUsage?: FutureUsage;
+  showAccounts?: boolean;
+  showEmails?: boolean;
 };
 
 const QUOTA_UI_STATE_KEY = 'quotaPage.uiState';
@@ -22,6 +35,9 @@ export const isQuotaTabId = (value: unknown): value is QuotaTabId =>
 export const isQuotaSortMode = (value: unknown): value is QuotaSortMode =>
   typeof value === 'string' && QUOTA_SORT_MODE_SET.has(value);
 
+const isOneOf = <T>(options: readonly T[], value: unknown): value is T =>
+  options.includes(value as T);
+
 export const readQuotaUiState = (): QuotaUiState | null => {
   if (typeof window === 'undefined') return null;
   try {
@@ -32,6 +48,15 @@ export const readQuotaUiState = (): QuotaUiState | null => {
     return {
       tab: isQuotaTabId(parsed.tab) ? parsed.tab : undefined,
       sortMode: isQuotaSortMode(parsed.sortMode) ? parsed.sortMode : undefined,
+      mode: isOneOf(POOL_MODES, parsed.mode) ? parsed.mode : undefined,
+      burnWindowHours: isOneOf(BURN_WINDOW_HOURS, parsed.burnWindowHours)
+        ? parsed.burnWindowHours
+        : undefined,
+      futureUsage: isOneOf(FUTURE_USAGE_OPTIONS, parsed.futureUsage)
+        ? parsed.futureUsage
+        : undefined,
+      showAccounts: typeof parsed.showAccounts === 'boolean' ? parsed.showAccounts : undefined,
+      showEmails: typeof parsed.showEmails === 'boolean' ? parsed.showEmails : undefined,
     };
   } catch {
     return null;

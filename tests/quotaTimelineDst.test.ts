@@ -13,7 +13,7 @@ const cases: { zone: string; date: number[]; hours: number; startHour?: number }
 ];
 
 for (const { zone, date, hours, startHour = 0 } of cases) {
-  test(`calendar columns and rendered labels across ${zone} ${date.join('-')}`, () => {
+  test(`pool span, day columns and labels across ${zone} ${date.join('-')}`, () => {
     const result = Bun.spawnSync({
       cmd: [
         process.execPath,
@@ -22,47 +22,30 @@ for (const { zone, date, hours, startHour = 0 } of cases) {
           import { createElement } from 'react';
           import { renderToStaticMarkup } from 'react-dom/server';
           import './src/i18n/index';
-          import { QuotaTimeline } from './src/features/quota/components/QuotaTimeline';
-          import { timelineSpan, timelineCells, projectLane, HOUR_MS }
-            from './src/features/quota/quotaTimelineModel';
-          const now = new Date(${date.join(',')}, 12).getTime();
-          const lane = {
-            name: 'fixture.json', displayName: 'Fixture', provider: 'codex',
-            anchorMs: new Date(${date[0]}, ${date[1]}, ${date[2] + 1}).getTime(),
-            periodHours: 168, remaining: 100, limits: [], resetCredits: [],
-          };
-          const output = ['weekly', 'session'].map((mode) => {
-            const span = timelineSpan(mode, 0, now);
-            const cells = timelineCells(mode, span);
-            const props = {
-              entries: [{ file: { name: 'fixture.json', type: 'codex' }, type: 'codex' }],
-              displayNameFor: (name) => name, resolvedTheme: 'light', now, initialMode: mode,
-              quotaFor: () => ({ status: 'success', windows: [{
-                id: mode === 'weekly' ? 'weekly' : 'five-hour', label: 'Limit',
-                usedPercent: 0, resetAtMs: lane.anchorMs,
-                periodHours: mode === 'weekly' ? 168 : 5,
-              }] }),
-            };
-            const markup = renderToStaticMarkup(createElement(QuotaTimeline, props));
-            const previousMarkup = renderToStaticMarkup(createElement(QuotaTimeline, {
-              ...props, initialOffset: -2,
-            }));
-            return {
-              mode, markup, previousMarkup, days: span.days,
-              endHour: new Date(span.endMs).getHours(),
-              offsetHours: [-1, 1].map((offset) =>
-                new Date(timelineSpan(mode, offset, now).startMs).getHours()),
-              hours: cells.map((cell) => cell.durationMs / HOUR_MS),
-              localHours: cells.map((cell) => new Date(cell.at).getHours()),
-              dates: cells.map((cell) => new Date(cell.at).getDate()),
-              coveredMs: cells.reduce((sum, cell) => sum + cell.durationMs, 0),
-              spanMs: span.endMs - span.startMs,
-              midnightPercent: cells[0].durationMs / (span.endMs - span.startMs) * 100,
-              windowEndPercent: projectLane(lane, span.startMs, span.endMs, now, 'weekly')
-                .find((window) => window.endMs === lane.anchorMs).widthPercent,
-            };
-          });
-          console.log(JSON.stringify(output));
+          import { QuotaPoolChart } from './src/features/quota/components/QuotaPoolChart';
+          import { poolSpan, poolDays, POOL_DAYS_BEFORE_TODAY, HOUR_MS }
+            from './src/features/quota/pool/poolModel';
+          // "Now" sits on the DST-transition day; the span starts a few days earlier,
+          // so place the transition day at the span start by offsetting now.
+          const transition = new Date(${date.join(',')}, 12);
+          const now = new Date(transition);
+          now.setDate(now.getDate() + POOL_DAYS_BEFORE_TODAY);
+          const span = poolSpan(0, now.getTime());
+          const days = poolDays(span);
+          const markup = renderToStaticMarkup(createElement(QuotaPoolChart, {
+            span, days, now: now.getTime(), yMax: 100, accent: '#000',
+            recorded: [], projected: [{ atMs: now.getTime(), value: 50 }, { atMs: span.endMs, value: 50 }],
+            jumps: [], formatAxis: String, formatDay: (ms) => 'D' + new Date(ms).getDate(),
+            describe: () => '', nowLabel: 'Now', ariaLabel: 'chart',
+          }));
+          console.log(JSON.stringify({
+            hours: days.map((day, index) => ((days[index + 1] ?? span.endMs) - day) / HOUR_MS),
+            localHours: days.map((day) => new Date(day).getHours()),
+            dates: days.map((day) => new Date(day).getDate()),
+            endHour: new Date(span.endMs).getHours(),
+            offsetHours: [-1, 1].map((offset) => new Date(poolSpan(offset, now.getTime()).startMs).getHours()),
+            labels: [...markup.matchAll(/>D(\\d+)</g)].map((match) => match[1]),
+          }));
         `,
       ],
       cwd: new URL('..', import.meta.url).pathname,
@@ -73,42 +56,15 @@ for (const { zone, date, hours, startHour = 0 } of cases) {
 
     expect(result.stderr.toString()).toBe('');
     expect(result.exitCode).toBe(0);
-    const [weekly, session] = JSON.parse(result.stdout.toString());
+    const output = JSON.parse(result.stdout.toString());
 
-    expect(weekly.hours).toHaveLength(14);
-    expect(weekly.hours[0]).toBe(hours);
-    expect(weekly.localHours).toEqual([startHour, ...Array(13).fill(0)]);
-    expect(new Set(weekly.dates).size).toBe(14);
-    expect(weekly.windowEndPercent).toBeCloseTo(weekly.midnightPercent, 8);
-    expect(weekly.markup).toContain(`--timeline-columns:minmax(0, ${hours}fr)`);
-
-    expect(session.hours).toHaveLength(12);
-    expect(session.hours[0]).toBe(hours - 18);
-    expect(session.localHours).toEqual([
-      startHour,
-      6,
-      12,
-      18,
-      ...Array(2).fill([0, 6, 12, 18]).flat(),
-    ]);
-
-    for (const output of [weekly, session]) {
-      expect(output.coveredMs).toBe(output.spanMs);
-      expect(output.endHour).toBe(0);
-      expect(output.offsetHours).toEqual([0, 0]);
-      const dayLabels = [
-        ...output.markup.matchAll(
-          /data-daystart="1"><span[^>]*>[^<]*<\/span><span[^>]*>([^<]*)<\/span>/g
-        ),
-      ].map((match) => match[1]);
-      expect(dayLabels).toHaveLength(output.days);
-      expect(new Set(dayLabels).size).toBe(output.days);
-      if (date[1] === 2 && date[2] === 29 && output.mode === 'session') {
-        expect(output.previousMarkup).toContain('03/27 – 03/29');
-      }
-      if (zone === 'America/Santiago' && output.mode === 'session') {
-        expect(output.markup).toContain('09/06 – 09/08');
-      }
-    }
+    expect(output.hours).toHaveLength(14);
+    expect(output.hours[0]).toBe(hours);
+    expect(output.localHours).toEqual([startHour, ...Array(13).fill(0)]);
+    expect(new Set(output.dates).size).toBe(14);
+    expect(output.endHour).toBe(0);
+    expect(output.offsetHours).toEqual([0, 0]);
+    expect(output.labels).toHaveLength(14);
+    expect(new Set(output.labels).size).toBe(14);
   });
 }

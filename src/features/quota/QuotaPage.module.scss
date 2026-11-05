@@ -183,6 +183,22 @@
   overflow-wrap: anywhere;
 }
 
+/* ---------- Provider pools + accounts ---------- */
+
+.pools {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 /* ---------- 卡片网格 ----------
  * 列宽由 CSS 决定（不再用 JS 测量）：额度卡承载水位条，取 340px 下限，
  * 与认证文件页配额模式（.gridQuota）同一档。 */
