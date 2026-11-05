@@ -218,9 +218,6 @@ export function MemberCard({
         </span>
       </span>
 
-      {route?.share !== null && route?.share !== undefined ? (
-        <span className={styles.share}>{t('routing.share', { share: route.share })}</span>
-      ) : null}
       {chip ? <span className={styles.chip}>{chip}</span> : null}
 
       <span className={styles.menuWrap}>

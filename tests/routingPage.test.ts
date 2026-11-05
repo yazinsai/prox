@@ -6,12 +6,7 @@ import i18n from '../src/i18n/index';
 import { authFilesApi } from '../src/services/api/authFiles';
 import { apiClient } from '../src/services/api/client';
 import { buildRoutingBoard, routingApi } from '../src/services/api/routing';
-import {
-  buildRoutingPlan,
-  draftFromBoard,
-  moveMember,
-  resolveRoute,
-} from '../src/features/routing/logic';
+import { buildRoutingPlan, draftFromBoard, moveMember } from '../src/features/routing/logic';
 import { TierLadder } from '../src/features/routing/components/TierLadder';
 import { PolicyPanel } from '../src/features/routing/components/PolicyPanel';
 import type { AuthFileItem } from '../src/types/authFile';
@@ -22,7 +17,7 @@ test('language changes do not trigger board reloads or reset the draft', () => {
     source.indexOf('  const load = useCallback'),
     source.indexOf('  useEffect(() => {')
   );
-  expect(load).toContain('[connected, fetchConfig, loadModels]');
+  expect(load).toContain('[connected, fetchConfig, loadModels, apiBase]');
   expect(load).not.toContain("t('common.unknown_error')");
   expect(source).toContain("message: error || t('common.unknown_error')");
 });
@@ -68,7 +63,6 @@ describe('routing board rendering', () => {
       createElement(TierLadder, {
         members: new Map(board.members.map((member) => [member.key, member])),
         draft,
-        preview: resolveRoute(board, draft, { channels: {}, credentials: {} }, null, 0),
         priorities: {
           'key:codex:0:0': 20,
           'key:claude:0:0': 0,
@@ -84,10 +78,12 @@ describe('routing board rendering', () => {
         onEditWeights: () => {},
       })
     );
-    expect(html).toContain('请求进入');
+    expect(html).toContain(i18n.t('routing.configuration_title'));
     expect(html).toContain('首选');
     expect(html).toContain('备用 1');
-    expect(html).toContain('正在承接请求');
+    expect(html).not.toContain('正在承接请求');
+    expect(html).not.toContain('100%');
+    expect(html).not.toContain('Serving requests');
     expect(html).toContain('整层不可用时转入下一层');
     expect(html).toContain('main@example.com');
     expect(html).toContain('aria-haspopup="menu"');
@@ -104,7 +100,6 @@ describe('routing board rendering', () => {
       createElement(TierLadder, {
         members: new Map(board.members.map((member) => [member.key, member])),
         draft,
-        preview: resolveRoute(board, draft, { channels: {}, credentials: {} }, null, 0),
         priorities: {},
         model: null,
         nowMs: 0,
@@ -133,7 +128,7 @@ describe('routing board rendering', () => {
     expect(enabledKey).not.toContain('无冷却信息');
     expect(cardTitle('key:claude:0:0')).not.toContain('无冷却信息');
     expect(enabledKey).not.toContain('已停用');
-    expect(cardState('key:codex:0:0')).toBe('serving');
+    expect(cardState('key:codex:0:0')).toBe('');
 
     // Credentials report real runtime state and never carry the note.
     expect(cardMarkup(html, 'cred:main.json')).not.toContain('无冷却信息');

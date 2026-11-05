@@ -8,7 +8,7 @@
  */
 
 import { apiClient } from './client';
-import { authFilesApi } from './authFiles';
+import { authFilesApi, normalizeOauthModelAlias } from './authFiles';
 import { guardConfigConnection } from './configValue';
 import type { AuthFileItem } from '@/types/authFile';
 import {
@@ -233,11 +233,22 @@ function credentialMember(file: AuthFileItem): RoutingMember | null {
 
 /** Every schedulable member of the stored configuration and the credential list. */
 export function buildRoutingBoard(raw: unknown, files: readonly AuthFileItem[]): RoutingBoard {
+  const aliases = normalizeOauthModelAlias(readPath(raw, ['oauth', 'model-alias']));
   return {
     members: [
       ...ROUTING_KEY_FAMILIES.flatMap((family) => keyMembers(raw, family)),
       ...compatMembers(raw),
-      ...files.flatMap((file) => credentialMember(file) ?? []),
+      ...files.flatMap((file) => {
+        const member = credentialMember(file);
+        if (!member) return [];
+        member.cooldownModelAliases = Object.fromEntries(
+          (aliases[member.family.toLowerCase()] ?? []).map(({ alias, name }) => [
+            alias.toLowerCase(),
+            name.toLowerCase(),
+          ])
+        );
+        return [member];
+      }),
     ],
     settings: readRoutingSettings(raw),
     forceModelPrefix: readPath(raw, ['routing', 'force-model-prefix']) === true,

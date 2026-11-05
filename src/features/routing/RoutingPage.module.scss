@@ -653,3 +653,116 @@ $label-x: $tier-pad + 1px + $index-size + 10px; // where tier names begin
     transition: none;
   }
 }
+
+/* Observations lead; configuration follows with no simulated health colors. */
+.subtitle {
+  margin: 8px 0 0;
+  max-width: 64ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.snapshot,
+.observed {
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--floating-surface);
+
+  p {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  @include mobile {
+    padding: 16px;
+  }
+}
+
+.snapshotHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  strong,
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.snapshotStatus,
+.snapshotMeta,
+.observationMeta,
+.observationSource {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.snapshotStatus {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.snapshotMeta,
+.observationMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+
+.observationGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  align-items: start;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.observationCard {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+
+  > header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-wrap: anywhere;
+
+    strong {
+      font-size: 14px;
+      font-weight: 600;
+    }
+  }
+
+  > .observationMeta {
+    margin-bottom: 16px;
+  }
+  > footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 16px;
+  }
+
+  @include mobile {
+    padding: 16px;
+  }
+}
+
+p.syncError {
+  color: var(--error-color);
+}
