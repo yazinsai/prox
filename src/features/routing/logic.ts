@@ -394,6 +394,20 @@ const baseModelKey = (value: string): string =>
     .toLowerCase()
     .replace(/\(.*\)$/, '');
 
+/** Runtime observations can advance without replacing the configuration being edited. */
+export function mergeRoutingRuntime(board: RoutingBoard, observed: RoutingBoard): RoutingBoard {
+  const latest = new Map(observed.members.map((member) => [member.key, member]));
+  return {
+    ...board,
+    members: board.members.map((member) => {
+      const next = latest.get(member.key);
+      return next
+        ? { ...member, cooldowns: next.cooldowns, unavailable: next.unavailable }
+        : member;
+    }),
+  };
+}
+
 /** Seconds until the member serves again, counting only cooldowns that block this request. */
 export function activeCooldownSeconds(
   member: RoutingMember,
@@ -410,6 +424,7 @@ export function activeCooldownSeconds(
     requested = baseModelKey(
       prefix && lower.startsWith(`${prefix}/`) ? lower.slice(prefix.length + 1) : lower
     );
+    requested = baseModelKey(member.cooldownModelAliases?.[requested] ?? requested);
   }
   let longest = 0;
   for (const record of snapshot.records) {
@@ -417,7 +432,12 @@ export function activeCooldownSeconds(
     if (remaining <= 0) continue;
     const blocks =
       record.scope === 'credential' ||
-      (requested !== null && baseModelKey(record.modelKey ?? '') === requested);
+      (requested !== null &&
+        baseModelKey(
+          member.cooldownModelAliases?.[baseModelKey(record.modelKey ?? '')] ??
+            record.modelKey ??
+            ''
+        ) === requested);
     if (blocks) longest = Math.max(longest, remaining);
   }
   return longest;

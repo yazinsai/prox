@@ -86,6 +86,8 @@ export interface RoutingMember {
   /** Credentials only. */
   unavailable: boolean;
   cooldowns: AuthFileCooldownSnapshot | null;
+  /** Callable OAuth alias to upstream model; scoped to this credential's provider. */
+  cooldownModelAliases?: Record<string, string>;
   location: RoutingMemberLocation;
 }
 

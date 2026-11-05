@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
+import { useInterval } from '@/hooks/useInterval';
+import { guardConfigConnection } from '@/services/api/configValue';
 import { useRevealGroup } from '@/hooks/motion';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import {
@@ -32,6 +34,8 @@ import type {
   RoutingTier,
 } from '@/types/routing';
 import { getErrorMessage } from '@/utils/helpers';
+import { ObservedStatus } from './components/ObservedStatus';
+import type { AuthFileItem } from '@/types/authFile';
 import { createSharedClock } from '@/utils/time/sharedClock';
 import {
   assignPriorities,
@@ -40,9 +44,9 @@ import {
   collectModelOptions,
   draftFromBoard,
   moveMember,
+  mergeRoutingRuntime,
   neededChannels,
   neededCredentialModels,
-  resolveRoute,
   stepMember,
 } from './logic';
 import { ChangeReviewDialog } from './components/ChangeReviewDialog';
@@ -66,6 +70,7 @@ interface ModelProgress {
 export function RoutingPage() {
   const { t } = useTranslation();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
+  const apiBase = useAuthStore((state) => state.apiBase);
   const fetchConfig = useConfigStore((state) => state.fetchConfig);
   const showNotification = useNotificationStore((state) => state.showNotification);
   const showConfirmation = useNotificationStore((state) => state.showConfirmation);
@@ -81,11 +86,13 @@ export function RoutingPage() {
   // A page sliding out must not leave its portalled save bar behind.
   const isCurrentLayer = pageTransitionLayer ? pageTransitionLayer.isCurrentLayer : true;
 
+  const [files, setFiles] = useState<AuthFileItem[]>([]);
   const [board, setBoard] = useState<RoutingBoard | null>(null);
   const [draft, setDraft] = useState<RoutingDraft | null>(null);
   const [catalog, setCatalog] = useState<RoutingModelCatalog>(EMPTY_CATALOG);
   const [modelProgress, setModelProgress] = useState<ModelProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [observedAt, setObservedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState('');
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -94,6 +101,8 @@ export function RoutingPage() {
   const [weightOpen, setWeightOpen] = useState(false);
   const requestRef = useRef(0);
   const catalogRef = useRef<RoutingModelCatalog>(EMPTY_CATALOG);
+  const inFlightRef = useRef(false);
+  const dirtyRef = useRef(false);
 
   const connected = connectionStatus === 'connected';
 
@@ -125,29 +134,51 @@ export function RoutingPage() {
     );
   }, []);
 
-  const load = useCallback(async () => {
-    const requestId = ++requestRef.current;
-    const isCurrent = () => requestId === requestRef.current;
-    if (!connected) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const [config, files] = await Promise.all([fetchConfig(true), routingApi.listCredentials()]);
-      if (!isCurrent()) return;
-      const next = buildRoutingBoard(config.raw ?? {}, files);
-      setBoard(next);
-      setDraft(draftFromBoard(next));
-      loadModels(next, requestId);
-    } catch (err) {
-      if (!isCurrent()) return;
-      setError(getErrorMessage(err));
-    } finally {
-      if (isCurrent()) setLoading(false);
-    }
-  }, [connected, fetchConfig, loadModels]);
+  const load = useCallback(
+    async (background = false) => {
+      if (background && inFlightRef.current) return;
+      const requestId = ++requestRef.current;
+      const isCurrent = () => requestId === requestRef.current;
+      const assertConnection = guardConfigConnection();
+      if (!connected || !apiBase) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      inFlightRef.current = true;
+      setError(null);
+      try {
+        const [config, files] = await Promise.all([
+          fetchConfig(true),
+          routingApi.listCredentials(),
+        ]);
+        if (!isCurrent()) return;
+        assertConnection();
+        const next = buildRoutingBoard(config.raw ?? {}, files);
+        setFiles(files);
+        setObservedAt(Date.now());
+        // Quota, counters and cooldowns keep updating while configuration edits stay local.
+        if (background && dirtyRef.current) {
+          setBoard((previous) => (previous ? mergeRoutingRuntime(previous, next) : next));
+          return;
+        }
+        setBoard(next);
+        setDraft(draftFromBoard(next));
+        // Model aliases and registrations can change without leaving this page.
+        catalogRef.current = EMPTY_CATALOG;
+        loadModels(next, requestId);
+      } catch (err) {
+        if (!isCurrent()) return;
+        setError(getErrorMessage(err));
+      } finally {
+        if (isCurrent()) {
+          setLoading(false);
+          inFlightRef.current = false;
+        }
+      }
+    },
+    [connected, fetchConfig, loadModels, apiBase]
+  );
 
   useEffect(() => {
     void load();
@@ -158,16 +189,44 @@ export function RoutingPage() {
   }, [load]);
 
   useEffect(() => {
-    // A new connection is a new backend: model lists are not shared across it.
+    // Never display one backend's snapshot under another backend's connection.
     catalogRef.current = EMPTY_CATALOG;
     setCatalog(EMPTY_CATALOG);
-  }, [connectionStatus]);
+    setFiles([]);
+    setBoard(null);
+    setDraft(null);
+    setObservedAt(null);
+  }, [connectionStatus, apiBase]);
 
   const plan = useMemo(
     () => (board && draft ? buildRoutingPlan(board, draft) : null),
     [board, draft]
   );
   const dirty = Boolean(plan && plan.changes.length > 0);
+  useEffect(() => {
+    dirtyRef.current = dirty;
+  }, [dirty]);
+
+  useInterval(
+    () => {
+      if (document.visibilityState === 'visible') void load(true);
+    },
+    connected && isCurrentLayer && !saving ? 15_000 : null
+  );
+
+  useEffect(() => {
+    const resume = () => {
+      if (connected && isCurrentLayer && !saving && document.visibilityState === 'visible') {
+        void load(true);
+      }
+    };
+    document.addEventListener('visibilitychange', resume);
+    window.addEventListener('focus', resume);
+    return () => {
+      document.removeEventListener('visibilitychange', resume);
+      window.removeEventListener('focus', resume);
+    };
+  }, [connected, isCurrentLayer, saving, load]);
 
   // The global header refresh reloads the board; with a draft it asks first.
   const refresh = useCallback(() => {
@@ -204,10 +263,6 @@ export function RoutingPage() {
     [board, draft]
   );
   const selectedModel = model.trim() || null;
-  const preview = useMemo(
-    () => (board && draft ? resolveRoute(board, draft, catalog, selectedModel, nowMs) : null),
-    [board, draft, catalog, selectedModel, nowMs]
-  );
   const modelOptions = useMemo(
     () => (board ? collectModelOptions(board, catalog) : []),
     [board, catalog]
@@ -350,7 +405,7 @@ export function RoutingPage() {
         />
       );
     }
-    if (!board || !draft || !preview) return null;
+    if (!board || !draft) return null;
     if (board.members.length === 0) {
       return <EmptyState title={t('routing.empty_title')} description={t('routing.empty_desc')} />;
     }
@@ -360,7 +415,6 @@ export function RoutingPage() {
           <TierLadder
             members={members}
             draft={draft}
-            preview={preview}
             priorities={priorities}
             model={selectedModel}
             nowMs={nowMs}
@@ -382,10 +436,59 @@ export function RoutingPage() {
   return (
     <div className={styles.page} ref={revealRef}>
       <header className={styles.header}>
-        <h1 className={styles.title} data-reveal>
-          {t('routing.title')}
-        </h1>
+        <div>
+          <h1 className={styles.title} data-reveal>
+            {t('routing.title')}
+          </h1>
+          <p className={styles.subtitle}>{t('routing.workspace_subtitle')}</p>
+        </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          loading={loading}
+          disabled={!connected || saving}
+          onClick={() => void refresh()}
+        >
+          {t('routing.refresh')}
+        </Button>
       </header>
+
+      <section className={styles.snapshot} aria-label={t('routing.snapshot_title')}>
+        <div className={styles.snapshotHeading}>
+          <strong>{t('routing.snapshot_title')}</strong>
+          <span className={styles.snapshotStatus}>
+            {t(
+              !connected
+                ? 'routing.sync_disconnected'
+                : error
+                  ? 'routing.sync_failed'
+                  : dirty || saving
+                    ? 'routing.sync_paused'
+                    : loading
+                      ? 'routing.sync_refreshing'
+                      : 'routing.sync_enabled'
+            )}
+          </span>
+        </div>
+        <p>{t('routing.snapshot_description')}</p>
+        <div className={styles.snapshotMeta}>
+          <span>
+            {observedAt === null
+              ? t('routing.snapshot_waiting')
+              : t('routing.snapshot_age', {
+                  seconds: Math.max(0, Math.floor((nowMs - observedAt) / 1000)),
+                })}
+          </span>
+          <span>{t('routing.counters_explanation')}</span>
+        </div>
+        {error && board ? (
+          <p className={styles.syncError} role="alert">
+            {t('routing.load_failed', { message: error })}
+          </p>
+        ) : null}
+      </section>
+
+      <ObservedStatus files={files} connected={connected && isCurrentLayer} nowMs={nowMs} />
 
       {renderBody()}
 
