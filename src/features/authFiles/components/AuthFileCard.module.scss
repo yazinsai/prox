@@ -525,3 +525,160 @@
     transform: none;
   }
 }
+
+.cardRow {
+  border: 0;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  padding: 16px 20px;
+  background: transparent;
+  &:first-child {
+    border-radius: 14px 14px 0 0;
+  }
+  &:last-child {
+    border-bottom: 0;
+    border-radius: 0 0 14px 14px;
+  }
+  &.cardSelected {
+    background: var(--bg-tertiary);
+    box-shadow: inset 3px 0 var(--text-primary);
+  }
+  .account,
+  .accountMono {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .fileName {
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .providerBadge {
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .actions {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .toggleLabel {
+    font-size: 12px;
+  }
+}
+.cardQuota {
+  background: var(--bg-primary);
+}
+@media (min-width: 1360px) {
+  .cardRow {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) 180px 160px 268px;
+    gap: 8px 20px;
+    align-items: center;
+    .head {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .fileName {
+      grid-column: 1;
+      grid-row: 2;
+      padding-left: 24px;
+    }
+    .health {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+    .healthHead {
+      flex-direction: column;
+      gap: 4px;
+    }
+    .healthCounts {
+      flex-wrap: wrap;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 400;
+    }
+    .metaRow {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      font-family: inherit;
+      font-size: 12px;
+    }
+    .actions {
+      grid-column: 4;
+      grid-row: 1 / span 2;
+      flex-wrap: nowrap;
+      gap: 10px;
+    }
+    .actionsMain {
+      flex-wrap: nowrap;
+    }
+    .toggleLabel {
+      display: none;
+    }
+    .warning,
+    .note,
+    .siwcRow {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+@media (min-width: 1360px) {
+  .cardRow > :not(.head):not(.fileName):not(.health):not(.metaRow):not(.actions) {
+    grid-column: 1 / -1;
+  }
+}
+
+.quotaDisclosure {
+  grid-column: 1 / -1;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  summary {
+    width: fit-content;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  summary:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+.quotaDetail {
+  padding-top: 12px;
+  max-width: 720px;
+}
+@media (min-width: 1360px) {
+  .cardRow .quotaDisclosure:not([open]) {
+    grid-column: 3;
+    grid-row: 3;
+  }
+  .cardRow {
+    grid-template-columns: minmax(180px, 1fr) 160px 128px 278px;
+    gap: 4px 16px;
+  }
+  .cardRow .head {
+    align-self: end;
+  }
+  .cardRow .fileName {
+    align-self: start;
+  }
+  .cardRow .health {
+    gap: 4px;
+  }
+  .cardRow .healthLabel {
+    font-family: inherit;
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+  .cardRow .statusBlock {
+    height: 4px;
+  }
+  .cardRow .actions {
+    gap: 8px;
+  }
+}

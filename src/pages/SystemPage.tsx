@@ -17,7 +17,7 @@ import { useApiKeysForModels } from '@/hooks/useApiKeysForModels';
 import { formatDateTimeValue } from '@/utils/format';
 import { classifyModels } from '@/utils/models';
 import { STORAGE_KEY_AUTH } from '@/utils/constants';
-import { INLINE_LOGO_JPEG } from '@/assets/logoInline';
+import proxMark from '@/assets/prox-mark.svg';
 import iconGemini from '@/assets/icons/gemini.svg';
 import iconClaude from '@/assets/icons/claude.svg';
 import iconMeta from '@/assets/icons/meta.svg';
@@ -304,7 +304,7 @@ export function SystemPage() {
       <div className={styles.content}>
         <Card className={styles.aboutCard}>
           <div className={styles.aboutHeader}>
-            <img src={INLINE_LOGO_JPEG} alt="CPAMC" className={styles.aboutLogo} />
+            <img src={proxMark} alt="CPAMC" className={styles.aboutLogo} />
             <div className={styles.aboutTitle}>{t('system_info.about_title')}</div>
           </div>
 
@@ -350,6 +350,62 @@ export function SystemPage() {
               <div className={styles.tileSub}>{auth.apiBase || '-'}</div>
             </div>
           </div>
+        </Card>
+
+        <Card
+          title={t('system_info.models_title')}
+          extra={
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => fetchModels({ forceRefresh: true })}
+              loading={modelsLoading}
+            >
+              {t('common.refresh')}
+            </Button>
+          }
+        >
+          <p className={styles.sectionDescription}>{t('system_info.models_desc')}</p>
+          {modelStatus && (
+            <div className={`status-badge ${modelStatus.type}`}>{modelStatus.message}</div>
+          )}
+          {modelsError && <div className="error-box">{modelsError}</div>}
+          {modelsLoading ? (
+            <div className="hint">{t('common.loading')}</div>
+          ) : models.length === 0 ? (
+            <div className="hint">{t('system_info.models_empty')}</div>
+          ) : (
+            <div className="item-list">
+              {groupedModels.map((group) => {
+                const iconSrc = getIconForCategory(group.id);
+                return (
+                  <div key={group.id} className="item-row">
+                    <div className="item-meta">
+                      <div className={styles.groupTitle}>
+                        {iconSrc && <img src={iconSrc} alt="" className={styles.groupIcon} />}
+                        <span className="item-title">{group.label}</span>
+                      </div>
+                      <div className="item-subtitle">
+                        {t('system_info.models_count', { count: group.items.length })}
+                      </div>
+                    </div>
+                    <div className={styles.modelTags}>
+                      {group.items.map((model) => (
+                        <span
+                          key={`${model.name}-${model.alias ?? 'default'}`}
+                          className={styles.modelTag}
+                          title={model.description || ''}
+                        >
+                          <span className={styles.modelName}>{model.name}</span>
+                          {model.alias && <span className={styles.modelAlias}>{model.alias}</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
 
         <Card title={t('system_info.quick_links_title')}>
@@ -409,62 +465,6 @@ export function SystemPage() {
               </div>
             </a>
           </div>
-        </Card>
-
-        <Card
-          title={t('system_info.models_title')}
-          extra={
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => fetchModels({ forceRefresh: true })}
-              loading={modelsLoading}
-            >
-              {t('common.refresh')}
-            </Button>
-          }
-        >
-          <p className={styles.sectionDescription}>{t('system_info.models_desc')}</p>
-          {modelStatus && (
-            <div className={`status-badge ${modelStatus.type}`}>{modelStatus.message}</div>
-          )}
-          {modelsError && <div className="error-box">{modelsError}</div>}
-          {modelsLoading ? (
-            <div className="hint">{t('common.loading')}</div>
-          ) : models.length === 0 ? (
-            <div className="hint">{t('system_info.models_empty')}</div>
-          ) : (
-            <div className="item-list">
-              {groupedModels.map((group) => {
-                const iconSrc = getIconForCategory(group.id);
-                return (
-                  <div key={group.id} className="item-row">
-                    <div className="item-meta">
-                      <div className={styles.groupTitle}>
-                        {iconSrc && <img src={iconSrc} alt="" className={styles.groupIcon} />}
-                        <span className="item-title">{group.label}</span>
-                      </div>
-                      <div className="item-subtitle">
-                        {t('system_info.models_count', { count: group.items.length })}
-                      </div>
-                    </div>
-                    <div className={styles.modelTags}>
-                      {group.items.map((model) => (
-                        <span
-                          key={`${model.name}-${model.alias ?? 'default'}`}
-                          className={styles.modelTag}
-                          title={model.description || ''}
-                        >
-                          <span className={styles.modelName}>{model.name}</span>
-                          {model.alias && <span className={styles.modelAlias}>{model.alias}</span>}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </Card>
 
         <Card title={t('system_info.clear_login_title')}>

@@ -1,11 +1,11 @@
 @use '../../styles/mixins' as *;
 
 .container {
-  --log-control-height: 40px;
+  --log-control-height: 38px;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   min-width: 0;
   min-height: 0;
 }
@@ -21,9 +21,9 @@
 .pageTitle {
   margin: 0;
   color: var(--text-primary);
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1.3;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.025em;
 }
 
@@ -40,7 +40,7 @@
   padding: 8px 14px;
   border-radius: 7px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -48,7 +48,7 @@
 .tabActive {
   background: var(--bg-primary);
   color: var(--text-primary);
-  box-shadow: 0 1px 3px var(--border-color);
+  box-shadow: none;
 }
 
 .container button:focus-visible,
@@ -78,7 +78,7 @@
   overflow: hidden;
   padding: 0;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--bg-primary);
   box-shadow: none;
 }
@@ -124,7 +124,7 @@
   border-radius: 8px;
   border: 1px solid var(--border-color);
   background: var(--bg-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1;
   box-shadow: none;
@@ -305,7 +305,7 @@
   font-size: 11px;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 .readStatus {
   display: flex;
@@ -355,7 +355,7 @@
   border-bottom: 1px solid var(--border-color);
   color: var(--text-secondary);
   font-size: 11px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 .loadMoreStats {
   display: flex;
@@ -396,7 +396,7 @@
 .logRow,
 .errorLogContent {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.65;
   font-variant-numeric: tabular-nums;
 }
@@ -411,17 +411,15 @@
   display: grid;
   grid-template-columns: 160px minmax(0, 1fr);
   gap: 16px;
-  padding: 4px 12px 4px 16px;
+  padding: 6px 20px;
   border-left: 2px solid transparent;
   color: var(--text-primary);
-  &:nth-child(even) {
-    background: color-mix(in srgb, var(--bg-secondary) 20%, transparent);
-  }
 }
 .rowWarn {
   border-left-color: var(--warning-color);
 }
 .rowError {
+  background: color-mix(in srgb, var(--error-color) 6%, transparent);
   border-left-color: var(--error-color);
 }
 .timestamp {
@@ -487,7 +485,7 @@
 .levelDebug,
 .levelTrace {
   color: var(--text-secondary);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 .statusBadge {
   font-variant-numeric: tabular-nums;
@@ -537,7 +535,7 @@
   :global(.item-title) {
     overflow-wrap: anywhere;
     font-family: ui-monospace, monospace;
-    font-size: 13px;
+    font-size: 14px;
   }
   :global(.item-actions) {
     flex-wrap: wrap;
@@ -563,7 +561,7 @@
   overflow: auto;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   white-space: pre;
 }

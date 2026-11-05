@@ -9,9 +9,14 @@
   border: 1px solid transparent;
   border-radius: $radius-md;
   padding: 10px 14px;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  min-height: 38px;
   cursor: pointer;
-  transition: all $transition-fast;
+  transition:
+    background-color var(--dur-hover) var(--ease-out-strong),
+    border-color var(--dur-hover) var(--ease-out-strong),
+    color var(--dur-hover) var(--ease-out-strong);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
 
@@ -74,8 +79,8 @@
 }
 
 [data-theme='dark'] {
-  .btn {
-    color: #fff;
+  .btn.btn-primary {
+    color: var(--primary-contrast);
   }
 
   .btn.btn-secondary,
@@ -90,7 +95,7 @@ textarea {
   border: 1px solid var(--border-color);
   border-radius: $radius-md;
   padding: 10px 12px;
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-tertiary);
   color: var(--text-primary);
   transition:
     border-color $transition-fast,

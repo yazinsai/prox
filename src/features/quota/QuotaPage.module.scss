@@ -17,7 +17,7 @@
 .workbench {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
   min-width: 0;
 }
 
@@ -51,7 +51,7 @@
   align-items: center;
   flex: 0 1 340px;
   min-width: 0;
-  height: 36px;
+  height: 38px;
   border: 1px solid transparent;
   border-radius: 10px;
   background: var(--bg-secondary);
@@ -81,7 +81,7 @@
   background: transparent;
   color: var(--text-primary);
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   appearance: none;
 
   &::placeholder {
@@ -125,7 +125,7 @@
   max-width: 100%;
 
   button[aria-haspopup='listbox'] {
-    height: 36px;
+    height: 38px;
     border-color: transparent;
     border-radius: 10px;
     background: transparent;
@@ -164,7 +164,7 @@
 
   .clearSearch {
     width: 36px;
-    height: 36px;
+    height: 38px;
   }
 
   .sort button[aria-haspopup='listbox'] {

@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { authFilesApi } from '@/services/api';
 import { useAuthStore, useConfigStore, useModelsStore } from '@/stores';
+import { apiClient } from '@/services/api/client';
+import { useInterval } from '@/hooks/useInterval';
 import { useApiKeysForModels } from '@/hooks/useApiKeysForModels';
 import { useProviderRecentRequests } from '@/components/providers/hooks/useProviderRecentRequests';
 import {
@@ -112,6 +114,7 @@ export const getProviderKeyCounts = (config: Config) => ({
 export function useDashboardOverview() {
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const apiBase = useAuthStore((state) => state.apiBase);
+  const managementKey = useAuthStore((state) => state.managementKey);
   const config = useConfigStore((state) => state.config);
   const fetchConfig = useConfigStore((state) => state.fetchConfig);
 
@@ -127,17 +130,68 @@ export function useDashboardOverview() {
     enabled: connected,
   });
 
-  const [authFiles, setAuthFiles] = useState<AuthFileItem[] | null>(null);
+  const [inventory, setInventory] = useState<{
+    scope: object;
+    revision: number;
+    files: AuthFileItem[];
+  } | null>(null);
+  const authRequest = useRef(0);
+  const revision = apiClient.getConnectionRevision();
+  const inventoryScope = useMemo(() => ({}), [apiBase, managementKey, connected, revision]);
+  const authFiles =
+    connected && inventory?.scope === inventoryScope && inventory.revision === revision
+      ? inventory.files
+      : null;
 
   const loadAuthFiles = useCallback(async () => {
     if (!connected) return;
+    const request = ++authRequest.current;
+    const connectionRevision = apiClient.getConnectionRevision();
+    const current = () =>
+      request === authRequest.current &&
+      connectionRevision === apiClient.getConnectionRevision() &&
+      useAuthStore.getState().connectionStatus === 'connected' &&
+      useAuthStore.getState().apiBase === apiBase &&
+      useAuthStore.getState().managementKey === managementKey;
     try {
       const response = await authFilesApi.list();
-      setAuthFiles(response.files);
+      if (current())
+        setInventory({
+          scope: inventoryScope,
+          revision: connectionRevision,
+          files: response.files,
+        });
     } catch {
-      setAuthFiles(null);
+      // Unknown is preferable to presenting old cooldowns as current observations.
+      if (current()) setInventory(null);
     }
-  }, [connected]);
+  }, [connected, apiBase, managementKey, inventoryScope]);
+
+  useEffect(() => {
+    setInventory(null);
+    return () => {
+      authRequest.current += 1;
+    };
+  }, [inventoryScope]);
+
+  useInterval(
+    () => {
+      if (document.visibilityState === 'visible') void loadAuthFiles();
+    },
+    connected ? 15_000 : null
+  );
+
+  useEffect(() => {
+    const resume = () => {
+      if (document.visibilityState === 'visible') void loadAuthFiles();
+    };
+    window.addEventListener('focus', resume);
+    document.addEventListener('visibilitychange', resume);
+    return () => {
+      window.removeEventListener('focus', resume);
+      document.removeEventListener('visibilitychange', resume);
+    };
+  }, [loadAuthFiles]);
 
   const loadModels = useCallback(async () => {
     if (!connected || !apiBase) return;
@@ -291,6 +345,7 @@ export function useDashboardOverview() {
     traffic,
     providers,
     credentials,
+    authFiles,
     refresh,
   };
 }

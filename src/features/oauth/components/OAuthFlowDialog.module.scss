@@ -752,3 +752,39 @@
     opacity: 0;
   }
 }
+
+.inlinePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+  padding: 28px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+
+  .headingTitle {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .headingCaption {
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 0;
+  }
+  .primary,
+  .secondary,
+  .ghost {
+    border-radius: 8px;
+  }
+  .statusBar {
+    padding: 12px 0 0;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+@media (max-width: 600px) {
+  .inlinePanel {
+    padding: 20px;
+  }
+}

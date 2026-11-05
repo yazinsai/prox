@@ -27,10 +27,21 @@
 .tabsRow {
   display: flex;
   min-width: 0;
-  border-bottom: 1px solid var(--border-color);
+  width: 200px;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.visualLayout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  min-width: 0;
 }
 
 .panel {
+  flex: 1;
+  gap: 16px;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -39,5 +50,18 @@
 @include mobile {
   .page {
     gap: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .visualLayout {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .tabsRow {
+    width: 100%;
+  }
+  .panel {
+    width: 100%;
   }
 }

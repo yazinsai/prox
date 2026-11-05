@@ -12,16 +12,18 @@
 
 .copy {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 16px;
   min-width: 0;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(26px, 3.2vw, 30px);
+  font-size: 26px;
   line-height: 1.15;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
@@ -32,16 +34,15 @@
   align-items: baseline;
   flex-wrap: wrap;
   gap: 4px 8px;
-  font-family: $font-mono;
   font-size: 13px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
+  letter-spacing: normal;
   color: var(--text-secondary);
 
   /* 终端游标：全站页头 meta 行的结构记号 */
   &::before {
-    content: '▍';
+    content: none;
     color: var(--viz-success);
     font-size: 13px;
     line-height: 1;
@@ -87,9 +88,9 @@
   gap: 6px;
   border: 0;
   cursor: pointer;
-  background: none;
-  color: var(--text-secondary);
-  border-radius: $radius-full;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-radius: 8px;
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 550;

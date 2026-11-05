@@ -424,6 +424,7 @@ export function RoutingPage() {
             onStep={handleStep}
             onEditWeights={handleEditWeights}
           />
+          <ObservedStatus files={files} connected={connected && isCurrentLayer} nowMs={nowMs} />
           <p className={styles.footnote}>{t('routing.footnote')}</p>
         </section>
         <PolicyPanel settings={draft.settings} disabled={saving} onChange={handleSettings} />
@@ -453,8 +454,8 @@ export function RoutingPage() {
         </Button>
       </header>
 
-      <section className={styles.snapshot} aria-label={t('routing.snapshot_title')}>
-        <div className={styles.snapshotHeading}>
+      <details className={styles.snapshot}>
+        <summary className={styles.snapshotHeading}>
           <strong>{t('routing.snapshot_title')}</strong>
           <span className={styles.snapshotStatus}>
             {t(
@@ -469,7 +470,7 @@ export function RoutingPage() {
                       : 'routing.sync_enabled'
             )}
           </span>
-        </div>
+        </summary>
         <p>{t('routing.snapshot_description')}</p>
         <div className={styles.snapshotMeta}>
           <span>
@@ -486,9 +487,7 @@ export function RoutingPage() {
             {t('routing.load_failed', { message: error })}
           </p>
         ) : null}
-      </section>
-
-      <ObservedStatus files={files} connected={connected && isCurrentLayer} nowMs={nowMs} />
+      </details>
 
       {renderBody()}
 

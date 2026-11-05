@@ -30,6 +30,7 @@ export interface SponsorCardProps {
   sites: SponsorCardSite[];
   /** 点站点入口：开始该站登录并打开授权对话框。 */
   onOpen: (siteId: string) => void;
+  flowTarget?: string;
 }
 
 /**
@@ -47,6 +48,7 @@ export function SponsorCard({
   signUpLabel,
   sites,
   onOpen,
+  flowTarget,
 }: SponsorCardProps) {
   const titleId = useId();
   const pools = LIGHT_POOLS.map((pool) => (
@@ -82,6 +84,7 @@ export function SponsorCard({
           <SiteEntry
             key={site.id}
             site={site}
+            flowTarget={flowTarget}
             signUpLabel={signUpLabel}
             onOpen={() => onOpen(site.id)}
           />
@@ -95,10 +98,12 @@ function SiteEntry({
   site,
   signUpLabel,
   onOpen,
+  flowTarget,
 }: {
   site: SponsorCardSite;
   signUpLabel: string;
   onOpen: () => void;
+  flowTarget?: string;
 }) {
   const metaId = useId();
 
@@ -111,7 +116,8 @@ function SiteEntry({
             className={styles.siteMain}
             onClick={onOpen}
             aria-label={site.name}
-            aria-haspopup="dialog"
+            aria-haspopup={flowTarget ? undefined : 'dialog'}
+            aria-controls={flowTarget}
             aria-describedby={metaId}
           >
             {site.region}

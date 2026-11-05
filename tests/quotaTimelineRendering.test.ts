@@ -114,6 +114,8 @@ describe('QuotaTimeline rendering', () => {
   });
 
   test('renders an unexpired Codex reset credit as an expiry tick', () => {
+    // Backend instants are UTC; the timeline deliberately displays local clock time.
+    const expiresAt = new Date(2026, 7, 3, 12).toISOString();
     const markup = renderToStaticMarkup(
       createElement(QuotaTimeline, {
         entries: [
@@ -140,7 +142,7 @@ describe('QuotaTimeline rendering', () => {
               id: 'credit-1',
               status: 'available',
               grantedAt: '2026-07-20T12:00:00Z',
-              expiresAt: '2026-08-03T12:00:00Z',
+              expiresAt,
             },
           ],
         }),

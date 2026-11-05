@@ -9,6 +9,14 @@
 @use './components.scss';
 @use './layout.scss';
 
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin.woff2') format('woff2');
+}
+
 body {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -44,4 +52,3 @@ body.modal-open .content {
     background: var(--border-hover);
   }
 }
-

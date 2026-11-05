@@ -7,14 +7,6 @@ import {
   IconPencil,
   IconTrash2,
 } from '@/components/ui/icons';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/Table';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { ProviderStatusBar } from '@/components/providers/ProviderStatusBar';
 import {
@@ -42,8 +34,6 @@ interface ProviderResourceTableProps {
   onDelete: (resource: ProviderResource) => void;
   onToggleDisabled?: (resource: ProviderResource, disabled: boolean) => void;
 }
-
-const columnWidths = ['180px', '220px', '72px', '138px', '174px', '176px'];
 
 const isSponsorResource = (resource: ProviderResource): boolean =>
   isMultiProtocolSponsorBrand(resource.brand);
@@ -200,134 +190,113 @@ export function ProviderResourceTable({
   };
 
   return (
-    <Table
-      className={styles.providerTable}
-      cols={columnWidths.map((w, i) => (
-        <col key={i} style={{ width: w }} />
-      ))}
-    >
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t('providersPage.table.key')}</TableHead>
-          <TableHead>{t('providersPage.table.baseUrl')}</TableHead>
-          <TableHead>{t('providersPage.table.prefix')}</TableHead>
-          <TableHead>{t('providersPage.table.models')}</TableHead>
-          <TableHead>{t('providersPage.table.status')}</TableHead>
-          <TableHead alignRight className={styles.actionsHead}>
-            {t('providersPage.table.actions')}
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {resources.map((resource) => {
-          return (
-            <TableRow key={resource.id} selected={resource.id === selectedId}>
-              <TableCell>{renderPrimary(resource)}</TableCell>
-              <TableCell>{renderBaseUrl(resource)}</TableCell>
-              <TableCell>
-                {resource.prefix ? (
-                  <span className={styles.chip}>{resource.prefix}</span>
-                ) : (
-                  <span className={styles.baseUrl}>{t('providersPage.status.none')}</span>
-                )}
-              </TableCell>
-              <TableCell>{renderModelsSummary(resource)}</TableCell>
-              <TableCell>
-                <div className={styles.statusCell}>
-                  {renderStatus(resource)}
-                  {usageByProvider && !isSponsorResource(resource) ? (
-                    <>
-                      {(() => {
-                        const stats = resolveTotalStats(resource, usageByProvider);
-                        return (
-                          <div className={styles.stats}>
-                            <span className={`${styles.statPill} ${styles.statSuccess}`}>
-                              {t('stats.success')}: {stats.success}
-                            </span>
-                            <span className={`${styles.statPill} ${styles.statFailure}`}>
-                              {t('stats.failure')}: {stats.failure}
-                            </span>
-                          </div>
-                        );
-                      })()}
-                      <div className={styles.statusBarWrap}>
-                        <ProviderStatusBar
-                          statusData={resolveStatusBarData(resource, usageByProvider)}
-                          styles={statusBarStyles}
-                        />
-                      </div>
-                    </>
-                  ) : null}
-                </div>
-              </TableCell>
-              <TableCell
-                alignRight
-                className={[
-                  styles.actionsCell,
-                  resource.id === selectedId ? styles.actionsCellSelected : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
+    <div className={styles.resourceGrid}>
+      {resources.map((resource) => (
+        <article
+          key={resource.id}
+          className={`${styles.resourceCard} ${resource.id === selectedId ? styles.resourceSelected : ''}`}
+        >
+          <div className={styles.resourceHeading}>
+            {renderPrimary(resource)}
+            {renderStatus(resource)}
+          </div>
+          <div className={styles.resourceField}>
+            <span className={styles.metricLabel}>{t('providersPage.table.baseUrl')}</span>
+            {renderBaseUrl(resource)}
+          </div>
+          {resource.prefix && (
+            <div className={styles.metricsCell}>
+              <span className={styles.metricLabel}>{t('providersPage.table.prefix')}</span>
+              <span className={styles.chip}>{resource.prefix}</span>
+            </div>
+          )}
+          {renderModelsSummary(resource)}
+          {resource.models.length > 0 && (
+            <div className={styles.modelChips}>
+              {resource.models.slice(0, 4).map((model) => (
+                <span key={model} className={styles.chip} title={model}>
+                  {model}
+                </span>
+              ))}
+              {resource.models.length > 4 && (
+                <span className={styles.chip}>+{resource.models.length - 4}</span>
+              )}
+            </div>
+          )}
+          {usageByProvider && !isSponsorResource(resource) && (
+            <div className={styles.resourceUsage}>
+              <div className={styles.stats}>
+                <span className={`${styles.statPill} ${styles.statSuccess}`}>
+                  {t('stats.success')}: {resolveTotalStats(resource, usageByProvider).success}
+                </span>
+                <span className={`${styles.statPill} ${styles.statFailure}`}>
+                  {t('stats.failure')}: {resolveTotalStats(resource, usageByProvider).failure}
+                </span>
+              </div>
+              <ProviderStatusBar
+                statusData={resolveStatusBarData(resource, usageByProvider)}
+                styles={statusBarStyles}
+              />
+            </div>
+          )}
+          <footer className={styles.resourceFooter}>
+            <div className={styles.actions}>
+              {onToggleDisabled ? (
+                <span className={styles.toggleWrap} onClick={(e) => e.stopPropagation()}>
+                  <ToggleSwitch
+                    checked={!resource.disabled}
+                    disabled={disableMutations}
+                    onChange={(value) => onToggleDisabled(resource, !value)}
+                    ariaLabel={
+                      resource.disabled
+                        ? t('providersPage.actions.enable')
+                        : t('providersPage.actions.disable')
+                    }
+                  />
+                </span>
+              ) : null}
+              <button
+                type="button"
+                className={styles.iconBtn}
+                aria-label={t('providersPage.actions.view')}
+                title={t('providersPage.actions.view')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView(resource);
+                }}
               >
-                <div className={styles.actions}>
-                  {onToggleDisabled ? (
-                    <span className={styles.toggleWrap} onClick={(e) => e.stopPropagation()}>
-                      <ToggleSwitch
-                        checked={!resource.disabled}
-                        disabled={disableMutations}
-                        onChange={(value) => onToggleDisabled(resource, !value)}
-                        ariaLabel={
-                          resource.disabled
-                            ? t('providersPage.actions.enable')
-                            : t('providersPage.actions.disable')
-                        }
-                      />
-                    </span>
-                  ) : null}
-                  <button
-                    type="button"
-                    className={styles.iconBtn}
-                    aria-label={t('providersPage.actions.view')}
-                    title={t('providersPage.actions.view')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onView(resource);
-                    }}
-                  >
-                    <IconEye size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.iconBtn}
-                    aria-label={t('providersPage.actions.edit')}
-                    title={t('providersPage.actions.edit')}
-                    disabled={disableMutations}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(resource);
-                    }}
-                  >
-                    <IconPencil size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
-                    aria-label={t('providersPage.actions.delete')}
-                    title={t('providersPage.actions.delete')}
-                    disabled={disableMutations}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(resource);
-                    }}
-                  >
-                    <IconTrash2 size={16} />
-                  </button>
-                </div>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+                <IconEye size={16} />
+              </button>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                aria-label={t('providersPage.actions.edit')}
+                title={t('providersPage.actions.edit')}
+                disabled={disableMutations}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(resource);
+                }}
+              >
+                <IconPencil size={16} />
+              </button>
+              <button
+                type="button"
+                className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                aria-label={t('providersPage.actions.delete')}
+                title={t('providersPage.actions.delete')}
+                disabled={disableMutations}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(resource);
+                }}
+              >
+                <IconTrash2 size={16} />
+              </button>
+            </div>
+          </footer>
+        </article>
+      ))}
+    </div>
   );
 }

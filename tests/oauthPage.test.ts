@@ -11,6 +11,7 @@ import zhTW from '@/i18n/locales/zh-TW.json';
 import ru from '@/i18n/locales/ru.json';
 import ko from '@/i18n/locales/ko.json';
 import vi from '@/i18n/locales/vi.json';
+import { OAuthSponsorSites } from '@/features/oauth/components/OAuthSponsorSites';
 import { OAuthPage } from '@/features/oauth/OAuthPage';
 import { resolveCallbackUrl, XAI_CALLBACK_URL } from '@/features/oauth/callbackUrl';
 import { resolveFlowView, splitAuthUrl } from '@/features/oauth/flowView';
@@ -133,7 +134,7 @@ describe('OAuth provider gallery', () => {
           createElement(MemoryRouter, null, createElement(OAuthPage))
         )
       );
-      for (const provider of OAUTH_PROVIDERS) {
+      for (const provider of OAUTH_PROVIDERS.filter((card) => !card.sponsor)) {
         const label =
           typeof provider.label === 'string' ? provider.label : i18n.t(provider.label.key);
         expect(markup).toContain(label);
@@ -141,28 +142,42 @@ describe('OAuth provider gallery', () => {
       expect(markup).toContain('Vertex AI');
       expect(markup).toContain(i18n.t('siwc.bind'));
       expect(markup).not.toMatch(/auth_login\.|vertex_import\.|siwc\./);
-      // 每个磁贴都是打开对话框的按钮（提供商 + Vertex + SIWC 绑定）
-      expect(markup.match(/aria-haspopup="dialog"/g)?.length).toBe(OAUTH_PROVIDERS.length + 2);
+      // OAuth providers select the inline panel; file import and SIWC still open dialogs.
+      expect(markup.match(/aria-haspopup="dialog"/g)?.length).toBe(2);
+      expect(markup.match(/aria-controls=/g)?.length).toBe(OAUTH_PROVIDERS.length - 1);
+      expect(markup).toContain('>Kimi</button>');
+      expect(markup).not.toContain('role="group"');
+      expect(markup).toContain('aria-pressed="false"');
     });
   }
 
-  test('merges both Kimi sites into one sponsor card with per-site entries', async () => {
+  test('shows both Kimi sites inside the selected flow options', async () => {
     const i18n = createInstance();
     await i18n.init({ lng: 'zh-CN', resources: { 'zh-CN': { translation: zhCN } } });
     const markup = renderToStaticMarkup(
       createElement(
         I18nextProvider,
         { i18n },
-        createElement(MemoryRouter, null, createElement(OAuthPage))
+        createElement(OAuthSponsorSites, {
+          sites: OAUTH_PROVIDERS.filter((card) => card.sponsor).map((card) => ({
+            id: card.id,
+            name: typeof card.label === 'string' ? card.label : i18n.t(card.label.key),
+            region: i18n.t(card.sponsor!.siteKey),
+            domain: card.domain ?? '',
+            signUpUrl: card.sponsor!.signUpUrl,
+          })),
+          selectedId: 'kimi',
+          onSelect: () => {},
+        })
       )
     );
-    // 一张品牌卡（role=group），卡内两个站点登录入口 + 两个开放平台注册链接
+    // Region selection and signup links live inside the selected Kimi flow.
     expect(markup.match(/role="group"/g)?.length).toBe(1);
     const card = markup.slice(markup.indexOf('role="group"'));
     expect(card).toContain('aria-label="Kimi 国内站"');
     expect(card).toContain('aria-label="Kimi 国际站"');
-    expect(card).toContain('>国内站</button>');
-    expect(card).toContain('>国际站</button>');
+    expect(card).toContain('>国内站</span>');
+    expect(card).toContain('>国际站</span>');
     expect(card.match(/aria-label="注册开放平台 · Kimi /g)?.length).toBe(2);
   });
 
@@ -203,7 +218,17 @@ describe('OAuth provider gallery', () => {
       createElement(
         I18nextProvider,
         { i18n },
-        createElement(MemoryRouter, null, createElement(OAuthPage))
+        createElement(OAuthSponsorSites, {
+          sites: OAUTH_PROVIDERS.filter((card) => card.sponsor).map((card) => ({
+            id: card.id,
+            name: typeof card.label === 'string' ? card.label : i18n.t(card.label.key),
+            region: i18n.t(card.sponsor!.siteKey),
+            domain: card.domain ?? '',
+            signUpUrl: card.sponsor!.signUpUrl,
+          })),
+          selectedId: 'kimi',
+          onSelect: () => {},
+        })
       )
     );
     for (const url of [KIMI_CHINESE_AFFILIATE_URL, KIMI_INTERNATIONAL_AFFILIATE_URL]) {

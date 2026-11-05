@@ -11,10 +11,10 @@
   display: flex;
   flex-direction: column;
   gap: 11px;
-  padding: 15px 16px;
+  padding: 20px;
   border-radius: 14px;
   border: 1px solid var(--border-color);
-  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+  background: var(--bg-primary);
   transition:
     transform var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
     border-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
@@ -23,9 +23,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
-    transform: translateY(-2px);
+    transform: none;
     border-color: var(--border-hover);
-    box-shadow: 0 12px 26px -14px rgb(0 0 0 / 0.16);
+    box-shadow: none;
   }
 }
 
@@ -78,7 +78,7 @@
 .fileName {
   min-width: 0;
   font-family: $font-mono;
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--text-primary);

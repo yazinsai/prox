@@ -40,7 +40,7 @@
 }
 
 .swatchSuccess {
-  background: var(--viz-success);
+  background: var(--text-tertiary);
 }
 
 .swatchFailure {
@@ -112,7 +112,7 @@
    * 相邻柱体之间同样保持 2px 表面色间隙。窄屏时槽位宽度小于 24px，
    * 柱体会填满槽位，没有这个 gap 就会连成一片、读起来像面积图。
    */
-  gap: 2px;
+  gap: 4px;
 }
 
 .column {
@@ -159,7 +159,7 @@
 }
 
 .segmentSuccess {
-  background: var(--viz-success);
+  background: var(--text-tertiary);
 }
 
 .segmentFailure {

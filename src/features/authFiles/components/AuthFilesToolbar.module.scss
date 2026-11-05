@@ -295,3 +295,31 @@
     animation: none;
   }
 }
+
+.segmented {
+  border: 0;
+  border-radius: 8px;
+  padding: 3px;
+}
+.segment {
+  min-height: 32px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 400;
+}
+.segmentActive {
+  box-shadow: none;
+  font-weight: 500;
+  background: var(--bg-hover);
+}
+.displayButton,
+.deleteAction {
+  border-radius: 8px;
+  height: 38px;
+  font-size: 14px;
+}
+.search :global(.input) {
+  height: 38px;
+  border-radius: 8px;
+  font-size: 14px;
+}

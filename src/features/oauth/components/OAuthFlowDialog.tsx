@@ -30,6 +30,9 @@ export function DialogTitle({ title, caption, icon }: DialogHeading) {
 
 export interface OAuthFlowDialogProps {
   open: boolean;
+  inline?: boolean;
+  panelId?: string;
+  providerOptions?: ReactNode;
   providerId: string;
   heading: DialogHeading;
   state: ProviderFlowState;
@@ -49,6 +52,19 @@ export interface OAuthFlowDialogProps {
 export function OAuthFlowDialog(props: OAuthFlowDialogProps) {
   const { open, heading, state, onClose } = props;
   const view = resolveFlowView(state);
+
+  if (props.inline) {
+    return (
+      <section id={props.panelId} className={styles.inlinePanel} aria-label={heading.title}>
+        <DialogTitle {...heading} />
+        {props.providerOptions}
+        <div className={styles.view} key={view}>
+          {view === 'success' ? <SuccessView {...props} /> : <FlowBody {...props} view={view} />}
+        </div>
+        {view === 'flow' && <FlowStatusBar {...props} />}
+      </section>
+    );
+  }
 
   return (
     <Modal

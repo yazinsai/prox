@@ -6,23 +6,27 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
+  gap: 20px;
   width: 100%;
+  min-width: 0;
 }
 
 // ─── Header ─────────────────────────────────────────────
 
 .pageHeader {
   display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
 .title {
   margin: 0;
   color: var(--text-primary);
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
@@ -64,7 +68,7 @@
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
-  background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
+  background: var(--bg-primary);
   flex-wrap: wrap;
 }
 
@@ -74,10 +78,10 @@
   max-width: 100%;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
-  border-radius: $radius-full;
-  border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
-  background: color-mix(in srgb, var(--bg-primary) 56%, transparent);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -92,7 +96,7 @@
 
 .statusDotOn {
   background: $success-color;
-  box-shadow: 0 0 6px rgba($success-color, 0.5);
+  box-shadow: none;
 }
 
 .statusDotOff {
@@ -167,8 +171,8 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
-  border-radius: $radius-lg;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
   overflow: hidden;
   background: color-mix(in srgb, var(--border-color) 30%, transparent);
 }
@@ -180,7 +184,7 @@
   grid-template-columns: 40px 1fr auto;
   align-items: center;
   gap: $spacing-md;
-  padding: $spacing-md $spacing-lg;
+  padding: 18px 20px;
   background: var(--bg-primary);
   transition: background-color $transition-fast;
 
@@ -204,7 +208,7 @@
   justify-content: center;
   overflow: hidden;
   border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  border: 1px solid transparent;
   background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
   color: var(--text-secondary);
   flex-shrink: 0;
@@ -315,7 +319,7 @@
 
 .badge {
   background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  border: 1px solid transparent;
   color: var(--text-secondary);
 }
 
@@ -583,5 +587,4 @@
       width: 100%;
     }
   }
-
 }

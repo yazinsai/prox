@@ -17,6 +17,8 @@ export interface ProviderTileProps {
   status?: ProviderFlowState['status'];
   statusLabel?: string;
   onOpen: () => void;
+  flowTarget?: string;
+  selected?: boolean;
 }
 
 /**
@@ -32,6 +34,8 @@ export function ProviderTile({
   status,
   statusLabel,
   onOpen,
+  flowTarget,
+  selected,
 }: ProviderTileProps) {
   const captionId = useId();
   // 挂载时捕获延迟：之后的重渲染（状态轮询）不重播入场
@@ -42,6 +46,7 @@ export function ProviderTile({
   return (
     <div
       className={styles.tile}
+      data-selected={selected || undefined}
       data-status={status ?? 'idle'}
       style={{ '--tile-delay': enterDelay } as CSSProperties}
     >
@@ -53,7 +58,9 @@ export function ProviderTile({
           type="button"
           className={styles.main}
           onClick={onOpen}
-          aria-haspopup="dialog"
+          aria-haspopup={flowTarget ? undefined : 'dialog'}
+          aria-controls={flowTarget}
+          aria-pressed={flowTarget ? selected : undefined}
           aria-describedby={captionId}
         >
           {label}

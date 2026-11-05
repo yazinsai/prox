@@ -100,3 +100,20 @@
     gap: 16px;
   }
 }
+
+.grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--bg-primary);
+}
+.gridCompact {
+  grid-template-columns: minmax(0, 1fr);
+}
+.gridQuota {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}

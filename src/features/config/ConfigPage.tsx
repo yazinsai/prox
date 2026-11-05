@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/Button';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -303,6 +304,11 @@ export function ConfigPage() {
         reloadDisabled={doc.loading || doc.saving}
         reloading={doc.loading}
         onReload={doc.handleReload}
+        extraActions={
+          <Button onClick={doc.handleSave} disabled={saveDisabled} loading={doc.saving}>
+            {t('config_management.save')}
+          </Button>
+        }
       />
 
       {doc.error && (
@@ -330,7 +336,7 @@ export function ConfigPage() {
       </div>
 
       {mode === 'visual' ? (
-        <>
+        <div className={styles.visualLayout}>
           <div className={styles.tabsRow} data-reveal>
             <ConfigTabs
               active={activeSection}
@@ -348,7 +354,7 @@ export function ConfigPage() {
           >
             {renderActiveSection()}
           </div>
-        </>
+        </div>
       ) : (
         <SourcePanel
           search={sourceSearch}

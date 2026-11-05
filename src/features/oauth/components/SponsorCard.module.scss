@@ -533,3 +533,39 @@ $site-radius: 12px;
     transform: none;
   }
 }
+
+.card {
+  border-radius: 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+}
+.field,
+.rim {
+  display: none;
+}
+.head {
+  padding: 16px;
+  gap: 12px;
+}
+.glyph {
+  width: 28px;
+  height: 28px;
+}
+.title {
+  font-size: 15px;
+  font-weight: 500;
+}
+.caption,
+.domain {
+  font-family: inherit;
+  letter-spacing: 0;
+  font-size: 13px;
+}
+.sites {
+  padding: 0 16px 12px;
+}
+.signUp,
+.trail {
+  border-radius: 6px;
+}

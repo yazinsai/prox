@@ -7,18 +7,18 @@ import { captureQuotaCacheGeneration, commitIfQuotaCacheCurrent, useQuotaStore }
 import type { AuthFileItem } from '@/types';
 import { classifyQuotaFiles } from '@/features/quota/logic';
 import { QUOTA_ADAPTERS, getQuotaSetter } from '@/features/quota/providers';
-import { bindQuotaClasses } from '@/features/quota/types';
-import { getQuotaCacheKey, getQuotaDisplayName } from '@/utils/quota/identity';
+import { getQuotaCacheKey } from '@/utils/quota/identity';
 import {
-  isObservationStale,
   mergeQuotaObservation,
   readQuotaObservations,
   type QuotaObservation,
 } from '../observations';
+import { QuotaObservationRow } from './QuotaObservationRow';
+import { bindQuotaClasses } from '@/features/quota/types';
 import bodyStyles from '@/features/quota/components/QuotaBody.module.scss';
 import styles from '../RoutingPage.module.scss';
 
-const classes = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
+const quotaClasses = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
 
 export function ObservedStatus({
   files,
@@ -128,7 +128,7 @@ export function ObservedStatus({
       <div className={styles.snapshotHeading}>
         <div>
           <h2>{t('routing.observed_title')}</h2>
-          <p>{t('routing.observed_description')}</p>
+          <p>{t('routing.summary_details_hint')}</p>
         </div>
         <Button
           variant="secondary"
@@ -140,77 +140,32 @@ export function ObservedStatus({
           {t('routing.refresh_quota')}
         </Button>
       </div>
+      <div className={styles.observationColumns} aria-hidden="true">
+        <span>{t('routing.summary_credential')}</span>
+        <span>{t('routing.summary_windows')}</span>
+        <span>{t('routing.summary_next_reset_header')}</span>
+      </div>
       <div className={styles.observationGrid}>
         {files.map((file) => {
           const key = getQuotaCacheKey(file);
-          const entry = entryByKey.get(key);
-          const observation = observations[key];
-          const Body = entry ? QUOTA_ADAPTERS[entry.type].Body : null;
-          const stale = isObservationStale(observation, nowMs, connected);
-          const cooldowns = file.cooldownSnapshot?.records?.filter(
-            (record) =>
-              record.remainingSeconds * 1000 > nowMs - (file.cooldownSnapshot?.receivedAtMs ?? 0)
-          );
           return (
-            <article key={key} className={styles.observationCard}>
-              <header>
-                <strong>{getQuotaDisplayName(file)}</strong>
-                <span className={styles.observationSource}>{entry?.type ?? file.type}</span>
-              </header>
-              <div className={styles.observationMeta}>
-                <span>
-                  {t(
-                    !observation?.quota
-                      ? 'routing.observation_unknown'
-                      : stale
-                        ? 'routing.observation_stale'
-                        : 'routing.observation_measured'
-                  )}
-                </span>
-                {observation?.observedAt ? (
-                  <span>
-                    {t('routing.snapshot_age', {
-                      seconds: Math.max(0, Math.floor((nowMs - observation.observedAt) / 1000)),
-                    })}
-                  </span>
-                ) : null}
-              </div>
-              {observation?.error ? (
-                <p className={styles.syncError} role="alert">
-                  {observation.error}
-                </p>
-              ) : null}
-              {observation?.quota && Body ? (
-                <Body quota={observation.quota} classes={classes} />
-              ) : (
-                <p>
-                  {t(
-                    entry
-                      ? loading
-                        ? 'routing.sync_refreshing'
-                        : 'routing.observation_unknown'
-                      : 'routing.quota_unsupported'
-                  )}
-                </p>
-              )}
-              <footer className={styles.observationMeta}>
-                <span>
-                  {t('routing.request_counts', {
-                    success: file.successCount ?? '—',
-                    failed: file.failureCount ?? '—',
-                  })}
-                </span>
-                {cooldowns?.map((record, index) => (
-                  <span key={index}>
-                    {record.modelKey ?? file.type}: {record.reason}
-                    {record.httpStatus ? ` (HTTP ${record.httpStatus})` : ''}
-                  </span>
-                ))}
-              </footer>
-            </article>
+            <QuotaObservationRow
+              key={key}
+              file={file}
+              entry={entryByKey.get(key)}
+              observation={observations[key]}
+              connected={connected}
+              nowMs={nowMs}
+              loading={loading}
+              classes={quotaClasses}
+            />
           );
         })}
       </div>
+      <details className={styles.observationCaveat}>
+        <summary>{t('routing.summary_measurement_details')}</summary>
+        <p>{t('routing.observed_description')}</p>
+      </details>
       {!files.length ? <p>{t('routing.snapshot_waiting')}</p> : null}
     </section>
   );

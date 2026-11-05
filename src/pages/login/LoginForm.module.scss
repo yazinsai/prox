@@ -24,15 +24,15 @@ $field-radius: 10px;
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
 
   > [data-stagger] {
-    animation: fieldRise 420ms var(--ease-out-strong) both;
+    animation: fieldRise var(--dur-hover) var(--ease-out-strong) both;
   }
 
   @for $i from 1 through 4 {
     > [data-stagger]:nth-child(#{$i}) {
-      animation-delay: #{180 + $i * 50}ms;
+      animation-delay: 0ms;
     }
   }
 

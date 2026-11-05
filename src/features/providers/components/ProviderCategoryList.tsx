@@ -5,7 +5,8 @@ import styles from './ProviderCategoryList.module.scss';
 
 interface ProviderCategoryListProps {
   groups: ProviderGroup[];
-  activeBrand: ProviderBrand;
+  activeBrand: ProviderBrand | null;
+  onAll?: () => void;
   onSelect: (brand: ProviderBrand) => void;
 }
 
@@ -13,7 +14,12 @@ const QUICK_FILL_BRAND_ORDER: readonly ProviderBrand[] = ['fennoAI', 'qiniuCloud
 
 const QUICK_FILL_BRANDS: ReadonlySet<ProviderBrand> = new Set(QUICK_FILL_BRAND_ORDER);
 
-export function ProviderCategoryList({ groups, activeBrand, onSelect }: ProviderCategoryListProps) {
+export function ProviderCategoryList({
+  groups,
+  activeBrand,
+  onSelect,
+  onAll,
+}: ProviderCategoryListProps) {
   const { t } = useTranslation();
 
   const quickFillGroups = groups
@@ -108,6 +114,19 @@ export function ProviderCategoryList({ groups, activeBrand, onSelect }: Provider
 
   return (
     <div className={styles.stack}>
+      {onAll && (
+        <button
+          type="button"
+          className={`${styles.item} ${activeBrand === null ? styles.active : ''}`}
+          onClick={onAll}
+          aria-current={activeBrand === null ? 'page' : undefined}
+        >
+          {t('auth_files.filter_all')}{' '}
+          <span className={styles.badge}>
+            {groups.reduce((sum, group) => sum + group.resources.length, 0)}
+          </span>
+        </button>
+      )}
       <aside className={styles.aside}>
         <p className={styles.eyebrow}>{t('providersPage.categories.title')}</p>
         {renderGroups(providerGroups)}

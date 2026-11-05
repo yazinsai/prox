@@ -390,6 +390,14 @@ export function QuotaPage() {
           </div>
         )}
 
+        {/* 时间线只比较当前页凭证，避免大量凭证一次性生成无界泳道。 */}
+        <QuotaTimeline
+          entries={pageItems}
+          quotaFor={getQuota}
+          displayNameFor={displayNameFor}
+          resolvedTheme={resolvedTheme}
+        />
+
         {loading ? (
           <div className={styles.grid} aria-hidden="true">
             {Array.from({ length: SKELETON_CARD_COUNT }, (_, index) => (
@@ -469,14 +477,6 @@ export function QuotaPage() {
             </Button>
           </div>
         )}
-
-        {/* 时间线只比较当前页凭证，避免大量凭证一次性生成无界泳道。 */}
-        <QuotaTimeline
-          entries={pageItems}
-          quotaFor={getQuota}
-          displayNameFor={displayNameFor}
-          resolvedTheme={resolvedTheme}
-        />
       </section>
     </div>
   );

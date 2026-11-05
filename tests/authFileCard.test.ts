@@ -13,6 +13,12 @@ const styles = readFileSync(
 );
 
 describe('auth file card presentation contract', () => {
+  test('keeps quota details closed on initial row rendering without removing quota controls', () => {
+    expect(source).toContain('<details className={styles.quotaDisclosure}>');
+    expect(source).not.toContain('<details open');
+    expect(source).toContain('<AuthFileQuotaSection');
+    expect(source).toContain('styles.cardRow,');
+  });
   test('uses identity rather than logos or duplicate status badges', () => {
     expect(source).not.toContain('<img');
     expect(source).not.toContain('getAuthFileIcon');

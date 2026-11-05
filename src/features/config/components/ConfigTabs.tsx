@@ -8,6 +8,7 @@ import {
   configTabDomId,
   type ConfigTabId,
 } from '../constants';
+import { configTabForKey } from '../configTabNavigation';
 import styles from './ConfigTabs.module.scss';
 
 export type ConfigTabsProps = {
@@ -49,16 +50,9 @@ export function ConfigTabs({
   }, [active]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    const count = CONFIG_TAB_IDS.length;
-    const currentIndex = CONFIG_TAB_IDS.indexOf(active);
-    let nextIndex = -1;
-    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % count;
-    else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + count) % count;
-    else if (event.key === 'Home') nextIndex = 0;
-    else if (event.key === 'End') nextIndex = count - 1;
-    if (nextIndex < 0) return;
+    const nextId = configTabForKey(event.key, active);
+    if (!nextId) return;
     event.preventDefault();
-    const nextId = CONFIG_TAB_IDS[nextIndex];
     onChange(nextId);
     buttonRefs.current[nextId]?.focus();
   };

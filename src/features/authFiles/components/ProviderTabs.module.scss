@@ -137,3 +137,33 @@
     transform: none;
   }
 }
+
+.tabs {
+  border-bottom: 0;
+  gap: 4px;
+}
+.tab {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 400;
+}
+.tab::after {
+  content: none;
+}
+.tabActive {
+  background: var(--bg-tertiary);
+  font-weight: 500;
+}
+.tabCount {
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 0;
+}
+.tabActive .tabCount {
+  background: transparent;
+  color: var(--text-tertiary);
+}

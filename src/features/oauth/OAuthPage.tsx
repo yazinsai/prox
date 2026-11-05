@@ -8,7 +8,8 @@ import iconCodex from '@/assets/icons/codex.svg';
 import { KIMI_DISPLAY_NAME } from '@/features/providers/kimi';
 import { OAuthHeader } from './components/OAuthHeader';
 import { ProviderTile } from './components/ProviderTile';
-import { SponsorCard, type SponsorCardSite } from './components/SponsorCard';
+import type { SponsorCardSite } from './components/SponsorCard';
+import { OAuthSponsorSites } from './components/OAuthSponsorSites';
 import { OAuthFlowDialog, type DialogHeading } from './components/OAuthFlowDialog';
 import { VertexImportDialog } from './components/VertexImportDialog';
 import { SiwcBindDialog } from './components/SiwcBindDialog';
@@ -46,6 +47,7 @@ export function OAuthPage() {
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const revealRef = useRevealGroup<HTMLDivElement>();
   const otherMethodsId = useId();
+  const flowPanelId = useId();
 
   const pluginProviders = usePluginOAuthProviders(apiBase);
   const providerCards = useMemo<OAuthProviderCard[]>(
@@ -138,7 +140,9 @@ export function OAuthPage() {
   const viewAuthFiles = () => navigate('/auth-files');
 
   const dialogCard =
-    dialog?.kind === 'oauth' ? providerCards.find((card) => card.id === dialog.id) : undefined;
+    dialog?.kind === 'oauth'
+      ? providerCards.find((card) => card.id === dialog.id)
+      : (providerCards.find((card) => card.id === 'anthropic') ?? providerCards[0]);
   const providerCount = providerCards.length;
   const sponsorCards = providerCards.filter(isSponsor);
   const regularCards = providerCards.filter((card) => !isSponsor(card));
@@ -163,6 +167,8 @@ export function OAuthPage() {
     return (
       <ProviderTile
         key={card.id}
+        flowTarget={flowPanelId}
+        selected={dialogCard?.id === card.id}
         label={labelOf(card)}
         caption={captionOf(card)}
         icon={iconOf(card)}
@@ -185,61 +191,83 @@ export function OAuthPage() {
         addedCount={flows.addedCount}
       />
 
-      {/* 赞助商独占首行：一张品牌卡收拢两站入口，其余提供商在下方紧凑网格 */}
-      {sponsorCards.length > 0 && (
-        <SponsorCard
-          title={KIMI_DISPLAY_NAME}
-          caption={t('auth_login.sponsor_kimi_caption')}
-          icon={iconOf(sponsorCards[0])}
-          signUpLabel={t('auth_login.sponsor_sign_up')}
-          sites={sponsorSites}
-          onOpen={(siteId) => {
-            const card = sponsorCards.find((sponsor) => sponsor.id === siteId);
-            if (card) openProvider(card);
-          }}
-        />
-      )}
-      <div className={styles.grid}>{regularCards.map(renderTile)}</div>
+      <div className={styles.workspace}>
+        <div className={styles.providerList}>
+          {sponsorCards.length > 0 && (
+            <ProviderTile
+              flowTarget={flowPanelId}
+              selected={Boolean(dialogCard && isSponsor(dialogCard))}
+              label={KIMI_DISPLAY_NAME}
+              caption={t('auth_login.sponsor_kimi_caption')}
+              icon={iconOf(sponsorCards[0])}
+              index={0}
+              onOpen={() => {
+                const target = dialogCard && isSponsor(dialogCard) ? dialogCard : sponsorCards[0];
+                focusedRef.current = target.id;
+                setDialog({ kind: 'oauth', id: target.id });
+              }}
+            />
+          )}
+          <div className={styles.grid}>{regularCards.map(renderTile)}</div>
 
-      <section className={styles.section} aria-labelledby={otherMethodsId}>
-        <h2 className={styles.sectionLabel} id={otherMethodsId} data-reveal>
-          {t('auth_login.other_login_methods')}
-        </h2>
-        <div className={styles.grid}>
-          <ProviderTile
-            label={VERTEX_LABEL}
-            caption={t('vertex_import.file_label')}
-            icon={iconVertex}
-            index={regularCards.length + tileIndexOffset}
-            onOpen={openVertex}
-          />
-          <ProviderTile
-            label={t('siwc.bind')}
-            caption={t('siwc.tile_caption')}
-            icon={iconCodex}
-            index={regularCards.length + tileIndexOffset + 1}
-            onOpen={openSiwc}
-          />
+          <section className={styles.section} aria-labelledby={otherMethodsId}>
+            <h2 className={styles.sectionLabel} id={otherMethodsId} data-reveal>
+              {t('auth_login.other_login_methods')}
+            </h2>
+            <div className={styles.grid}>
+              <ProviderTile
+                label={VERTEX_LABEL}
+                caption={t('vertex_import.file_label')}
+                icon={iconVertex}
+                index={regularCards.length + tileIndexOffset}
+                onOpen={openVertex}
+              />
+              <ProviderTile
+                label={t('siwc.bind')}
+                caption={t('siwc.tile_caption')}
+                icon={iconCodex}
+                index={regularCards.length + tileIndexOffset + 1}
+                onOpen={openSiwc}
+              />
+            </div>
+          </section>
         </div>
-      </section>
-
-      {dialogCard && (
-        <OAuthFlowDialog
-          open={dialogOpen && dialog?.kind === 'oauth'}
-          providerId={dialogCard.id}
-          heading={headingOf(dialogCard)}
-          state={flows.states[dialogCard.id] ?? {}}
-          text={(suffix) => flows.providerText(dialogCard.id, suffix)}
-          supportsCallback={supportsManualCallback(dialogCard)}
-          sponsor={sponsorOf(dialogCard)}
-          onStart={() => void flows.startAuth(dialogCard.id)}
-          onCancel={() => void flows.cancelAuth(dialogCard.id)}
-          onCallbackChange={(value) => flows.setCallbackInput(dialogCard.id, value)}
-          onCallbackSubmit={() => void flows.submitCallback(dialogCard.id)}
-          onViewAuthFiles={viewAuthFiles}
-          onClose={closeDialog}
-        />
-      )}
+        {dialogCard && (
+          <OAuthFlowDialog
+            inline
+            panelId={flowPanelId}
+            providerOptions={
+              isSponsor(dialogCard) ? (
+                <OAuthSponsorSites
+                  sites={sponsorSites}
+                  selectedId={dialogCard.id}
+                  onSelect={(siteId) => {
+                    focusedRef.current = siteId;
+                    setDialog({ kind: 'oauth', id: siteId });
+                  }}
+                />
+              ) : undefined
+            }
+            open={dialogOpen && dialog?.kind === 'oauth'}
+            providerId={dialogCard.id}
+            heading={headingOf(dialogCard)}
+            state={flows.states[dialogCard.id] ?? {}}
+            text={(suffix) => flows.providerText(dialogCard.id, suffix)}
+            supportsCallback={supportsManualCallback(dialogCard)}
+            sponsor={sponsorOf(dialogCard)}
+            onStart={() => {
+              focusedRef.current = dialogCard.id;
+              setDialog({ kind: 'oauth', id: dialogCard.id });
+              void flows.startAuth(dialogCard.id);
+            }}
+            onCancel={() => void flows.cancelAuth(dialogCard.id)}
+            onCallbackChange={(value) => flows.setCallbackInput(dialogCard.id, value)}
+            onCallbackSubmit={() => void flows.submitCallback(dialogCard.id)}
+            onViewAuthFiles={viewAuthFiles}
+            onClose={closeDialog}
+          />
+        )}
+      </div>
 
       <VertexImportDialog
         open={dialogOpen && dialog?.kind === 'vertex'}

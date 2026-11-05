@@ -185,3 +185,88 @@
   border-color: color-mix(in srgb, #1783ff 48%, var(--border-color));
   color: color-mix(in srgb, #1783ff 82%, var(--text-primary));
 }
+
+.stack {
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 12px;
+  max-width: 100%;
+  padding-bottom: 4px;
+}
+.aside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.eyebrow {
+  display: none;
+}
+.list {
+  flex-direction: row;
+  gap: 4px;
+}
+.item {
+  width: auto;
+  padding: 0 14px;
+  min-height: 38px;
+  border-radius: 8px;
+  gap: 8px;
+}
+.itemLeft {
+  gap: 8px;
+  flex: initial;
+}
+.logo {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  padding: 0;
+  background: transparent;
+}
+.logoThemeSurface {
+  padding: 2px;
+}
+.itemSubtitle {
+  display: none;
+}
+.itemTitle {
+  font-size: 15px;
+  font-weight: 400;
+}
+.badge,
+.badgeAmber,
+.badgeKimi {
+  padding: 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  font-weight: 400;
+}
+.item.active,
+.itemKimi.active {
+  border-color: transparent;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+// Every tab keeps its intrinsic width; the outer strip owns horizontal overflow.
+.stack {
+  width: 100%;
+  flex-shrink: 0;
+  overscroll-behavior-x: contain;
+}
+.aside,
+.list,
+.item {
+  flex-shrink: 0;
+}
+.item {
+  white-space: nowrap;
+}

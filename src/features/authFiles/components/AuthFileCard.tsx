@@ -124,6 +124,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const cardClasses = [
     styles.card,
     compact ? styles.cardCompact : '',
+    styles.cardRow,
     selected ? styles.cardSelected : '',
     file.disabled === true ? styles.cardDisabled : '',
     mountEntranceDelayMs != null ? styles.cardEnter : '',
@@ -263,7 +264,16 @@ export function AuthFileCard(props: AuthFileCardProps) {
       )}
 
       {showQuotaLayout && quotaType && (
-        <AuthFileQuotaSection file={file} quotaType={quotaType} disableControls={disableControls} />
+        <details className={styles.quotaDisclosure}>
+          <summary>{t('nav.quota_management')}</summary>
+          <div className={styles.quotaDetail}>
+            <AuthFileQuotaSection
+              file={file}
+              quotaType={quotaType}
+              disableControls={disableControls}
+            />
+          </div>
+        </details>
       )}
 
       <footer className={styles.actions}>

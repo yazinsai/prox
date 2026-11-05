@@ -13,6 +13,7 @@ import {
 } from '@/components/providers/utils';
 import type { OpenAIProviderConfig } from '@/types';
 import { ProviderHeaderCard } from './components/ProviderHeaderCard';
+import { ProviderOverview } from './components/ProviderOverview';
 import { ProviderCategoryList } from './components/ProviderCategoryList';
 import { ProviderResourcePanel } from './components/ProviderResourcePanel';
 import type { ProviderPanelControls } from './components/ProviderResourcePanel';
@@ -107,6 +108,7 @@ export function ProvidersWorkbenchPage({ fixedBrand }: ProvidersWorkbenchPagePro
   const isCurrentLayer = pageTransitionLayer ? pageTransitionLayer.status === 'current' : true;
 
   const workbench = useProviderWorkbench();
+  const [overview, setOverview] = useState(!fixedBrand);
   const [uiState, setUiState] = useState<ProvidersWorkbenchUiState>(readProvidersWorkbenchUiState);
   const [sheetState, setSheetState] = useState<SheetState>({
     open: false,
@@ -430,7 +432,8 @@ export function ProvidersWorkbenchPage({ fixedBrand }: ProvidersWorkbenchPagePro
         {!fixedBrand ? (
           <ProviderCategoryList
             groups={groups}
-            activeBrand={activeGroup.id}
+            activeBrand={overview ? null : activeGroup.id}
+            onAll={() => setOverview(true)}
             onSelect={(brand) => {
               const isSwitching = sheetState.open && sheetState.brand !== brand;
               const proceed =
@@ -439,6 +442,7 @@ export function ProvidersWorkbenchPage({ fixedBrand }: ProvidersWorkbenchPagePro
                   : Promise.resolve(true);
               void proceed.then((ok) => {
                 if (!ok) return;
+                setOverview(false);
                 setActiveBrand(brand);
                 if (isSwitching) {
                   closeSheet();
@@ -456,6 +460,14 @@ export function ProvidersWorkbenchPage({ fixedBrand }: ProvidersWorkbenchPagePro
               mutationDisabled={disableMutations}
             />
           </div>
+        ) : overview ? (
+          <ProviderOverview
+            groups={groups}
+            onSelect={(brand) => {
+              setActiveBrand(brand);
+              setOverview(false);
+            }}
+          />
         ) : (
           <ProviderResourcePanel
             group={activeGroup}

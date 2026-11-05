@@ -211,17 +211,14 @@ describe('login dot-matrix on mobile', () => {
     expect(source).toContain("origin: compact ? 'top-right' : 'bottom-right'");
   });
 
-  test('mobile shows the dots as a top banner instead of hiding them', async () => {
+  test('the redesigned login centers one responsive form without mounting the dot canvas', async () => {
     const page = await Bun.file('src/pages/LoginPage.module.scss').text();
-    const hero = await Bun.file('src/pages/login/DotMatrixHero.module.scss').text();
-    const brandPanel = page.slice(page.indexOf('.brandPanel {'), page.indexOf('.formPanel {'));
-    expect(brandPanel).not.toContain('display: none');
-    expect(brandPanel).toContain('height: var(--hero-band)');
-    expect(brandPanel).toContain('pointer-events: none');
-    expect(page).toMatch(/--hero-band: clamp\(/);
-    // 横幅向下淡出；标语在移动端让位给表单标题
-    const mobileHero = hero.slice(hero.indexOf('@media (max-width: $breakpoint-mobile)'));
-    expect(mobileHero).toMatch(/mask-image: linear-gradient\(\s*to bottom/);
-    expect(mobileHero).toMatch(/\.title \{\s*display: none;/);
+    const source = await Bun.file('src/pages/LoginPage.tsx').text();
+    expect(source).not.toContain('<DotMatrixHero');
+    expect(page).not.toContain('--hero-band');
+    expect(page).toContain('max-width: 400px');
+    expect(page).toContain('margin-block: auto');
+    expect(page).toContain('overflow-y: auto');
+    expect(source).toContain('className={styles.formLogo}');
   });
 });

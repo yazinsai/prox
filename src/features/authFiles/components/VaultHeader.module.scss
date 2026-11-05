@@ -19,9 +19,9 @@
 
 .title {
   margin: 0;
-  font-size: clamp(26px, 3.2vw, 30px);
+  font-size: 26px;
   line-height: 1.15;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
@@ -196,4 +196,37 @@
   .spinning {
     animation: none;
   }
+}
+
+.meta {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.meta::before {
+  content: none;
+}
+@media (min-width: 900px) {
+  .copy,
+  .header:has(> .title) {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 16px;
+  }
+}
+
+.primaryAction,
+.ghostAction {
+  border-radius: 8px;
+  height: 38px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ghostAction {
+  background: var(--bg-tertiary);
+}
+.primaryAction:hover:not(:disabled) {
+  transform: none;
+  box-shadow: none;
 }

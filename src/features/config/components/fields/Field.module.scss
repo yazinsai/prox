@@ -23,10 +23,10 @@
     min-height: 36px;
     padding: 7px 11px;
     border-radius: 8px;
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     border-color: var(--border-color);
     box-shadow: none;
-    font-size: 13.5px;
+    font-size: 14px;
     transition:
       border-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
       background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
@@ -94,7 +94,7 @@
   margin: 0;
   max-width: 80ch;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
 }
 
@@ -102,9 +102,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-width: 0;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   /* 裁掉分隔线越界的部分 + 圆角；下拉菜单走 portal，不受影响。 */
   overflow: hidden;
 }
@@ -174,7 +174,7 @@
 
 .rowLabel {
   color: var(--text-primary);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
   overflow-wrap: anywhere;
@@ -188,7 +188,7 @@
 .rowDescription {
   max-width: 72ch;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
@@ -221,9 +221,9 @@
   height: 36px;
   padding: 0 11px;
   border-radius: 8px;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   box-shadow: none;
-  font-size: 13.5px;
+  font-size: 14px;
   transition: border-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
 
   &:focus-visible,
@@ -383,7 +383,7 @@
 
 .fieldHint {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
 }
 

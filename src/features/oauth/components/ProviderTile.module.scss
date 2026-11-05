@@ -212,3 +212,44 @@
     animation: none;
   }
 }
+
+.tile {
+  border-radius: 10px;
+  background: var(--bg-primary);
+  padding: 14px 16px;
+}
+.glyph {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: transparent;
+}
+.glyphImage {
+  width: 24px;
+  height: 24px;
+}
+.main {
+  font-size: 15px;
+  font-weight: 500;
+}
+.caption {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.trail {
+  border: 0;
+  background: transparent;
+}
+@media (hover: hover) {
+  .tile:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.tile[data-selected] {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+}
