@@ -9,6 +9,7 @@ import {
   moveMember,
   resolveRoute,
   stepMember,
+  summarizeRoute,
   tiersFromMembers,
 } from '../src/features/routing/logic';
 import {
@@ -386,6 +387,32 @@ describe('route preview', () => {
 
     const loading = resolveRoute(current, draft, { channels: {}, credentials: {} }, 'gpt-5', 0);
     expect(loading.tiers[0].members[0].state).toBe('unknown');
+  });
+
+  test('summarizes where a picked model lands, or that it errors', () => {
+    const current = board();
+    const draft = draftFromBoard(current);
+    expect(summarizeRoute(resolveRoute(current, draft, catalog, 'deepseek-v4', 2_000))).toEqual({
+      kind: 'routed',
+      tierIndex: 1,
+      memberKeys: ['compat:0'],
+    });
+    expect(summarizeRoute(resolveRoute(current, draft, catalog, 'no-such-model', 0))).toEqual({
+      kind: 'none',
+    });
+    const empty = { channels: {}, credentials: {} };
+    expect(summarizeRoute(resolveRoute(current, draft, empty, 'gpt-5', 0)).kind).toBe('unknown');
+
+    const coolingOnly = draftFromBoard(current);
+    coolingOnly.tiers = coolingOnly.tiers
+      .map((tier) => ({
+        ...tier,
+        memberKeys: tier.memberKeys.filter((k) => k === 'cred:cool.json'),
+      }))
+      .filter((tier) => tier.memberKeys.length > 0);
+    expect(summarizeRoute(resolveRoute(current, coolingOnly, catalog, 'gpt-5', 2_000)).kind).toBe(
+      'cooling'
+    );
   });
 
   test('fill-first has no fixed split', () => {

@@ -6,7 +6,12 @@ import i18n from '../src/i18n/index';
 import { authFilesApi } from '../src/services/api/authFiles';
 import { apiClient } from '../src/services/api/client';
 import { buildRoutingBoard, routingApi } from '../src/services/api/routing';
-import { buildRoutingPlan, draftFromBoard, moveMember } from '../src/features/routing/logic';
+import {
+  buildRoutingPlan,
+  draftFromBoard,
+  moveMember,
+  resolveRoute,
+} from '../src/features/routing/logic';
 import { TierLadder } from '../src/features/routing/components/TierLadder';
 import { PolicyPanel } from '../src/features/routing/components/PolicyPanel';
 import type { AuthFileItem } from '../src/types/authFile';
@@ -70,6 +75,7 @@ describe('routing board rendering', () => {
           'cred:runtime': 0,
         },
         model: null,
+        preview: null,
         nowMs: 0,
         theme: 'light',
         entryControl: null,
@@ -102,6 +108,7 @@ describe('routing board rendering', () => {
         draft,
         priorities: {},
         model: null,
+        preview: null,
         nowMs: 0,
         theme: 'light',
         entryControl: null,
@@ -134,6 +141,47 @@ describe('routing board rendering', () => {
     expect(cardMarkup(html, 'cred:main.json')).not.toContain('无冷却信息');
     const card = readFileSync('src/features/routing/components/MemberCard.tsx', 'utf8');
     expect(card).toContain("const muted = state === 'disabled' || state === 'ineligible';");
+  });
+
+  test('a picked model highlights the tier and members that serve it', async () => {
+    await i18n.changeLanguage('en');
+    const board = buildRoutingBoard(RAW, FILES);
+    const draft = draftFromBoard(board);
+    const catalog = {
+      channels: { codex: ['gpt-5'], claude: ['claude-x'] },
+      credentials: { 'main.json': ['gpt-5'], runtime: ['gemini-x'] },
+    };
+    const render = (model: string) =>
+      renderToStaticMarkup(
+        createElement(TierLadder, {
+          members: new Map(board.members.map((member) => [member.key, member])),
+          draft,
+          priorities: {},
+          model,
+          preview: resolveRoute(board, draft, catalog, model, 0),
+          nowMs: 0,
+          theme: 'light',
+          entryControl: null,
+          onMove: () => {},
+          onStep: () => {},
+          onEditWeights: () => {},
+        })
+      );
+    const cardState = (html: string, key: string) =>
+      html.match(new RegExp(`data-member-key="${key}" data-state="([^"]*)"`))?.[1] ?? '';
+
+    const routed = render('gpt-5');
+    expect(routed).toContain('data-outcome="routed"');
+    expect(routed).toContain('gpt-5 → Preferred: opencode');
+    expect(routed).toContain('data-route-state="active"');
+    expect(cardState(routed, 'key:codex:0:0')).toBe('serving');
+    expect(cardMarkup(routed, 'key:codex:0:0')).toContain('Serves this request');
+
+    const failing = render('nope');
+    expect(failing).toContain('data-outcome="none"');
+    expect(failing).toContain('no tier offers this model');
+    expect(failing).not.toContain('data-route-state="active"');
+    expect(cardState(failing, 'key:codex:0:0')).toBe('ineligible');
   });
 
   test('the strategy picker is a keyboard radio group', async () => {

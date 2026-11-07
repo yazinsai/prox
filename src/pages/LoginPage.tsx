@@ -21,7 +21,7 @@ import styles from './LoginPage.module.scss';
 export type LoginPhase = 'idle' | 'connecting' | 'success' | 'exiting';
 
 /** 左上角品牌名：产品全称，所有语言下保持英文，不走 i18n */
-export const LOGIN_BRAND_NAME = 'CLI Proxy API Management Center';
+export const LOGIN_BRAND_NAME = 'prox · CLI Proxy API Management Center';
 
 /** 语言下拉层最小宽度：最长的语言名（繁體中文（台灣））单行显示 */
 const LANGUAGE_DROPDOWN_MIN_WIDTH = 180;

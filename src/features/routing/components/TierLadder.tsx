@@ -1,17 +1,34 @@
 import { Fragment, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ResolvedTheme } from '@/types';
-import type { RoutingDraft, RoutingDropTarget, RoutingMember } from '@/types/routing';
-import { activeCooldownSeconds, canStepMember, tierIndexOf } from '../logic';
+import type {
+  RouteMember,
+  RoutePreview,
+  RouteTierState,
+  RoutingDraft,
+  RoutingDropTarget,
+  RoutingMember,
+} from '@/types/routing';
+import { activeCooldownSeconds, canStepMember, summarizeRoute, tierIndexOf } from '../logic';
 import { useDragAutoScroll } from '../useDragAutoScroll';
 import { MemberCard } from './MemberCard';
 import styles from '../RoutingPage.module.scss';
+
+const TIER_STATE_CLASS: Record<RouteTierState, string> = {
+  active: styles.tierActive,
+  standby: styles.tierStandby,
+  skipped: styles.tierSkipped,
+  cooling: styles.tierCooling,
+  unknown: styles.tierUnknown,
+};
 
 export interface TierLadderProps {
   members: ReadonlyMap<string, RoutingMember>;
   draft: RoutingDraft;
   priorities: Readonly<Record<string, number>>;
   model: string | null;
+  /** Where a request for `model` lands; null when no model is picked. */
+  preview: RoutePreview | null;
   nowMs: number;
   theme: ResolvedTheme;
   entryControl: ReactNode;
@@ -32,6 +49,7 @@ export function TierLadder({
   draft,
   priorities,
   model,
+  preview,
   nowMs,
   theme,
   entryControl,
@@ -45,6 +63,54 @@ export function TierLadder({
   const ladderRef = useRef<HTMLOListElement>(null);
   useDragAutoScroll(dragKey !== null, ladderRef);
   const tiers = draft.tiers;
+  const routeByTier = new Map(preview?.tiers.map((tier) => [tier.tierId, tier]));
+  const outcome = preview ? summarizeRoute(preview) : null;
+  const tierLabel = (index: number) =>
+    index === 0 ? t('routing.tier_primary') : t('routing.tier_backup', { index });
+
+  const tierStateText = (state: RouteTierState): string => {
+    switch (state) {
+      case 'active':
+        return t('routing.tier_state_active');
+      case 'standby':
+        return t('routing.tier_state_standby');
+      case 'cooling':
+        return t('routing.tier_state_cooling');
+      case 'unknown':
+        return t('routing.tier_state_unknown');
+      default:
+        return t('routing.tier_state_skipped_model');
+    }
+  };
+
+  // Configuration-only state, shown whether or not a model is picked.
+  const baseRoute = (member: RoutingMember): RouteMember | undefined =>
+    member.disabled
+      ? { key: member.key, state: 'disabled', share: null }
+      : activeCooldownSeconds(member, model, nowMs) > 0
+        ? { key: member.key, state: 'cooling', share: null }
+        : undefined;
+
+  const outcomeText = (): string | null => {
+    if (!outcome || !model) return null;
+    switch (outcome.kind) {
+      case 'routed': {
+        const names = outcome.memberKeys.map((key) => members.get(key)?.name ?? key);
+        return t('routing.outcome_routed', {
+          model,
+          tier: tierLabel(outcome.tierIndex),
+          members: names.join(', '),
+        });
+      }
+      case 'cooling':
+        return t('routing.outcome_cooling', { model });
+      case 'unknown':
+        return t('routing.outcome_unknown', { model });
+      default:
+        return t('routing.outcome_none', { model });
+    }
+  };
+  const outcomeLine = outcomeText();
 
   const isValidTarget = (target: RoutingDropTarget): boolean => {
     if (!dragKey) return false;
@@ -104,27 +170,63 @@ export function TierLadder({
     );
   };
 
+  // Only the tier that takes the request highlights its members; elsewhere "could serve" is
+  // just neutral, so the eye lands on one place.
+  const memberRoute = (
+    member: RoutingMember,
+    routed: RouteMember | undefined,
+    tierState: RouteTierState | undefined
+  ): RouteMember | undefined => {
+    if (!routed) return baseRoute(member);
+    if (routed.state === 'serving') {
+      return tierState === 'active' ? { ...routed, share: null } : undefined;
+    }
+    return { ...routed, share: null };
+  };
+
   return (
     <ol ref={ladderRef} className={styles.ladder}>
       <li className={styles.entry}>
         <span className={styles.entryLabel}>{t('routing.configuration_title')}</span>
         <div className={styles.entryControl}>{entryControl}</div>
+        {outcomeLine ? (
+          <p
+            className={[styles.outcome, outcome ? styles[`outcome_${outcome.kind}`] : '']
+              .filter(Boolean)
+              .join(' ')}
+            role="status"
+            data-outcome={outcome?.kind}
+          >
+            {outcomeLine}
+          </p>
+        ) : null}
       </li>
       {tiers.map((tier, index) => {
+        const route = routeByTier.get(tier.id);
+        const routeMembers = new Map(route?.members.map((member) => [member.key, member]));
         const target: RoutingDropTarget = { kind: 'tier', tierId: tier.id };
         const tierMembers = tier.memberKeys.flatMap((key) => members.get(key) ?? []);
         const priority = priorities[tier.memberKeys[0]] ?? 0;
         const originals = new Set(tierMembers.map((member) => member.priority));
         const original = originals.size === 1 ? [...originals][0] : null;
         const changed = tierMembers.some((member) => priorities[member.key] !== member.priority);
-        const className = [styles.tier, sameTarget(hover, target) ? styles.tierHover : '']
+        const className = [
+          styles.tier,
+          route ? TIER_STATE_CLASS[route.state] : '',
+          sameTarget(hover, target) ? styles.tierHover : '',
+        ]
           .filter(Boolean)
           .join(' ');
-        const label = index === 0 ? t('routing.tier_primary') : t('routing.tier_backup', { index });
+        const label = tierLabel(index);
         return (
           <Fragment key={tier.id}>
             {renderGap(index)}
-            <li className={className} {...dropHandlers(target)} aria-label={label}>
+            <li
+              className={className}
+              {...dropHandlers(target)}
+              aria-label={route ? `${label}: ${tierStateText(route.state)}` : label}
+              data-route-state={route?.state}
+            >
               <div className={styles.tierHead}>
                 <span className={styles.tierIndex} aria-hidden="true">
                   {index + 1}
@@ -135,19 +237,16 @@ export function TierLadder({
                     ? t('routing.tier_priority_changed', { from: original, to: priority })
                     : t('routing.tier_priority', { priority })}
                 </span>
+                {route ? (
+                  <span className={styles.tierState}>{tierStateText(route.state)}</span>
+                ) : null}
               </div>
               <div className={styles.tierMembers}>
                 {tierMembers.map((member) => (
                   <MemberCard
                     key={member.key}
                     member={member}
-                    route={
-                      member.disabled
-                        ? { key: member.key, state: 'disabled', share: null }
-                        : activeCooldownSeconds(member, model, nowMs) > 0
-                          ? { key: member.key, state: 'cooling', share: null }
-                          : undefined
-                    }
+                    route={memberRoute(member, routeMembers.get(member.key), route?.state)}
                     strategy={draft.settings.strategy}
                     weights={draft.weights[member.key] ?? []}
                     cooldownSeconds={activeCooldownSeconds(member, model, nowMs)}

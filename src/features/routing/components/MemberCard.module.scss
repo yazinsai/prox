@@ -47,8 +47,9 @@
 }
 
 .serving {
-  border-color: color-mix(in srgb, var(--viz-success) 55%, var(--border-color));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--viz-success) 18%, transparent);
+  border-color: color-mix(in srgb, var(--viz-success) 60%, var(--border-color));
+  background: color-mix(in srgb, var(--viz-success) 8%, var(--bg-tertiary));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--viz-success) 22%, transparent);
 }
 
 .muted {
@@ -152,6 +153,12 @@
   line-height: 1.4;
   color: var(--text-secondary);
   white-space: nowrap;
+}
+
+.chipServing {
+  background: color-mix(in srgb, var(--viz-success) 18%, transparent);
+  color: var(--viz-success);
+  font-weight: 600;
 }
 
 .menuWrap {

@@ -142,6 +142,8 @@ export function MemberCard({
   } else if (state === 'blocked') chip = t('routing.state_blocked');
   else if (state === 'unknown') chip = t('routing.state_unknown');
   else if (state === 'excluded') chip = t('routing.state_excluded');
+  else if (state === 'ineligible') chip = t('routing.state_ineligible');
+  else if (state === 'serving') chip = t('routing.state_serving');
 
   const singleWeight = member.weights.length === 1 ? weights[0] : null;
   const showWeight =
@@ -153,7 +155,7 @@ export function MemberCard({
 
   const className = [
     styles.card,
-    route?.share !== null && route?.share !== undefined ? styles.serving : '',
+    state === 'serving' ? styles.serving : '',
     muted ? styles.muted : '',
     dragging ? styles.dragging : '',
     member.locked ? styles.locked : '',
@@ -164,7 +166,6 @@ export function MemberCard({
   const tooltip = [
     member.name,
     member.detail,
-    state === 'ineligible' ? t('routing.state_ineligible') : '',
     showNoRuntimeState ? t('routing.no_runtime_state') : '',
   ]
     .filter(Boolean)
@@ -218,7 +219,13 @@ export function MemberCard({
         </span>
       </span>
 
-      {chip ? <span className={styles.chip}>{chip}</span> : null}
+      {chip ? (
+        <span
+          className={state === 'serving' ? `${styles.chip} ${styles.chipServing}` : styles.chip}
+        >
+          {chip}
+        </span>
+      ) : null}
 
       <span className={styles.menuWrap}>
         <button

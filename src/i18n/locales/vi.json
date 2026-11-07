@@ -57,11 +57,11 @@
     "unsaved_changes_message": "Bạn có thay đổi chưa lưu. Rời đi bây giờ sẽ mất các thay đổi đó. Bạn có muốn rời đi không?"
   },
   "title": {
-    "login": "Trung tâm Quản lý CLI Proxy API",
-    "abbr": "CPAMC"
+    "login": "prox · Trung tâm Quản lý CLI Proxy API",
+    "abbr": "prox"
   },
   "splash": {
-    "title": "CLI Proxy API",
+    "title": "prox",
     "subtitle": "Trung tâm Quản lý"
   },
   "login": {
@@ -1663,7 +1663,7 @@
     "empty_title": "Chưa có gì để định tuyến",
     "empty_desc": "Hãy thêm API key hoặc thông tin xác thực OAuth trong Nhà cung cấp AI hoặc Tệp xác thực trước.",
     "entry": "Yêu cầu vào",
-    "model_placeholder": "Lọc thời gian chờ theo mô hình",
+    "model_placeholder": "Chọn mô hình để xem tầng nào phục vụ",
     "models_loading": "Đang tải mô hình {{done}}/{{total}}",
     "tier_primary": "Ưu tiên",
     "tier_backup": "Dự phòng {{index}}",
@@ -1689,6 +1689,11 @@
     "state_blocked": "Không khả dụng",
     "state_unknown": "Chưa rõ mô hình",
     "state_ineligible": "Không cung cấp mô hình này",
+    "state_serving": "Phục vụ yêu cầu này",
+    "outcome_routed": "{{model}} → {{tier}}: {{members}}",
+    "outcome_cooling": "{{model}}: mọi thành viên cung cấp mô hình này đang chờ hoặc không khả dụng. Yêu cầu sẽ lỗi cho đến khi có thành viên phục hồi.",
+    "outcome_unknown": "{{model}}: chưa xác nhận được tuyến, một số danh sách mô hình chưa rõ.",
+    "outcome_none": "{{model}}: không tầng nào cung cấp mô hình này. Yêu cầu sẽ trả về lỗi.",
     "state_excluded": "Trọng số 0",
     "no_runtime_state": "Không có thông tin hạ nhiệt",
     "weight_badge": "Trọng số {{weight}}",
@@ -1943,7 +1948,7 @@
   },
   "system_info": {
     "title": "Thông tin Trung tâm Quản lý",
-    "about_title": "Trung tâm Quản lý CLI Proxy API",
+    "about_title": "prox · Trung tâm Quản lý CLI Proxy API",
     "models_title": "Model khả dụng",
     "models_desc": "Hiển thị phản hồi /models và tự động dùng API key đã lưu để xác thực.",
     "models_loading": "Đang tải model khả dụng...",

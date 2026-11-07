@@ -57,11 +57,11 @@
     "unsaved_changes_message": "你有未儲存的變更，離開後將遺失這些變更。確定要離開嗎？"
   },
   "title": {
-    "login": "CLI Proxy API Management Center",
-    "abbr": "CPAMC"
+    "login": "prox · CLI Proxy API 管理中心",
+    "abbr": "prox"
   },
   "splash": {
-    "title": "CLI Proxy API",
+    "title": "prox",
     "subtitle": "管理中心"
   },
   "login": {
@@ -1733,7 +1733,7 @@
     "empty_title": "尚無可調度的上游",
     "empty_desc": "請先在 AI 提供商或認證檔案中新增 API Key 或 OAuth 憑證。",
     "entry": "請求進入",
-    "model_placeholder": "依模型篩選冷卻狀態",
+    "model_placeholder": "選擇模型以查看由哪一層承接",
     "models_loading": "正在讀取模型 {{done}}/{{total}}",
     "tier_primary": "首選",
     "tier_backup": "備用 {{index}}",
@@ -1759,6 +1759,11 @@
     "state_blocked": "不可用",
     "state_unknown": "模型未知",
     "state_ineligible": "不提供此模型",
+    "state_serving": "承接此請求",
+    "outcome_routed": "{{model}} → {{tier}}：{{members}}",
+    "outcome_cooling": "{{model}}：提供此模型的成員都在冷卻或不可用，恢復前請求會失敗。",
+    "outcome_unknown": "{{model}}：部分模型清單未知，尚無法確認路由。",
+    "outcome_none": "{{model}}：沒有任何一層提供此模型，請求將回傳錯誤。",
     "state_excluded": "權重 0",
     "no_runtime_state": "無冷卻資訊",
     "weight_badge": "權重 {{weight}}",
@@ -2013,7 +2018,7 @@
   },
   "system_info": {
     "title": "管理中心資訊",
-    "about_title": "CLI Proxy API Management Center",
+    "about_title": "prox · CLI Proxy API 管理中心",
     "models_title": "可用模型清單",
     "models_desc": "展示 /models 回傳的模型，並自動使用伺服器儲存的 API Key 進行驗證。",
     "models_loading": "正在載入可用模型...",

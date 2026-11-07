@@ -57,11 +57,11 @@
     "unsaved_changes_message": "You have unsaved changes. Leaving now will discard them. Do you want to leave?"
   },
   "title": {
-    "login": "CLI Proxy API Management Center",
-    "abbr": "CPAMC"
+    "login": "prox · CLI Proxy API Management Center",
+    "abbr": "prox"
   },
   "splash": {
-    "title": "CLI Proxy API",
+    "title": "prox",
     "subtitle": "Management Center"
   },
   "login": {
@@ -1707,7 +1707,7 @@
     "empty_title": "Nothing to route yet",
     "empty_desc": "Add an API key or OAuth credential under AI Providers or Auth Files first.",
     "entry": "Request in",
-    "model_placeholder": "Filter cooldowns by model",
+    "model_placeholder": "Pick a model to see which tier serves it",
     "models_loading": "Loading models {{done}}/{{total}}",
     "tier_primary": "Preferred",
     "tier_backup": "Fallback {{index}}",
@@ -1733,6 +1733,11 @@
     "state_blocked": "Unavailable",
     "state_unknown": "Models unknown",
     "state_ineligible": "Does not offer this model",
+    "state_serving": "Serves this request",
+    "outcome_routed": "{{model}} → {{tier}}: {{members}}",
+    "outcome_cooling": "{{model}}: every member that offers it is cooling down or unavailable. Requests fail until one recovers.",
+    "outcome_unknown": "{{model}}: no confirmed route yet; some model lists are still unknown.",
+    "outcome_none": "{{model}}: no tier offers this model. Requests will return an error.",
     "state_excluded": "Weight 0",
     "no_runtime_state": "No cooldown info",
     "weight_badge": "Weight {{weight}}",
@@ -1987,7 +1992,7 @@
   },
   "system_info": {
     "title": "Management Center Info",
-    "about_title": "CLI Proxy API Management Center",
+    "about_title": "prox · CLI Proxy API Management Center",
     "models_title": "Available Models",
     "models_desc": "Shows the /models response and uses saved API keys for auth automatically.",
     "models_loading": "Loading available models...",

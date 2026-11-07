@@ -515,6 +515,30 @@ export function resolveRoute(
   return { tiers, hasActive };
 }
 
+export type RouteOutcome =
+  /** A tier takes the request; `tierIndex` is its position in the draft. */
+  | { kind: 'routed'; tierIndex: number; memberKeys: string[] }
+  /** Some tier offers the model but every such member is cooling down or unavailable. */
+  | { kind: 'cooling' }
+  /** No tier can be confirmed yet because some model lists are still unknown. */
+  | { kind: 'unknown' }
+  /** Nothing offers the model: the request returns an error. */
+  | { kind: 'none' };
+
+/** One-line answer to "where does this request go right now?". */
+export function summarizeRoute(preview: RoutePreview): RouteOutcome {
+  const tierIndex = preview.tiers.findIndex((tier) => tier.state === 'active');
+  if (tierIndex >= 0) {
+    const memberKeys = preview.tiers[tierIndex].members
+      .filter((member) => member.state === 'serving')
+      .map((member) => member.key);
+    return { kind: 'routed', tierIndex, memberKeys };
+  }
+  if (preview.tiers.some((tier) => tier.state === 'unknown')) return { kind: 'unknown' };
+  if (preview.tiers.some((tier) => tier.state === 'cooling')) return { kind: 'cooling' };
+  return { kind: 'none' };
+}
+
 /** Channels whose built-in model lists the board needs. */
 export function neededChannels(board: RoutingBoard): string[] {
   const channels = new Set<string>();

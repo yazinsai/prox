@@ -47,6 +47,7 @@ import {
   mergeRoutingRuntime,
   neededChannels,
   neededCredentialModels,
+  resolveRoute,
   stepMember,
 } from './logic';
 import { ChangeReviewDialog } from './components/ChangeReviewDialog';
@@ -263,6 +264,14 @@ export function RoutingPage() {
     [board, draft]
   );
   const selectedModel = model.trim() || null;
+  // Only a picked model has a route; without one the board stays plain configuration.
+  const preview = useMemo(
+    () =>
+      board && draft && selectedModel
+        ? resolveRoute(board, draft, catalog, selectedModel, nowMs)
+        : null,
+    [board, draft, catalog, selectedModel, nowMs]
+  );
   const modelOptions = useMemo(
     () => (board ? collectModelOptions(board, catalog) : []),
     [board, catalog]
@@ -417,6 +426,7 @@ export function RoutingPage() {
             draft={draft}
             priorities={priorities}
             model={selectedModel}
+            preview={preview}
             nowMs={nowMs}
             theme={resolvedTheme}
             entryControl={entryControl}

@@ -57,11 +57,11 @@
     "unsaved_changes_message": "你有未保存的更改，离开后将丢失这些更改。确定要离开吗？"
   },
   "title": {
-    "login": "CLI Proxy API Management Center",
-    "abbr": "CPAMC"
+    "login": "prox · CLI Proxy API 管理中心",
+    "abbr": "prox"
   },
   "splash": {
-    "title": "CLI Proxy API",
+    "title": "prox",
     "subtitle": "管理中心"
   },
   "login": {
@@ -1705,7 +1705,7 @@
     "empty_title": "还没有可调度的上游",
     "empty_desc": "先在 AI 提供商或认证文件中添加 API Key 或 OAuth 凭证。",
     "entry": "请求进入",
-    "model_placeholder": "按模型筛选冷却状态",
+    "model_placeholder": "选择模型以查看由哪一层承接",
     "models_loading": "正在读取模型 {{done}}/{{total}}",
     "tier_primary": "首选",
     "tier_backup": "备用 {{index}}",
@@ -1731,6 +1731,11 @@
     "state_blocked": "不可用",
     "state_unknown": "模型未知",
     "state_ineligible": "不提供该模型",
+    "state_serving": "承接此请求",
+    "outcome_routed": "{{model}} → {{tier}}：{{members}}",
+    "outcome_cooling": "{{model}}：提供该模型的成员都在冷却或不可用，恢复前请求会失败。",
+    "outcome_unknown": "{{model}}：部分模型列表未知，尚无法确认路由。",
+    "outcome_none": "{{model}}：没有任何一层提供该模型，请求将返回错误。",
     "state_excluded": "权重 0",
     "no_runtime_state": "无冷却信息",
     "weight_badge": "权重 {{weight}}",
@@ -1985,7 +1990,7 @@
   },
   "system_info": {
     "title": "管理中心信息",
-    "about_title": "CLI Proxy API Management Center",
+    "about_title": "prox · CLI Proxy API 管理中心",
     "models_title": "可用模型列表",
     "models_desc": "展示 /models 返回的模型，并自动使用服务器保存的 API Key 进行鉴权。",
     "models_loading": "正在加载可用模型...",

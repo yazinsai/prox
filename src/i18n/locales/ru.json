@@ -57,11 +57,11 @@
     "unsaved_changes_message": "У вас есть несохранённые изменения. Если вы уйдёте, они будут потеряны. Выйти?"
   },
   "title": {
-    "login": "Центр управления CLI Proxy API",
-    "abbr": "CPAMC"
+    "login": "prox · Центр управления CLI Proxy API",
+    "abbr": "prox"
   },
   "splash": {
-    "title": "CLI Proxy API",
+    "title": "prox",
     "subtitle": "Центр управления"
   },
   "login": {
@@ -1712,7 +1712,7 @@
     "empty_title": "Пока нечего маршрутизировать",
     "empty_desc": "Сначала добавьте API-ключ или OAuth-учётные данные в разделах «AI-провайдеры» или «Файлы авторизации».",
     "entry": "Входящий запрос",
-    "model_placeholder": "Фильтр таймеров по модели",
+    "model_placeholder": "Выберите модель, чтобы увидеть обслуживающий уровень",
     "models_loading": "Загрузка моделей {{done}}/{{total}}",
     "tier_primary": "Основной",
     "tier_backup": "Резерв {{index}}",
@@ -1738,6 +1738,11 @@
     "state_blocked": "Недоступен",
     "state_unknown": "Модели неизвестны",
     "state_ineligible": "Не предоставляет эту модель",
+    "state_serving": "Обслуживает запрос",
+    "outcome_routed": "{{model}} → {{tier}}: {{members}}",
+    "outcome_cooling": "{{model}}: все участники с этой моделью на таймере или недоступны. Запросы будут завершаться ошибкой до восстановления.",
+    "outcome_unknown": "{{model}}: маршрут не подтверждён, часть списков моделей ещё неизвестна.",
+    "outcome_none": "{{model}}: ни один уровень не предоставляет эту модель. Запросы вернут ошибку.",
     "state_excluded": "Вес 0",
     "no_runtime_state": "Нет данных об охлаждении",
     "weight_badge": "Вес {{weight}}",
@@ -1983,7 +1988,7 @@
   },
   "system_info": {
     "title": "Информация о центре управления",
-    "about_title": "CLI Proxy API Management Center",
+    "about_title": "prox · CLI Proxy API Management Center",
     "models_title": "Доступные модели",
     "models_desc": "Показывает ответ /models и автоматически использует сохранённые API-ключи для авторизации.",
     "models_loading": "Загрузка доступных моделей...",

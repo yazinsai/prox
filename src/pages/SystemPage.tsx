@@ -304,7 +304,7 @@ export function SystemPage() {
       <div className={styles.content}>
         <Card className={styles.aboutCard}>
           <div className={styles.aboutHeader}>
-            <img src={proxMark} alt="CPAMC" className={styles.aboutLogo} />
+            <img src={proxMark} alt="prox" className={styles.aboutLogo} />
             <div className={styles.aboutTitle}>{t('system_info.about_title')}</div>
           </div>
 

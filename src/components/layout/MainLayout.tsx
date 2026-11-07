@@ -339,7 +339,7 @@ export function MainLayout() {
   const themeMenuRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
 
-  const fullBrandName = 'CLI Proxy API Management Center';
+  const fullBrandName = 'prox · CLI Proxy API Management Center';
   const abbrBrandName = 'prox';
   const arrivingFromLogin = useLoginTransitionStore((state) => state.phase === 'revealing');
   const isLogsPage = location.pathname.startsWith('/logs');

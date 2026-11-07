@@ -193,6 +193,37 @@ $label-x: $tier-pad + 1px + $index-size + 10px; // where tier names begin
   color: var(--text-tertiary);
 }
 
+/* The answer to "where does this request go?", right under the model picker. */
+.outcome {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.outcome_routed {
+  border-color: color-mix(in srgb, var(--viz-success) 45%, var(--border-color));
+  background: color-mix(in srgb, var(--viz-success) 8%, var(--bg-primary));
+  color: var(--text-primary);
+}
+
+.outcome_cooling {
+  border-color: color-mix(in srgb, var(--amber-color) 45%, var(--border-color));
+  background: color-mix(in srgb, var(--amber-color) 8%, var(--bg-primary));
+  color: var(--text-primary);
+}
+
+.outcome_none {
+  border-color: color-mix(in srgb, var(--error-color) 50%, var(--border-color));
+  background: color-mix(in srgb, var(--error-color) 8%, var(--bg-primary));
+  color: var(--text-primary);
+}
+
 /* Gaps carry the rail between tiers and open into drop zones while dragging. */
 
 .gap {
@@ -348,7 +379,9 @@ $label-x: $tier-pad + 1px + $index-size + 10px; // where tier names begin
 }
 
 .tierActive {
-  border-color: color-mix(in srgb, var(--viz-success) 38%, var(--border-color));
+  border-color: color-mix(in srgb, var(--viz-success) 60%, var(--border-color));
+  background: color-mix(in srgb, var(--viz-success) 5%, var(--bg-primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-success) 14%, transparent);
 
   .tierIndex {
     background: var(--viz-success);

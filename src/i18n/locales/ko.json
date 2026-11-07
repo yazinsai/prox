@@ -57,11 +57,11 @@
     "unsaved_changes_message": "저장되지 않은 변경 사항이 있습니다. 지금 나가면 변경 사항이 삭제됩니다. 나가시겠습니까?"
   },
   "title": {
-    "login": "CLI Proxy API 관리 센터",
-    "abbr": "CPAMC"
+    "login": "prox · CLI Proxy API 관리 센터",
+    "abbr": "prox"
   },
   "splash": {
-    "title": "CLI Proxy API",
+    "title": "prox",
     "subtitle": "관리 센터"
   },
   "login": {
@@ -1707,7 +1707,7 @@
     "empty_title": "아직 라우팅할 대상이 없습니다",
     "empty_desc": "먼저 AI 제공자 또는 인증 파일에서 API 키나 OAuth 자격 증명을 추가하세요.",
     "entry": "요청 유입",
-    "model_placeholder": "모델별 쿨다운 필터",
+    "model_placeholder": "모델을 선택하면 처리할 계층을 표시합니다",
     "models_loading": "모델 불러오는 중 {{done}}/{{total}}",
     "tier_primary": "선호",
     "tier_backup": "대체 {{index}}",
@@ -1733,6 +1733,11 @@
     "state_blocked": "사용 불가",
     "state_unknown": "모델 알 수 없음",
     "state_ineligible": "이 모델을 제공하지 않음",
+    "state_serving": "이 요청 처리",
+    "outcome_routed": "{{model}} → {{tier}}: {{members}}",
+    "outcome_cooling": "{{model}}: 이 모델을 제공하는 모든 멤버가 쿨다운 중이거나 사용할 수 없습니다. 복구될 때까지 요청이 실패합니다.",
+    "outcome_unknown": "{{model}}: 일부 모델 목록을 아직 알 수 없어 경로가 확정되지 않았습니다.",
+    "outcome_none": "{{model}}: 이 모델을 제공하는 계층이 없습니다. 요청이 오류를 반환합니다.",
     "state_excluded": "가중치 0",
     "no_runtime_state": "쿨다운 정보 없음",
     "weight_badge": "가중치 {{weight}}",
@@ -1987,7 +1992,7 @@
   },
   "system_info": {
     "title": "관리 센터 정보",
-    "about_title": "CLI Proxy API 관리 센터",
+    "about_title": "prox · CLI Proxy API 관리 센터",
     "models_title": "사용 가능한 모델",
     "models_desc": "/models 응답을 표시하며 저장된 API 키를 사용하여 자동으로 인증합니다.",
     "models_loading": "사용 가능한 모델을 불러오는 중...",
