@@ -38,7 +38,11 @@ export function useRequestArchive() {
         if (current() && !controller.signal.aborted) {
           unsupported = isRecord(error) && error.status === 404;
           // Do not leave a stale healthy result visible after a failed refresh.
-          setResult({ revision: scope, stats: null, state: unsupported ? 'unsupported' : 'error' });
+          setResult((previous) => ({
+            revision: scope,
+            stats: previous?.revision === scope ? previous.stats : null,
+            state: unsupported ? 'unsupported' : 'error',
+          }));
         }
       } finally {
         running = false;
@@ -70,5 +74,9 @@ export function useRequestArchive() {
     : result?.revision === revision
       ? result.state
       : 'loading';
-  return { stats: state === 'ready' ? (result?.stats ?? null) : null, state, refresh };
+  return {
+    stats: connected && result?.revision === revision ? result.stats : null,
+    state,
+    refresh,
+  };
 }

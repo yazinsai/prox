@@ -67,6 +67,7 @@ const normalizeLogsResponse = (data: unknown): LogsResponse => {
 
 export interface LogsRequestOptions {
   signal?: AbortSignal;
+  captureConnection?: boolean;
 }
 
 const normalizeErrorLogsResponse = (data: unknown): ErrorLogsResponse => {
@@ -105,8 +106,10 @@ export const responseDataToText = async (data: unknown): Promise<string> => {
 
 const downloadLog = async (path: string, options: LogsRequestOptions) => {
   try {
-    return await apiClient.getRaw(path, {
-      ...options,
+    const { captureConnection, ...requestOptions } = options;
+    const client = captureConnection ? apiClient.captureConnection() : apiClient;
+    return await client.getRaw(path, {
+      ...requestOptions,
       responseType: 'blob',
       timeout: LOGS_TIMEOUT_MS,
     });

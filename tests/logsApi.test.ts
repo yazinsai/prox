@@ -111,6 +111,36 @@ describe('log downloads', () => {
     }
   });
 
+  test('pins dashboard archive downloads to the connection that opened the detail', async () => {
+    apiClient.setConfig({ apiBase: 'https://old.example', managementKey: 'test-old-key' });
+    const client = apiClient.captureConnection();
+    const captured = spyOn(apiClient, 'captureConnection').mockReturnValue(client);
+    const instance = (client as unknown as { instance: AxiosInstance }).instance;
+    let base = '';
+    let authorization = '';
+    instance.defaults.adapter = async (config) => {
+      base = config.baseURL ?? '';
+      authorization = String(config.headers.get('Authorization'));
+      return {
+        data: new Blob(['test archive']),
+        status: 200,
+        statusText: 'OK',
+        headers: new AxiosHeaders(),
+        config,
+      };
+    };
+    try {
+      const pending = logsApi.downloadRequestLogById('request-id', { captureConnection: true });
+      apiClient.setConfig({ apiBase: 'https://new.example', managementKey: 'test-new-key' });
+      await pending;
+      expect(base).toBe('https://old.example/v8/management');
+      expect(authorization).toBe('Bearer test-old-key');
+    } finally {
+      captured.mockRestore();
+      apiClient.setConfig({ apiBase: '', managementKey: '' });
+    }
+  });
+
   test('decodes Blob JSON from the actual client interceptor and emits unauthorized exactly once', async () => {
     const instance = (apiClient as unknown as { instance: AxiosInstance }).instance;
     const adapter = instance.defaults.adapter;
