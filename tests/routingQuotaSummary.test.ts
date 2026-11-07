@@ -124,6 +124,51 @@ describe('compact routing quota summaries', () => {
     expect(nextQuotaReset(windows, 31_000)).toBeNull();
   });
 
+  test('provider quota and active proxy cooldown are explained together', () => {
+    const file = {
+      name: 'test-claude.json',
+      type: 'claude',
+      authIndex: 'test-auth',
+      cooldownSnapshot: {
+        receivedAtMs: 1_000,
+        records: [
+          {
+            scope: 'credential' as const,
+            reason: 'credential_quota',
+            remainingSeconds: 137,
+            retryAt: '',
+            httpStatus: 429,
+          },
+        ],
+      },
+    };
+    const render = (nowMs: number) =>
+      renderToStaticMarkup(
+        createElement(QuotaObservationRow, {
+          file,
+          entry: { file, type: 'claude' },
+          observation: { quota: claude, observedAt: 1_000 },
+          connected: true,
+          nowMs,
+          loading: false,
+          classes: bindQuotaClasses(
+            Object.fromEntries(QUOTA_CLASS_KEYS.map((key) => [key, key])),
+            'test'
+          ),
+        })
+      );
+    const markup = render(2_000);
+    const summary = markup.slice(0, markup.indexOf('</summary>'));
+    expect(summary).toContain(i18n.t('routing.proxy_cooldown_active'));
+    expect(markup).toContain(i18n.t('routing.quota_cooldown_explanation'));
+    const visibleActions = markup.slice(markup.indexOf('</details>'));
+    expect(visibleActions).toContain('<button');
+    expect(visibleActions).toContain(i18n.t('auth_files.cooldown_reset_button'));
+    expect(visibleActions).not.toContain('disabled=');
+    expect(render(139_000)).not.toContain('<button');
+    expect(render(139_000)).not.toContain(i18n.t('routing.quota_cooldown_explanation'));
+  });
+
   test('native credential disclosure retains plan, full model quota, errors and counters', () => {
     const file = { name: 'test-claude.json', type: 'claude', successCount: 12, failureCount: 2 };
     const markup = renderToStaticMarkup(

@@ -421,6 +421,7 @@ export function RoutingPage() {
     return (
       <div className={styles.layout} ref={layoutRef}>
         <section className={styles.board} aria-label={t('routing.title')}>
+          <p className={styles.footnote}>{t('routing.footnote')}</p>
           <TierLadder
             members={members}
             draft={draft}
@@ -434,8 +435,12 @@ export function RoutingPage() {
             onStep={handleStep}
             onEditWeights={handleEditWeights}
           />
-          <ObservedStatus files={files} connected={connected && isCurrentLayer} nowMs={nowMs} />
-          <p className={styles.footnote}>{t('routing.footnote')}</p>
+          <ObservedStatus
+            files={files}
+            connected={connected && isCurrentLayer}
+            nowMs={nowMs}
+            onCooldownCleared={() => load(true)}
+          />
         </section>
         <PolicyPanel settings={draft.settings} disabled={saving} onChange={handleSettings} />
       </div>

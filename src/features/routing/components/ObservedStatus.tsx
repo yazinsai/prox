@@ -24,10 +24,12 @@ export function ObservedStatus({
   files,
   connected,
   nowMs,
+  onCooldownCleared,
 }: {
   files: AuthFileItem[];
   connected: boolean;
   nowMs: number;
+  onCooldownCleared?: () => Promise<void>;
 }) {
   const { t } = useTranslation();
   const sessionGeneration = useQuotaStore((state) => state.cacheGeneration);
@@ -158,6 +160,7 @@ export function ObservedStatus({
               nowMs={nowMs}
               loading={loading}
               classes={quotaClasses}
+              onCooldownCleared={onCooldownCleared}
             />
           );
         })}

@@ -813,7 +813,7 @@ $label-x: $tier-pad + 1px + $index-size + 10px; // where tier names begin
   min-width: 0;
   border-bottom: 1px solid var(--border-color);
 
-  &[open] .observationChevron svg {
+  & details[open] .observationChevron svg {
     transform: rotate(180deg);
   }
 }
@@ -1052,4 +1052,21 @@ p.syncError {
 
 .observationPercent[data-depleted='true'] {
   color: var(--error-color);
+}
+
+.cooldownAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color);
+
+  p {
+    flex: 1 1 240px;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
 }

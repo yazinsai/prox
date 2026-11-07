@@ -175,7 +175,10 @@ describe('routing board rendering', () => {
     expect(routed).toContain('gpt-5 → Preferred: opencode');
     expect(routed).toContain('data-route-state="active"');
     expect(cardState(routed, 'key:codex:0:0')).toBe('serving');
-    expect(cardMarkup(routed, 'key:codex:0:0')).toContain('Serves this request');
+    expect(cardMarkup(routed, 'key:codex:0:0')).toContain('Eligible for routing');
+    expect(routed).toContain('First eligible tier');
+    expect(routed).not.toContain('Serves this request');
+    expect(routed).not.toContain('Serving requests');
 
     const failing = render('nope');
     expect(failing).toContain('data-outcome="none"');
