@@ -78,9 +78,15 @@ write_state() {
 restart_agent() { launchctl kickstart -k "gui/$(id -u)/$1"; }
 
 wait_for_proxy() {
-  local i
+  local i status
   for i in $(seq 1 30); do
-    curl -fsS -o /dev/null --max-time 2 "$PROXY_URL/" 2>/dev/null && return 0
+    # Management traffic is excluded from full request recording. A public-root
+    # probe can wait on archive I/O even when the server is already accepting calls.
+    status=$(curl -sS -o /dev/null --max-time 2 -w '%{http_code}' \
+      "$PROXY_URL/v8/management/observability/archive" 2>/dev/null) || status=
+    case "$status" in
+      200 | 401) return 0 ;;
+    esac
     sleep 1
   done
   return 1

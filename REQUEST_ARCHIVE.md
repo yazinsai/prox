@@ -8,12 +8,21 @@ implementation details, search/export commands, limitations, and rollback.
 
 The local service is configured with full request logging enabled and
 `CLI_PROXY_REQUEST_ARCHIVE=1`. Completed exchanges are retained as lossless
-`*.log.zst` records in `~/.config/cliproxyapi/logs/`. A persistent Python 3.14
-indexer maintains `request-index.sqlite3` there without copying bodies into SQLite.
+`*.log.zst` records in `~/.config/cliproxyapi/logs/`. The indexer losslessly
+optimizes completed records into shared Zstandard chunks and compressed manifests
+under `request-chunks/` and `request-records/`, retaining their original logical
+names and verifying complete-record SHA-256 digests before removing old sources.
+Repeated images, conversation context, and upstream attempts share their unchanged
+bytes. Manifests and chunks are packed to avoid small-file allocation overhead.
+Back up both directories together, including `request-chunks/dictionaries/` when
+trained dictionaries are active; they contain the authoritative payloads.
+A persistent Python 3.14 indexer maintains `request-index.sqlite3` there without
+copying bodies into SQLite.
 Archive files do not expire automatically. Management credentials remain excluded,
 and sensitive authentication headers keep the backend's existing masking.
 
-The dashboard's request-log download action also reads archived records. Search
+The dashboard's request-log download action reconstructs complete archived records,
+including legacy standalone files and 100-record ZIP packs during migration. Search
 and export are currently available through the backend's archive CLI; there is no
 new dashboard search page.
 
