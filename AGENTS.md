@@ -2,8 +2,9 @@
 
 ## Project Scope & Structure
 
-This is a React 19 + TypeScript + Vite management frontend for CLI Proxy API, not the proxy itself. It exclusively uses the backend v8 Management API under `/v8/management` and the v8 configuration layout; do not add v0 fallbacks or legacy config adapters. Plugin resources and custom HTTP extensions are exceptions: preserve their backend-declared paths. The one sanctioned v0 touchpoint is `src/services/api/legacyBackendProbe.ts`: after a v8 login 404 it only detects an outdated backend to show a clearer error, and must never supply application data or act as a login fallback.
+This is a React 19 + TypeScript + Vite management frontend for CLI Proxy API; the proxy itself lives in the `backend/` submodule. It exclusively uses the backend v8 Management API under `/v8/management` and the v8 configuration layout; do not add v0 fallbacks or legacy config adapters. Plugin resources and custom HTTP extensions are exceptions: preserve their backend-declared paths. The one sanctioned v0 touchpoint is `src/services/api/legacyBackendProbe.ts`: after a v8 login 404 it only detects an outdated backend to show a clearer error, and must never supply application data or act as a login fallback.
 
+- `backend/`: git submodule containing the CLI Proxy API Go backend fork (`yazinsai/prox-backend`). See Backend Submodule; its own `backend/AGENTS.md` governs Go changes.
 - `src/features/`: feature-owned pages, components, hooks, types, and logic. Current features are `dashboard`, `providers`, `authFiles`, `oauth`, `quota`, `config`, `logs`, and `plugins`. Prefer this layout for new feature work.
 - `src/pages/`: remaining route pages outside the feature layout (login, system, and the auth-file OAuth excluded-model/model-alias editors); `LogsPage.tsx` there is only a re-export of the logs feature. Follow nearby conventions when modifying these; do not migrate unrelated code.
 - `src/components/`, `src/hooks/`, `src/utils/`: shared UI, hooks, and utilities. Keep feature-specific code within its feature rather than promoting it prematurely.
@@ -27,6 +28,7 @@ Use Bun; `package.json` pins `bun@1.4.3`, and CI uses Node.js 24. Keep dependenc
 - `bun run type-check`: run `tsc --noEmit`; the main TypeScript config includes `src`, not `tests`.
 - `bun run verify`: run tests, lint, and build (which includes TypeScript compilation).
 - `bun run format`: format all `src/**/*.{ts,tsx,css,scss}`. Prefer targeted formatting of changed files during routine work to avoid unrelated diffs.
+- `bun run sync:local`: deploy changed pieces of the local stack (see Local Deployment).
 
 ## Deployment Constraints
 
@@ -36,7 +38,7 @@ Preserve hash routing and single-file deployment. Changes to assets, imports, co
 
 ## API Contracts & State
 
-- Treat backend contracts as the source of truth. Inspect `../CLIProxyAPI` before changing endpoint names, payloads, provider keys, OAuth callback parameters, auth-file semantics, or plugin/config contracts. If that checkout is unavailable, report the missing evidence rather than guessing; do not modify the backend unless requested.
+- Treat backend contracts as the source of truth. Inspect `backend/` before changing endpoint names, payloads, provider keys, OAuth callback parameters, auth-file semantics, or plugin/config contracts. If the submodule is not checked out (`git submodule update --init`), report the missing evidence rather than guessing; do not modify the backend unless requested.
 - Reuse `apiClient` from `src/services/api/client.ts` for Management API requests through domain modules. It centralizes the API prefix, bearer authentication, error normalization, and response-header handling. Avoid bypassing it with ad hoc requests in components.
 - Preserve the client's event integration: `unauthorized` handles 401s, `server-version-update` carries version/build metadata, and `server-plugin-support-update` carries plugin capability information. Keep plugin routes gated by backend support.
 - Normalize backend fields on read and serialize on write in the API layer; consult `transformers.ts` and the relevant domain module. Keep raw backend field-name handling out of ordinary UI components.
@@ -57,6 +59,14 @@ Keep user-facing text in i18n. Preserve keyboard interaction, accessible names, 
 Tests are centralized under `tests/` as `*.test.ts` and use `bun:test`; shared fixtures live in `tests/fixtures/` and helpers in `tests/helpers/`. Existing suites cover pure logic, React server-side static rendering via `renderToStaticMarkup`, and source/contract checks. There is no configured browser DOM test harness; static markup tests do not verify browser interactions. Prefer extracting testable logic and following nearby test patterns rather than introducing a new framework by default.
 
 For code changes, add or update relevant regression tests, run focused tests while iterating, and run `bun run verify` before handoff. For UI changes, also verify the affected route in a browser and include screenshots or notes. Report commands actually run, failures, and anything not verified; if a backend or browser is unavailable, state the limitation explicitly. Documentation-only changes can be checked with diff/content validation instead of a full build.
+
+## Local Deployment
+
+After every change to the frontend or to `backend/` (Go code or `tools/request-archive/`), run `bun run sync:local` from the repo root once the change is verified, and report its output. It rebuilds and redeploys only what changed: the dashboard (`~/.config/cliproxyapi/static/management.html`), the archive indexer, and the proxy binary. The proxy is restarted only when files compiled into it changed, because a restart clears in-memory usage statistics; never restart it, copy builds, or run `launchctl` by hand instead. Use `--dry-run` to preview and `--force` only when explicitly asked. If the backend fails to start, the script restores the previous binary and exits non-zero; report that rather than retrying.
+
+## Backend Submodule
+
+`backend/` is a separate repository with its own `origin` (the fork) and `upstream` (`router-for-me/CLIProxyAPI`) remotes, history, CI, and upstream-sync workflow. Run Go commands and backend tests from `backend/`. For a change that spans both: commit and push inside `backend/` first, then commit the updated `backend` pointer together with the frontend change in this repo, so the pointer never references an unpushed commit. After a backend-only change, still commit the pointer bump here so this repo records the deployed backend. Do not add backend files to this repository or edit backend files from frontend tooling (formatting, linting, and Vite already ignore `backend/`). `../CLIProxyAPI` is a compatibility symlink to `backend/`.
 
 ## Security
 

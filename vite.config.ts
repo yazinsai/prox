@@ -62,6 +62,12 @@ export default defineConfig({
       }
     }
   },
+  server: {
+    // Allow access through Tailscale MagicDNS / `tailscale serve`.
+    allowedHosts: ['.ts.net'],
+    // The Go backend submodule is not part of the frontend build.
+    watch: { ignored: ['**/backend/**'] },
+  },
   build: {
     target: 'es2020',
     outDir: 'dist',

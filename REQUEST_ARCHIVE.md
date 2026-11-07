@@ -1,9 +1,9 @@
 # Local request archive
 
 Full request capture runs in the proxy backend, independently of this dashboard.
-The backend source is in `../CLIProxyAPI`, on `main`, based on v8.0.56.
-The backend fork is https://github.com/yazinsai/CLIProxyAPI.
-See [the backend operational guide](https://github.com/yazinsai/CLIProxyAPI/blob/main/docs/request-archive.md) for
+The backend source is the `backend/` git submodule (`main`, based on v8.0.56).
+The backend fork is https://github.com/yazinsai/prox-backend.
+See [the backend operational guide](https://github.com/yazinsai/prox-backend/blob/main/docs/request-archive.md) for
 implementation details, search/export commands, limitations, and rollback.
 
 The local service is configured with full request logging enabled and
@@ -74,7 +74,7 @@ labelled; missing reporting never becomes a fabricated zero count.
 
 Use **Actions → Sync upstream → Run workflow** in each repository:
 
-- [Backend sync](https://github.com/yazinsai/CLIProxyAPI/actions/workflows/sync-upstream.yml)
+- [Backend sync](https://github.com/yazinsai/prox-backend/actions/workflows/sync-upstream.yml)
 - [Dashboard sync](https://github.com/yazinsai/prox/actions/workflows/sync-upstream.yml)
 
 The workflow merges upstream `main` into a uniquely named branch. It stops on

@@ -7,7 +7,7 @@ import { useRequestArchive, type ArchiveLoadState } from '../hooks/useRequestArc
 import styles from './RequestArchivePanel.module.scss';
 
 const FORK_GUIDE = 'https://github.com/yazinsai/prox/blob/main/REQUEST_ARCHIVE.md';
-const SYNC_WORKFLOW = 'https://github.com/yazinsai/CLIProxyAPI/actions/workflows/sync-upstream.yml';
+const SYNC_WORKFLOW = 'https://github.com/yazinsai/prox-backend/actions/workflows/sync-upstream.yml';
 
 interface Props {
   stats: RequestArchiveStats | null;
