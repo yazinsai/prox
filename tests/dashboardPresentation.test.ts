@@ -8,10 +8,12 @@ import { readFileSync } from 'node:fs';
 import { ArchiveSummary } from '../src/features/dashboard/components/ArchiveSummary';
 import { DashboardRequests } from '../src/features/dashboard/components/DashboardRequests';
 import {
+  defaultModelPins,
   normalizeModelPins,
   pinStorageKey,
   readModelPins,
 } from '../src/features/dashboard/modelPins';
+import { rankRequestBreakdown } from '../src/features/dashboard/requestBreakdown';
 import type { RequestArchiveStats } from '../src/services/api/requestArchive';
 import type { DashboardRequests as RequestFeed } from '../src/services/api/dashboard';
 
@@ -188,8 +190,14 @@ afterEach(() => {
 });
 
 describe('model pins', () => {
-  test('limits pins to four unique nonempty exact model IDs and rejects malformed records', () => {
-    expect(normalizeModelPins([' a ', 'a', '', 'b', 'c', 'd', 'e'])).toEqual(['a', 'b', 'c', 'd']);
+  test('limits pins to five unique nonempty exact model IDs and rejects malformed records', () => {
+    expect(normalizeModelPins([' a ', 'a', '', 'b', 'c', 'd', 'e', 'f'])).toEqual([
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+    ]);
     expect(normalizeModelPins(['alias-a', 'alias-b'])).toEqual(['alias-a', 'alias-b']);
     expect(normalizeModelPins([])).toEqual([]);
     for (const value of [null, {}, 'a', ['a', 1]]) expect(normalizeModelPins(value)).toBeNull();
@@ -222,5 +230,46 @@ describe('model pins', () => {
       },
     });
     expect(readModelPins('https://one.invalid')).toBeNull();
+  });
+});
+
+describe('dashboard defaults and model ranking', () => {
+  test('prefers discovered Paper models and fills at most five pins with exact available IDs', () => {
+    expect(
+      defaultModelPins([
+        'old-model',
+        'gpt-6.1-sol',
+        'deepseek-v4.1-flash',
+        'gpt-6-astra',
+        'claude-opus-5-5',
+        'extra-model',
+      ])
+    ).toEqual([
+      'claude-opus-5-5',
+      'gpt-6.1-sol',
+      'gpt-6-astra',
+      'deepseek-v4.1-flash',
+      'old-model',
+    ]);
+    expect(defaultModelPins(['available-only'])).toEqual(['available-only']);
+    expect(defaultModelPins([])).toEqual([]);
+  });
+  test('shows the five highest request totals with stable ties and without merging model IDs', () => {
+    const rows = [1, 80, 3, 40, 80, 20, 9].map((total, index) => ({
+      id: `model-${index}`,
+      total,
+      success: total,
+      failed: 0,
+    }));
+    expect(rankRequestBreakdown(rows).map((row) => row.id)).toEqual([
+      'model-1',
+      'model-4',
+      'model-3',
+      'model-5',
+      'model-6',
+    ]);
+    expect(rows[0].id).toBe('model-0');
+    expect(rankRequestBreakdown(rows, rows.length)).toHaveLength(7);
+    expect(rankRequestBreakdown([])).toEqual([]);
   });
 });

@@ -2609,7 +2609,7 @@
     "stale": "上次已知資料 · 重新整理失敗",
     "edit_pins": "釘選模型 · 編輯",
     "pinned_models": "釘選模型",
-    "pin_hint": "最多選擇四個已探索的模型。釘選設定按連線儲存。",
+    "pin_hint": "最多選擇五個已發現的模型。釘選模型會依連線儲存。",
     "pin_storage_failed": "釘選設定僅在本次工作階段有效。瀏覽器儲存空間無法使用。",
     "no_pins": "釘選一個模型以查看其即時路由。",
     "model": "模型",
@@ -2644,7 +2644,6 @@
     "no_requests": "此範圍內沒有請求",
     "no_errors": "此範圍內沒有失敗請求",
     "recent_requests": "最近請求",
-    "latest_eight": "最近 8 筆",
     "all": "全部",
     "errors": "錯誤",
     "request_filter": "請求結果",
@@ -2695,6 +2694,7 @@
     "disk_free": "可用磁碟空間",
     "window_hour": "最近一小時",
     "healthy": "正常",
-    "no_models": "尚未發現模型。新增供應商以查看即時模型路由。"
+    "no_models": "尚未發現模型。新增供應商以查看即時模型路由。",
+    "latest_ten": "最新10筆"
   }
 }

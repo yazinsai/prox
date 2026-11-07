@@ -249,6 +249,11 @@ describe('dashboard contracts', () => {
         params: { window: '8h', outcome: 'failed', cursor: 'opaque-cursor', limit: 32 },
         signal: controller.signal,
       });
+      await dashboardApi.getRequests({ window: '8h' });
+      expect(get).toHaveBeenLastCalledWith('/observability/dashboard/requests', {
+        params: { window: '8h', outcome: undefined, cursor: undefined, limit: 10 },
+        signal: undefined,
+      });
       get.mockResolvedValue({ ...feed, window: '1h' });
       await expect(dashboardApi.getRequests({ window: '8h' })).rejects.toThrow();
     } finally {

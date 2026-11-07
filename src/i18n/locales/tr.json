@@ -2583,7 +2583,7 @@
     "stale": "Son bilinen veriler · yenileme başarısız",
     "edit_pins": "Sabitlenen modeller · Düzenle",
     "pinned_models": "Sabitlenen modeller",
-    "pin_hint": "Keşfedilen en fazla dört modeli seçin. Seçimler bu bağlantı için kaydedilir.",
+    "pin_hint": "Bulunan modellerden en fazla beşini seçin. Sabitlenen modeller bu bağlantı için kaydedilir.",
     "pin_storage_failed": "Sabitlemeler yalnızca bu oturum için geçerli. Tarayıcı depolaması kullanılamıyor.",
     "no_pins": "Canlı rotalarını görmek için bir model sabitleyin.",
     "model": "Model",
@@ -2618,7 +2618,6 @@
     "no_requests": "Bu aralıkta istek yok",
     "no_errors": "Bu aralıkta başarısız istek yok",
     "recent_requests": "Son istekler",
-    "latest_eight": "Son 8",
     "all": "Tümü",
     "errors": "Hatalar",
     "request_filter": "İstek sonucu",
@@ -2669,6 +2668,7 @@
     "disk_free": "Boş disk alanı",
     "window_hour": "Son saat",
     "healthy": "Sağlıklı",
-    "no_models": "Model bulunamadı. Canlı model rotalarını görmek için bir sağlayıcı ekleyin."
+    "no_models": "Model bulunamadı. Canlı model rotalarını görmek için bir sağlayıcı ekleyin.",
+    "latest_ten": "Son 10"
   }
 }

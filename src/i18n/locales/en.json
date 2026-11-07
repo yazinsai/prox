@@ -2583,7 +2583,7 @@
     "stale": "Last known data · refresh failed",
     "edit_pins": "Pinned models · Edit",
     "pinned_models": "Pinned models",
-    "pin_hint": "Choose up to four discovered models. Pins are saved for this connection.",
+    "pin_hint": "Choose up to five discovered models. Pins are saved for this connection.",
     "pin_storage_failed": "Pins apply for this session. Browser storage is unavailable.",
     "no_pins": "Pin a model to see its live routes.",
     "model": "Model",
@@ -2618,7 +2618,6 @@
     "no_requests": "No requests in this window",
     "no_errors": "No failed requests in this window",
     "recent_requests": "Recent requests",
-    "latest_eight": "Latest 8",
     "all": "All",
     "errors": "Errors",
     "request_filter": "Request outcome",
@@ -2669,6 +2668,7 @@
     "disk_free": "Disk free",
     "window_hour": "Last hour",
     "healthy": "Healthy",
-    "no_models": "No models discovered. Add a provider to see live model routes."
+    "no_models": "No models discovered. Add a provider to see live model routes.",
+    "latest_ten": "Latest 10"
   }
 }

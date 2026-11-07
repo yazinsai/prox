@@ -10,7 +10,8 @@ import { useDashboardData } from './hooks/useDashboardData';
 import { useDashboardCooldownClock } from './hooks/useDashboardCooldownClock';
 import type { DashboardLoadState, DashboardModel, DashboardWindow } from '@/services/api/dashboard';
 import { apiClient } from '@/services/api/client';
-import { normalizeModelPins, pinStorageKey, readModelPins } from './modelPins';
+import { defaultModelPins, normalizeModelPins, pinStorageKey, readModelPins } from './modelPins';
+import { rankRequestBreakdown } from './requestBreakdown';
 import { ArchiveSummary } from './components/ArchiveSummary';
 import { DashboardRequests } from './components/DashboardRequests';
 import styles from './dashboard.module.scss';
@@ -48,7 +49,7 @@ function DashboardContent({ connection }: { connection: string }) {
   useHeaderRefresh(refresh, connected);
 
   const models = data.routes?.models ?? EMPTY_MODELS;
-  const pins = storedPins ?? models.slice(0, 4).map((model) => model.id);
+  const pins = storedPins ?? defaultModelPins(models.map((model) => model.id));
   const pinnedModels = pins.map(
     (id) =>
       models.find((model) => model.id === id) ?? {
@@ -60,7 +61,7 @@ function DashboardContent({ connection }: { connection: string }) {
   );
   useEffect(() => {
     if (storedPins !== null || models.length === 0) return;
-    const defaults = models.slice(0, 4).map((model) => model.id);
+    const defaults = defaultModelPins(models.map((model) => model.id));
     setStoredPins(defaults);
     try {
       localStorage.setItem(pinStorageKey(connection), JSON.stringify(defaults));
@@ -74,7 +75,7 @@ function DashboardContent({ connection }: { connection: string }) {
   const summary = data.summary;
   const breakdown = useMemo(() => {
     const rows = grouping === 'model' ? summary?.byModel : summary?.byProvider;
-    return [...(rows ?? [])].sort((a, b) => b.total - a.total || a.id.localeCompare(b.id));
+    return rankRequestBreakdown(rows ?? [], grouping === 'model' ? 5 : (rows?.length ?? 0));
   }, [summary, grouping]);
   const count = (value: number | undefined) =>
     value === undefined ? DASH : value.toLocaleString(i18n.language);
@@ -436,7 +437,7 @@ function DashboardContent({ connection }: { connection: string }) {
               <input
                 type="checkbox"
                 checked={draftPins.includes(id)}
-                disabled={!draftPins.includes(id) && draftPins.length >= 4}
+                disabled={!draftPins.includes(id) && draftPins.length >= 5}
                 onChange={(event) =>
                   setDraftPins((current) =>
                     event.target.checked ? [...current, id] : current.filter((pin) => pin !== id)

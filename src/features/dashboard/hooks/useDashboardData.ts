@@ -75,7 +75,7 @@ export function useDashboardData(timeWindow: DashboardWindow, outcome: Dashboard
         ? Promise.resolve(null)
         : Promise.all([
             dashboardApi.getSummary(timeWindow, signal),
-            dashboardApi.getRequests({ window: timeWindow, outcome, limit: 8 }, signal),
+            dashboardApi.getRequests({ window: timeWindow, outcome, limit: 10 }, signal),
           ]);
       pending = Promise.allSettled([routesPromise, trafficPromise])
         .then(([routes, traffic]) => {

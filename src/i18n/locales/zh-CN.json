@@ -2581,7 +2581,7 @@
     "stale": "上次已知数据 · 刷新失败",
     "edit_pins": "固定模型 · 编辑",
     "pinned_models": "固定模型",
-    "pin_hint": "最多选择四个已发现的模型。固定设置按连接保存。",
+    "pin_hint": "选择最多五个已发现的模型。置顶模型将按连接保存。",
     "pin_storage_failed": "固定设置仅在本次会话有效。浏览器存储不可用。",
     "no_pins": "固定一个模型以查看其实时路由。",
     "model": "模型",
@@ -2616,7 +2616,6 @@
     "no_requests": "此窗口内没有请求",
     "no_errors": "此窗口内没有失败请求",
     "recent_requests": "最近请求",
-    "latest_eight": "最近 8 条",
     "all": "全部",
     "errors": "错误",
     "request_filter": "请求结果",
@@ -2667,6 +2666,7 @@
     "disk_free": "可用磁盘空间",
     "window_hour": "最近一小时",
     "healthy": "正常",
-    "no_models": "尚未发现模型。添加供应商以查看实时模型路由。"
+    "no_models": "尚未发现模型。添加供应商以查看实时模型路由。",
+    "latest_ten": "最新10条"
   }
 }

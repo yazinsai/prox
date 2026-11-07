@@ -46,7 +46,7 @@ export function DashboardRequests({
         <header className={styles.panelHead}>
           <div className={styles.titleGroup}>
             <h2 id="dashboard-requests-title">{t('dashboard_live.recent_requests')}</h2>
-            <span className={styles.muted}>{t('dashboard_live.latest_eight')}</span>
+            <span className={styles.muted}>{t('dashboard_live.latest_ten')}</span>
           </div>
           <div
             className={styles.segmented}

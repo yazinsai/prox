@@ -286,7 +286,7 @@ export const dashboardApi = {
           window: query.window,
           outcome: query.outcome === 'failed' ? 'failed' : undefined,
           cursor: query.cursor || undefined,
-          limit: query.limit ?? 8,
+          limit: query.limit ?? 10,
         },
         signal,
       })

@@ -2589,7 +2589,7 @@
     "stale": "Dữ liệu gần nhất · làm mới thất bại",
     "edit_pins": "Mô hình đã ghim · Sửa",
     "pinned_models": "Mô hình đã ghim",
-    "pin_hint": "Chọn tối đa bốn mô hình đã phát hiện. Lựa chọn được lưu cho kết nối này.",
+    "pin_hint": "Chọn tối đa năm mô hình đã tìm thấy. Các mô hình ghim được lưu cho kết nối này.",
     "pin_storage_failed": "Ghim chỉ có hiệu lực trong phiên này. Bộ nhớ trình duyệt không khả dụng.",
     "no_pins": "Ghim mô hình để xem các tuyến trực tiếp.",
     "model": "Mô hình",
@@ -2624,7 +2624,6 @@
     "no_requests": "Không có yêu cầu trong khoảng này",
     "no_errors": "Không có yêu cầu thất bại trong khoảng này",
     "recent_requests": "Yêu cầu gần đây",
-    "latest_eight": "8 yêu cầu mới nhất",
     "all": "Tất cả",
     "errors": "Lỗi",
     "request_filter": "Kết quả yêu cầu",
@@ -2675,6 +2674,7 @@
     "disk_free": "Dung lượng đĩa trống",
     "window_hour": "Giờ vừa qua",
     "healthy": "Hoạt động tốt",
-    "no_models": "Chưa tìm thấy mô hình. Thêm nhà cung cấp để xem định tuyến trực tiếp."
+    "no_models": "Chưa tìm thấy mô hình. Thêm nhà cung cấp để xem định tuyến trực tiếp.",
+    "latest_ten": "10 yêu cầu mới nhất"
   }
 }
