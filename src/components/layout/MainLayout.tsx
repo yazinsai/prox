@@ -964,6 +964,17 @@ export function MainLayout() {
           </Button>
         </div>
 
+        {location.pathname === '/' || location.pathname === '/dashboard' ? (
+          <div className="header-connection-meta">
+            {serverVersion ? <span>{serverVersion}</span> : null}
+            <span>
+              <i className={`connection-dot ${connectionStatus}`} aria-hidden="true" />
+              {t('common.' + connectionStatus)}
+            </span>
+            <span className="header-connection-host">{apiBase.replace(/^https?:\/\//, '')}</span>
+          </div>
+        ) : null}
+
         <div className="header-actions floating-actions">
           <Button
             variant="ghost"
