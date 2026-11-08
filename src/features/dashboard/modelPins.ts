@@ -1,8 +1,13 @@
+import { modelIdentity } from '@/utils/modelIdentity';
+
 const LIMIT = 5;
 
 export function normalizeModelPins(value: unknown): string[] | null {
   if (!Array.isArray(value) || value.some((id) => typeof id !== 'string')) return null;
-  return [...new Set(value.map((id) => id.trim()).filter(Boolean))].slice(0, LIMIT);
+  return [...new Set(value.map((id) => modelIdentity(id.trim()).id).filter(Boolean))].slice(
+    0,
+    LIMIT
+  );
 }
 
 export function readModelPins(connection: string): string[] | null {

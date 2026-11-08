@@ -1,3 +1,4 @@
+import { modelLabel } from '@/utils/modelIdentity';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sheet } from '@/components/ui/Sheet';
@@ -142,9 +143,7 @@ function RequestTable({
                   className={styles.requestLink}
                   onClick={() => onSelect(request)}
                 >
-                  {models.find((model) => model.id === request.model)?.label ||
-                    request.model ||
-                    '—'}
+                  {modelLabel(request.model, models) || '—'}
                 </button>
               </td>
               <td>

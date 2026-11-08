@@ -16,6 +16,8 @@ import { ArchiveSummary } from './components/ArchiveSummary';
 import { DashboardRequests } from './components/DashboardRequests';
 import styles from './dashboard.module.scss';
 
+import { modelLabel } from '@/utils/modelIdentity';
+
 const DASH = '—';
 const EMPTY_MODELS: DashboardModel[] = [];
 const WINDOWS: DashboardWindow[] = ['1h', '8h', '24h'];
@@ -97,7 +99,7 @@ function DashboardContent({ connection }: { connection: string }) {
   const lastUpdate = observation ? new Date(observation).toLocaleTimeString(i18n.language) : null;
   const labelFor = (id: string) => {
     if (!id) return DASH;
-    if (grouping === 'model') return models.find((model) => model.id === id)?.label || id;
+    if (grouping === 'model') return modelLabel(id, models);
     return (
       models.flatMap((model) => model.routes).find((route) => route.provider === id)
         ?.providerLabel || id
@@ -193,7 +195,6 @@ function DashboardContent({ connection }: { connection: string }) {
               <li className={styles.routeRow} key={model.id}>
                 <div className={styles.modelName}>
                   <strong>{model.label}</strong>
-                  <code>{model.id}</code>
                 </div>
                 <div className={styles.readyRoutes}>
                   <span className={styles.mobileLabel}>{t('dashboard_live.ready_priority')}</span>
@@ -444,10 +445,7 @@ function DashboardContent({ connection }: { connection: string }) {
                   )
                 }
               />
-              <span>
-                {models.find((model) => model.id === id)?.label || id}
-                <code>{id}</code>
-              </span>
+              <span>{modelLabel(id, models)}</span>
             </label>
           ))}
         </div>

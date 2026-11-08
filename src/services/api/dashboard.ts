@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { isRecord } from '@/utils/helpers';
+import { modelIdentity } from '@/utils/modelIdentity';
 
 export type DashboardWindow = '1h' | '8h' | '24h';
 export type DashboardOutcome = 'all' | 'failed';
@@ -146,38 +147,74 @@ function normalizeCoverage(data: Record<string, unknown>): DashboardCoverage {
   };
 }
 
+function groupDashboardModels(models: DashboardModel[]): DashboardModel[] {
+  const grouped = new Map<string, DashboardModel>();
+  for (const model of models) {
+    const identity = modelIdentity(model.id);
+    const existing = grouped.get(identity.id);
+    if (existing) {
+      existing.routes.push(...model.routes);
+      existing.lastUsedProvider ??= model.lastUsedProvider;
+    } else {
+      grouped.set(identity.id, {
+        ...model,
+        id: identity.id,
+        label: identity.label ?? model.label,
+        routes: [...model.routes],
+      });
+    }
+  }
+  return [...grouped.values()];
+}
+
+function groupModelCounts(rows: DashboardBreakdown[]): DashboardBreakdown[] {
+  const grouped = new Map<string, DashboardBreakdown>();
+  for (const row of rows) {
+    const id = modelIdentity(row.id).id;
+    const existing = grouped.get(id);
+    if (existing) {
+      existing.total += row.total;
+      existing.success += row.success;
+      existing.failed += row.failed;
+    } else grouped.set(id, { ...row, id });
+  }
+  return [...grouped.values()];
+}
+
 export function normalizeDashboardRoutes(value: unknown): DashboardRoutes {
   const data = record(value);
   const runtimeKnown = boolean(data.runtime_known);
   return {
     observedAt: date(data.observed_at),
     runtimeKnown,
-    models: list(data.models, (entry) => {
-      const model = record(entry);
-      return {
-        id: identifier(model.id),
-        label: optionalText(model.label) ?? identifier(model.id),
-        lastUsedProvider: optionalText(model.last_used_provider),
-        routes: list(model.routes, (entry) => {
-          const route = record(entry);
-          const status = route.status as DashboardRouteStatus;
-          if (!routeStatuses.has(status)) invalid();
-          if (typeof route.priority !== 'number' || !Number.isSafeInteger(route.priority))
-            invalid();
-          const readyCredentials = integer(route.ready_credentials);
-          const retryAt = optionalText(route.retry_at);
-          return {
-            provider: identifier(route.provider),
-            providerLabel: optionalText(route.provider_label) ?? identifier(route.provider),
-            priority: route.priority as number,
-            readyCredentials: runtimeKnown ? readyCredentials : 0,
-            status: runtimeKnown ? status : 'unknown',
-            cooldownReason: optionalText(route.cooldown_reason),
-            retryAt: retryAt ? date(retryAt) : null,
-          };
-        }),
-      };
-    }),
+    models: groupDashboardModels(
+      list(data.models, (entry) => {
+        const model = record(entry);
+        return {
+          id: identifier(model.id),
+          label: optionalText(model.label) ?? identifier(model.id),
+          lastUsedProvider: optionalText(model.last_used_provider),
+          routes: list(model.routes, (entry) => {
+            const route = record(entry);
+            const status = route.status as DashboardRouteStatus;
+            if (!routeStatuses.has(status)) invalid();
+            if (typeof route.priority !== 'number' || !Number.isSafeInteger(route.priority))
+              invalid();
+            const readyCredentials = integer(route.ready_credentials);
+            const retryAt = optionalText(route.retry_at);
+            return {
+              provider: identifier(route.provider),
+              providerLabel: optionalText(route.provider_label) ?? identifier(route.provider),
+              priority: route.priority as number,
+              readyCredentials: runtimeKnown ? readyCredentials : 0,
+              status: runtimeKnown ? status : 'unknown',
+              cooldownReason: optionalText(route.cooldown_reason),
+              retryAt: retryAt ? date(retryAt) : null,
+            };
+          }),
+        };
+      })
+    ),
   };
 }
 
@@ -252,7 +289,7 @@ export function normalizeDashboardSummary(value: unknown): DashboardSummary {
   return {
     ...normalizeCoverage(data),
     ...normalizeCounts(data),
-    byModel: list(data.by_model, breakdown),
+    byModel: groupModelCounts(list(data.by_model, breakdown)),
     byProvider: list(data.by_provider, breakdown),
   };
 }
