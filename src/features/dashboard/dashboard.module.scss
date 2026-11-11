@@ -674,7 +674,11 @@
   }
 }
 @media (max-width: 640px) {
+  .page {
+    gap: 16px;
+  }
   .pageHead {
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 16px;
     h1 {
@@ -693,12 +697,18 @@
     white-space: nowrap;
   }
   .panelHead {
-    padding: 16px;
+    padding: 12px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
   }
   .titleGroup {
     gap: 8px;
+    .positive {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--success-color) 8%, var(--bg-primary));
+      font-size: 11px;
+    }
     h2 {
       font-size: 16px;
     }
@@ -707,27 +717,60 @@
     display: none;
   }
   .routeRow {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    padding: 12px;
+  }
+  .modelName strong {
+    font-size: 15px;
+    font-weight: 600;
   }
   .mobileLabel {
-    display: block;
-    font-size: 12px;
-    color: var(--text-tertiary);
-    margin-bottom: 4px;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .readyRoutes {
-    align-items: center;
-    .mobileLabel {
-      width: 100%;
+    gap: 6px;
+  }
+  .routeChip {
+    padding: 3px 8px;
+    gap: 6px;
+    font-size: 12px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--success-color) 8%, var(--bg-primary));
+    border: 1px solid color-mix(in srgb, var(--success-color) 18%, var(--border-color));
+  }
+  .otherRoutes {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+    > [data-status] {
+      padding: 3px 6px;
+      border-radius: 6px;
+      background: var(--bg-tertiary);
+      overflow-wrap: anywhere;
+    }
+    > [data-status='cooling'] {
+      background: color-mix(in srgb, var(--amber-color) 8%, var(--bg-primary));
     }
   }
   .lastUsed {
-    display: block;
+    display: flex;
+    gap: 6px;
     text-align: left;
+    font-size: 11px;
+    .mobileLabel {
+      position: static;
+      width: auto;
+      height: auto;
+      clip-path: none;
+    }
   }
   .panelFooter {
     padding: 12px 16px;

@@ -233,6 +233,7 @@ function DashboardContent({ connection }: { connection: string }) {
                       return (
                         <span
                           key={`${route.provider}:${route.priority}`}
+                          data-status={status}
                           className={status === 'cooling' ? styles.warning : ''}
                         >
                           {route.providerLabel}
