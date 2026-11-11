@@ -274,7 +274,7 @@ export function SystemPage() {
   }, [auth.serverVersion, showNotification, t]);
 
   useEffect(() => {
-    fetchConfig().catch(() => {
+    fetchConfig(true).catch(() => {
       // ignore
     });
   }, [fetchConfig]);
@@ -294,7 +294,7 @@ export function SystemPage() {
   }, []);
 
   useEffect(() => {
-    fetchModels();
+    fetchModels({ forceRefresh: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.connectionStatus, auth.apiBase]);
 

@@ -3,10 +3,10 @@
  * history + projection), with per-account cards behind the Accounts toggle.
  *
  * 保留的行为契约（重设计不改）：
- * - 现有提供商保持点击加载；Devin 首次可见时主动查询一次，不轮询；
+ * - 进入页面自动分批查询全部支持的凭据额度，不轮询；
  * - cacheGeneration 会话隔离 + request-id 去重（见 useQuotaBatchLoader）；
  * - 文件列表变化后按 provider 剪枝额度缓存（已删文件不残留）；
- * - useHeaderRefresh 单槽位：本页唯一注册者，全局刷新 = 重取文件列表。
+ * - useHeaderRefresh 单槽位：本页唯一注册者，全局刷新 = 重取文件列表与额度。
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -62,7 +62,6 @@ import {
 import { nextRecoveryMs } from './resetSchedule';
 import { QUOTA_ADAPTERS, getQuotaSetter, type QuotaCardState } from './providers';
 import type { QuotaProviderType } from './providers/types';
-import { useDevinQuotaAutoLoad } from './providers/devin/useDevinQuotaAutoLoad';
 import { useQuotaActions } from './hooks/useQuotaActions';
 import { useQuotaBatchLoader } from './hooks/useQuotaBatchLoader';
 import { readQuotaUiState, writeQuotaUiState } from './uiState';
@@ -108,6 +107,7 @@ export function QuotaPage() {
 
   const sessionGeneration = useQuotaStore((state) => state.cacheGeneration);
   const [filesGeneration, setFilesGeneration] = useState<number | null>(null);
+  const pendingRefreshRef = useRef<number | null>(null);
   const listRequestRef = useRef(0);
   const loadFiles = useCallback(async () => {
     const requestId = ++listRequestRef.current;
@@ -120,6 +120,7 @@ export function QuotaPage() {
     const isCurrent = () =>
       requestId === listRequestRef.current &&
       sessionGeneration === useQuotaStore.getState().cacheGeneration;
+    pendingRefreshRef.current = sessionGeneration;
     setLoading(true);
     setError('');
     try {
@@ -135,8 +136,6 @@ export function QuotaPage() {
       if (isCurrent()) setLoading(false);
     }
   }, [connectionStatus, sessionGeneration, t]);
-
-  useHeaderRefresh(loadFiles);
 
   useEffect(() => {
     void loadFiles();
@@ -380,18 +379,18 @@ export function QuotaPage() {
     return null;
   };
 
-  const pendingRefreshRef = useRef<number | null>(null);
   const prevLoadingRef = useRef(loading);
 
-  // 刷新全部：先重取文件列表，待其落定（loading 下降沿）再批量拉当前页额度
+  // List reads on entry and refresh both hand off to bounded quota batches.
   const handleRefreshAll = useCallback(() => {
     if (disableControls) return;
-    pendingRefreshRef.current = sessionGeneration;
     void loadFiles();
     void loadHistory();
-  }, [disableControls, loadFiles, loadHistory, sessionGeneration]);
+  }, [disableControls, loadFiles, loadHistory]);
 
-  // Pools cover every credential of the tab, so refresh all of them, one page
+  useHeaderRefresh(handleRefreshAll);
+
+  // Refresh every supported credential, including hidden tabs, one page
   // at a time to keep upstream concurrency bounded.
   const loadTabQuota = useCallback(
     async (targets: QuotaFileEntry[]) => {
@@ -426,27 +425,9 @@ export function QuotaPage() {
         disableControls
       )
     ) {
-      void loadTabQuota(tabEntries);
+      void loadTabQuota(entries);
     }
-  }, [
-    disableControls,
-    error,
-    filesGeneration,
-    loading,
-    loadTabQuota,
-    tabEntries,
-    sessionGeneration,
-  ]);
-
-  useDevinQuotaAutoLoad(
-    pageItems,
-    disableControls ||
-      loading ||
-      batchLoading ||
-      Boolean(error) ||
-      filesGeneration !== sessionGeneration,
-    loadQuota
-  );
+  }, [disableControls, error, filesGeneration, loading, loadTabQuota, entries, sessionGeneration]);
 
   const canUseActions = !disableControls && !loading && filesGeneration === sessionGeneration;
 

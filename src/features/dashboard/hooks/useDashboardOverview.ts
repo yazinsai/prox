@@ -197,7 +197,7 @@ export function useDashboardOverview() {
     if (!connected || !apiBase) return;
     try {
       const apiKeys = await resolveApiKeysForModels();
-      await fetchModelsFromStore(apiBase, apiKeys[0]);
+      await fetchModelsFromStore(apiBase, apiKeys[0], true);
     } catch {
       // 模型列表失败不应影响仪表盘其余部分
     }
@@ -205,7 +205,7 @@ export function useDashboardOverview() {
 
   useEffect(() => {
     if (!connected) return;
-    void fetchConfig().catch(() => undefined);
+    void fetchConfig(true).catch(() => undefined);
     void loadAuthFiles();
     void loadModels();
   }, [connected, fetchConfig, loadAuthFiles, loadModels]);
