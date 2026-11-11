@@ -65,6 +65,13 @@ export default defineConfig({
   server: {
     // Allow access through Tailscale MagicDNS / `tailscale serve`.
     allowedHosts: ['.ts.net'],
+    // Keep phone requests on the Tailscale origin while the backend stays on loopback.
+    proxy: {
+      '/v8/management': {
+        target: 'http://127.0.0.1:8317',
+        changeOrigin: true,
+      },
+    },
     // The Go backend submodule is not part of the frontend build.
     watch: { ignored: ['**/backend/**'] },
   },
