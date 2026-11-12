@@ -1720,7 +1720,7 @@
     "pool_chart_label": "{{provider}} 額度池：剩餘 {{total}} / {{capacity}}",
     "pool_email_hidden": "郵箱已隱藏",
     "pool_history_unsupported": "記錄的歷史需要支援額度歷史的 CLIProxyAPI 版本。",
-    "pool_history_off": "請求封存已關閉，不會記錄歷史。",
+    "pool_history_off": "此伺服器未記錄配額歷史。",
     "pool_history_error": "無法載入歷史：{{message}}"
   },
   "routing": {

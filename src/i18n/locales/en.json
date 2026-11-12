@@ -1694,7 +1694,7 @@
     "pool_chart_label": "{{provider}} quota pool: {{total}} of {{capacity}} left",
     "pool_email_hidden": "Email hidden",
     "pool_history_unsupported": "Recorded history needs a CLIProxyAPI version with quota history.",
-    "pool_history_off": "Request archiving is off, so no history is being recorded.",
+    "pool_history_off": "This server isn't recording quota history.",
     "pool_history_error": "Couldn't load history: {{message}}"
   },
   "routing": {

@@ -1692,7 +1692,7 @@
     "pool_chart_label": "{{provider}} 额度池：剩余 {{total}} / {{capacity}}",
     "pool_email_hidden": "邮箱已隐藏",
     "pool_history_unsupported": "记录的历史需要支持额度历史的 CLIProxyAPI 版本。",
-    "pool_history_off": "请求归档已关闭，不会记录历史。",
+    "pool_history_off": "此服务器未记录配额历史。",
     "pool_history_error": "无法加载历史：{{message}}"
   },
   "routing": {

@@ -1694,7 +1694,7 @@
     "pool_chart_label": "{{provider}} kota havuzu: {{capacity}} içinden {{total}} kaldı",
     "pool_email_hidden": "E-posta gizli",
     "pool_history_unsupported": "Kayıtlı geçmiş için kota geçmişi destekleyen bir CLIProxyAPI sürümü gerekir.",
-    "pool_history_off": "İstek arşivleme kapalı, geçmiş kaydedilmiyor.",
+    "pool_history_off": "Bu sunucu kota geçmişini kaydetmiyor.",
     "pool_history_error": "Geçmiş yüklenemedi: {{message}}"
   },
   "routing": {

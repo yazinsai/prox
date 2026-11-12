@@ -1694,7 +1694,7 @@
     "pool_chart_label": "{{provider}} 할당량 풀: {{capacity}} 중 {{total}} 남음",
     "pool_email_hidden": "이메일 숨김",
     "pool_history_unsupported": "기록된 기록을 보려면 할당량 기록을 지원하는 CLIProxyAPI 버전이 필요합니다.",
-    "pool_history_off": "요청 보관이 꺼져 있어 기록이 저장되지 않습니다.",
+    "pool_history_off": "이 서버는 할당량 기록을 저장하지 않습니다.",
     "pool_history_error": "기록을 불러오지 못했습니다: {{message}}"
   },
   "routing": {

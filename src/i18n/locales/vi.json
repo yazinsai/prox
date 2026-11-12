@@ -1650,7 +1650,7 @@
     "pool_chart_label": "Hạn mức chung {{provider}}: còn {{total}} trên {{capacity}}",
     "pool_email_hidden": "Email đã ẩn",
     "pool_history_unsupported": "Lịch sử cần phiên bản CLIProxyAPI có lịch sử hạn mức.",
-    "pool_history_off": "Lưu trữ yêu cầu đang tắt nên không ghi lịch sử.",
+    "pool_history_off": "Máy chủ này không ghi lịch sử hạn mức.",
     "pool_history_error": "Không tải được lịch sử: {{message}}"
   },
   "routing": {

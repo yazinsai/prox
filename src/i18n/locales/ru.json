@@ -1699,7 +1699,7 @@
     "pool_chart_label": "Пул квоты {{provider}}: осталось {{total}} из {{capacity}}",
     "pool_email_hidden": "Email скрыт",
     "pool_history_unsupported": "Для истории нужна версия CLIProxyAPI с историей квот.",
-    "pool_history_off": "Архивирование запросов выключено, история не записывается.",
+    "pool_history_off": "Этот сервер не записывает историю квот.",
     "pool_history_error": "Не удалось загрузить историю: {{message}}"
   },
   "routing": {
