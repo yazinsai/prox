@@ -9,6 +9,7 @@ import type { AuthState, LoginCredentials, ConnectionStatus } from '@/types';
 import { STORAGE_KEY_AUTH } from '@/utils/constants';
 import { isCurrentObfuscated } from '@/utils/encryption';
 import { obfuscatedStorage } from '@/services/storage/secureStorage';
+import { claudeQuotaSnapshots } from '@/services/storage/claudeQuotaSnapshots';
 import { apiClient } from '@/services/api/client';
 import { LegacyBackendError, probeLegacyBackend } from '@/services/api/legacyBackendProbe';
 import { useConfigStore } from './useConfigStore';
@@ -172,6 +173,7 @@ export const useAuthStore = create<AuthStoreState>()(
         useConfigStore.getState().clearCache();
         useModelsStore.getState().clearCache();
         useQuotaStore.getState().clearQuotaCache();
+        claudeQuotaSnapshots.clear();
         set({
           isAuthenticated: false,
           apiBase: '',

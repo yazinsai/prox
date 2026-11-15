@@ -51,6 +51,11 @@ class ApiClient {
     }
   }
 
+  /** Resolved API base of the current connection; empty when logged out. */
+  getApiBase(): string {
+    return this.apiBase;
+  }
+
   /** Guards read/modify/write operations across connection changes, including ABA switches. */
   getConnectionRevision(): number {
     return this.connectionRevision;

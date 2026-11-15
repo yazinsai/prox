@@ -4,6 +4,8 @@
 
 import { create } from 'zustand';
 import { getQuotaCacheFileName } from '@/utils/quota/identity';
+import { apiClient } from '@/services/api/client';
+import { claudeQuotaSnapshots } from '@/services/storage/claudeQuotaSnapshots';
 import type {
   AntigravityQuotaState,
   ClaudeQuotaState,
@@ -64,9 +66,18 @@ export const useQuotaStore = create<QuotaStoreState>((set) => ({
   setClaudeQuota: (updater) =>
     set((state) => {
       const next = resolveUpdater(updater, state.claudeQuota);
+      const connection = apiClient.getApiBase();
       let retained = next;
       for (const [key, quota] of Object.entries(next)) {
-        const previous = state.claudeQuota[key];
+        if (quota.status === 'success' && quota !== state.claudeQuota[key]) {
+          claudeQuotaSnapshots.save(connection, key, quota);
+        }
+        // After a reload memory is empty; the persisted copy stands in for it.
+        const previous =
+          state.claudeQuota[key] ??
+          (quota.status === 'loading' || quota.status === 'error'
+            ? claudeQuotaSnapshots.get(connection, key)
+            : undefined);
         if (
           previous &&
           quota !== previous &&
@@ -122,6 +133,9 @@ export const useQuotaStore = create<QuotaStoreState>((set) => ({
           fileGenerations[name] = (fileGenerations[name] ?? 0) + 1;
         });
         const invalidatedNames = new Set(names);
+        claudeQuotaSnapshots.remove(apiClient.getApiBase(), (key) =>
+          invalidatedNames.has(getQuotaCacheFileName(key))
+        );
         const omitNames = <T>(cache: Record<string, T>): Record<string, T> => {
           const keysToDelete = Object.keys(cache).filter((key) =>
             invalidatedNames.has(getQuotaCacheFileName(key))
