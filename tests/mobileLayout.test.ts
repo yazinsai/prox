@@ -14,11 +14,11 @@ test('shared header blocks underlying page content and mobile spacing follows it
   expect(layout).toContain('padding: calc(var(--header-height) + 12px) 8px 24px');
 });
 
-test('compact route badges retain status text and accessible mobile labels', () => {
-  const page = source('../src/features/dashboard/DashboardPage.tsx');
+test('route chips keep their status as text, not colour alone', () => {
+  const chips = source('../src/features/dashboard/components/RouteChips.tsx');
   const styles = source('../src/features/dashboard/dashboard.module.scss');
-  expect(page).toContain('data-status={status}');
-  expect(page).toContain('t(`dashboard_live.route_${status}`)');
-  expect(styles).toContain("[data-status='cooling']");
+  expect(chips).toContain('data-state={state}');
+  expect(chips).toContain('t(`dashboard_live.chip_${state}`)');
+  expect(styles).toContain("[data-state='cooling']");
   expect(styles).toContain('clip-path: inset(50%)');
 });

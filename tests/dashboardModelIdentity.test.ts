@@ -1,6 +1,5 @@
 import { expect, test } from 'bun:test';
 import { normalizeDashboardRoutes, normalizeDashboardSummary } from '../src/services/api/dashboard';
-import { normalizeModelPins } from '../src/features/dashboard/modelPins';
 import { modelIdentity, modelLabel } from '../src/utils/modelIdentity';
 
 const now = '2026-11-07T12:00:00Z';
@@ -22,7 +21,7 @@ test('one Sonnet entry preserves both provider routes', () => {
   expect(modelLabel('claude-sonnet-5-5-high', models)).toBe('Claude Sonnet 5.5');
 });
 
-test('usage and stored pins consolidate without losing counts', () => {
+test('usage of equivalent variants consolidates without losing counts', () => {
   const summary = normalizeDashboardSummary({
     supported: true,
     observed_at: now,
@@ -39,9 +38,6 @@ test('usage and stored pins consolidate without losing counts', () => {
     by_provider: [],
   });
   expect(summary.byModel).toEqual([{ id: 'claude-sonnet-5-5', total: 3, success: 2, failed: 1 }]);
-  expect(normalizeModelPins(['claude-sonnet-5-5-high', 'claude-sonnet-5-5'])).toEqual([
-    'claude-sonnet-5-5',
-  ]);
 });
 
 test('known equivalent variants merge while distinct models and namespaces stay separate', () => {

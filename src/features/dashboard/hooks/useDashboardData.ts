@@ -4,38 +4,85 @@ import { apiClient } from '@/services/api/client';
 import {
   dashboardApi,
   type DashboardLoadState,
-  type DashboardOutcome,
-  type DashboardRequests,
   type DashboardRoutes,
   type DashboardSummary,
   type DashboardWindow,
 } from '@/services/api/dashboard';
 import { isRecord } from '@/utils/helpers';
+import { MINUTE_MS } from '@/utils/time/durations';
+import { PULSE_MINUTES, type RecentActivity } from '../insights';
 
 export type { DashboardLoadState } from '@/services/api/dashboard';
+
+/** 4 × 100 rows covers the pulse up to ~27 requests/minute; beyond that it is marked partial. */
+const PAGE_SIZE = 100;
+const MAX_PAGES = 4;
+
+interface Traffic {
+  hour: DashboardSummary;
+  day: DashboardSummary;
+  /** Only fetched while the 8-hour window is selected. */
+  eight: DashboardSummary | null;
+  recent: RecentActivity;
+}
 
 interface Snapshot {
   scope: object;
   routes: DashboardRoutes | null;
-  summary: DashboardSummary | null;
-  requests: DashboardRequests | null;
+  traffic: Traffic | null;
   routesState: DashboardLoadState;
   trafficState: DashboardLoadState;
   refreshing: boolean;
-  lastUpdate: string | null;
+  /** Local clocks when each part last landed, to age server timestamps without skew. */
+  routesReceivedAt: number | null;
+  trafficReceivedAt: number | null;
 }
 
 const loadState = (error: unknown): DashboardLoadState =>
   isRecord(error) && error.status === 404 ? 'unsupported' : 'error';
 
-export function useDashboardData(timeWindow: DashboardWindow, outcome: DashboardOutcome) {
+export async function loadRecentActivity(signal: AbortSignal): Promise<RecentActivity> {
+  const first = await dashboardApi.getRequests({ window: '1h', limit: PAGE_SIZE }, signal);
+  const horizon = Date.parse(first.observedAt) - PULSE_MINUTES * MINUTE_MS;
+  const requests = [...first.requests];
+  let cursor = first.nextCursor;
+  const reachedHorizon = () => {
+    const last = requests[requests.length - 1];
+    return !last || Date.parse(last.completedAt) <= horizon;
+  };
+  for (let page = 1; cursor && page < MAX_PAGES && !reachedHorizon(); page += 1) {
+    const next = await dashboardApi.getRequests({ window: '1h', limit: PAGE_SIZE, cursor }, signal);
+    requests.push(...next.requests);
+    cursor = next.nextCursor;
+  }
+  return { observedAt: first.observedAt, requests, complete: !cursor || reachedHorizon() };
+}
+
+async function loadTraffic(window: DashboardWindow, signal: AbortSignal): Promise<Traffic> {
+  const [hour, day, eight, recent] = await Promise.all([
+    dashboardApi.getSummary('1h', signal),
+    dashboardApi.getSummary('24h', signal),
+    window === '8h' ? dashboardApi.getSummary('8h', signal) : Promise.resolve(null),
+    loadRecentActivity(signal),
+  ]);
+  return { hour, day, eight, recent };
+}
+
+function selectedSummary(traffic: Traffic | null, window: DashboardWindow) {
+  if (!traffic) return null;
+  return window === '1h' ? traffic.hour : window === '24h' ? traffic.day : traffic.eight;
+}
+
+export function useDashboardData(timeWindow: DashboardWindow) {
   const connected = useAuthStore((state) => state.connectionStatus === 'connected');
   const apiBase = useAuthStore((state) => state.apiBase);
   const managementKey = useAuthStore((state) => state.managementKey);
   const revision = apiClient.getConnectionRevision();
+  // The window is deliberately not part of the scope: switching it keeps routes and the
+  // pulse on screen, and 1h/24h are always loaded, so only 8h ever waits.
   const scope = useMemo(
-    () => ({ connected, apiBase, managementKey, revision, timeWindow, outcome }),
-    [connected, apiBase, managementKey, revision, timeWindow, outcome]
+    () => ({ connected, apiBase, managementKey, revision }),
+    [connected, apiBase, managementKey, revision]
   );
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const refreshRef = useRef<() => Promise<void>>(async () => {});
@@ -56,27 +103,26 @@ export function useDashboardData(timeWindow: DashboardWindow, outcome: Dashboard
       if (!current() || (routesUnsupported && trafficUnsupported)) return Promise.resolve();
       controller = new AbortController();
       const signal = controller.signal;
-      setSnapshot((previous) => ({
-        scope,
-        routes: previous?.scope === scope ? previous.routes : null,
-        summary: previous?.scope === scope ? previous.summary : null,
-        requests: previous?.scope === scope ? previous.requests : null,
-        routesState: previous?.scope === scope ? previous.routesState : 'loading',
-        trafficState: previous?.scope === scope ? previous.trafficState : 'loading',
-        refreshing: true,
-        lastUpdate: previous?.scope === scope ? previous.lastUpdate : null,
-      }));
+      setSnapshot((previous) => {
+        const prior = previous?.scope === scope ? previous : null;
+        return {
+          scope,
+          routes: prior?.routes ?? null,
+          traffic: prior?.traffic ?? null,
+          routesState: prior?.routesState ?? 'loading',
+          trafficState: prior?.trafficState ?? 'loading',
+          refreshing: true,
+          routesReceivedAt: prior?.routesReceivedAt ?? null,
+          trafficReceivedAt: prior?.trafficReceivedAt ?? null,
+        };
+      });
 
-      // Summary and feed commit together so every traffic panel describes the same window.
       const routesPromise = routesUnsupported
         ? Promise.resolve(null)
         : dashboardApi.getRoutes(signal);
       const trafficPromise = trafficUnsupported
         ? Promise.resolve(null)
-        : Promise.all([
-            dashboardApi.getSummary(timeWindow, signal),
-            dashboardApi.getRequests({ window: timeWindow, outcome, limit: 10 }, signal),
-          ]);
+        : loadTraffic(timeWindow, signal);
       pending = Promise.allSettled([routesPromise, trafficPromise])
         .then(([routes, traffic]) => {
           if (!current() || signal.aborted) return;
@@ -84,6 +130,7 @@ export function useDashboardData(timeWindow: DashboardWindow, outcome: Dashboard
             routesUnsupported = loadState(routes.reason) === 'unsupported';
           if (traffic.status === 'rejected')
             trafficUnsupported = loadState(traffic.reason) === 'unsupported';
+          const receivedAt = Date.now();
           setSnapshot((previous) => {
             const prior = previous?.scope === scope ? previous : null;
             const routesValue = routes.status === 'fulfilled' ? routes.value : null;
@@ -91,8 +138,7 @@ export function useDashboardData(timeWindow: DashboardWindow, outcome: Dashboard
             return {
               scope,
               routes: routesValue ?? prior?.routes ?? null,
-              summary: trafficValue?.[0] ?? prior?.summary ?? null,
-              requests: trafficValue?.[1] ?? prior?.requests ?? null,
+              traffic: trafficValue ?? prior?.traffic ?? null,
               routesState:
                 routes.status === 'rejected'
                   ? loadState(routes.reason)
@@ -106,11 +152,8 @@ export function useDashboardData(timeWindow: DashboardWindow, outcome: Dashboard
                     ? 'ready'
                     : (prior?.trafficState ?? 'unsupported'),
               refreshing: false,
-              lastUpdate:
-                trafficValue?.[0].observedAt ??
-                routesValue?.observedAt ??
-                prior?.lastUpdate ??
-                null,
+              routesReceivedAt: routesValue ? receivedAt : (prior?.routesReceivedAt ?? null),
+              trafficReceivedAt: trafficValue ? receivedAt : (prior?.trafficReceivedAt ?? null),
             };
           });
         })
@@ -140,18 +183,22 @@ export function useDashboardData(timeWindow: DashboardWindow, outcome: Dashboard
       document.removeEventListener('visibilitychange', resume);
       refreshRef.current = async () => {};
     };
-  }, [connected, scope, timeWindow, outcome]);
+  }, [connected, scope, timeWindow]);
 
   const visible = connected && snapshot?.scope === scope ? snapshot : null;
   const state: DashboardLoadState = connected ? 'loading' : 'disconnected';
+  const traffic = visible?.traffic ?? null;
   return {
     routes: visible?.routes ?? null,
-    summary: visible?.summary ?? null,
-    requests: visible?.requests ?? null,
+    hour: traffic?.hour ?? null,
+    day: traffic?.day ?? null,
+    selected: selectedSummary(traffic, timeWindow),
+    recent: traffic?.recent ?? null,
     routesState: visible?.routesState ?? state,
     trafficState: visible?.trafficState ?? state,
     refreshing: visible?.refreshing ?? false,
-    lastUpdate: visible?.lastUpdate ?? null,
+    routesReceivedAt: visible?.routesReceivedAt ?? null,
+    trafficReceivedAt: visible?.trafficReceivedAt ?? null,
     refresh,
   };
 }

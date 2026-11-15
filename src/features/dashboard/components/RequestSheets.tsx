@@ -5,7 +5,6 @@ import { Sheet } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
 import {
   dashboardApi,
-  type DashboardLoadState,
   type DashboardModel,
   type DashboardRequest,
   type DashboardRequestDetail,
@@ -15,80 +14,36 @@ import {
 import { apiClient } from '@/services/api/client';
 import { logsApi } from '@/services/api/logs';
 import { downloadBlob } from '@/utils/download';
-import styles from '../dashboard.module.scss';
+import styles from './RequestSheets.module.scss';
 
-interface Props {
+interface BrowserProps {
   models?: DashboardModel[];
-  feed: RequestFeed | null;
-  state: DashboardLoadState;
+  /** Which list to open, or null when the browser is closed. */
+  view: 'all' | 'failed' | null;
   window: DashboardWindow;
-  errorsOnly: boolean;
-  onErrorsOnly: (value: boolean) => void;
+  onClose: () => void;
 }
 
-export function DashboardRequests({
-  models = [],
-  feed,
-  state,
-  window: timeWindow,
-  errorsOnly,
-  onErrorsOnly,
-}: Props) {
-  const { t } = useTranslation();
+/** Request history and single-request details, opened on demand from the dashboard. */
+export function RequestBrowser({ models = [], view, window: timeWindow, onClose }: BrowserProps) {
   const [selected, setSelected] = useState<DashboardRequest | null>(null);
-  const [history, setHistory] = useState(false);
+  const [errorsOnly, setErrorsOnly] = useState(view === 'failed');
+  const [opened, setOpened] = useState(view);
+  if (view !== opened) {
+    setOpened(view);
+    if (view) setErrorsOnly(view === 'failed');
+  }
 
   return (
     <>
-      <section
-        className={`${styles.panel} ${styles.feed}`}
-        aria-labelledby="dashboard-requests-title"
-      >
-        <header className={styles.panelHead}>
-          <div className={styles.titleGroup}>
-            <h2 id="dashboard-requests-title">{t('dashboard_live.recent_requests')}</h2>
-            <span className={styles.muted}>{t('dashboard_live.latest_ten')}</span>
-          </div>
-          <div
-            className={styles.segmented}
-            role="group"
-            aria-label={t('dashboard_live.request_filter')}
-          >
-            <button type="button" aria-pressed={!errorsOnly} onClick={() => onErrorsOnly(false)}>
-              {t('dashboard_live.all')}
-            </button>
-            <button type="button" aria-pressed={errorsOnly} onClick={() => onErrorsOnly(true)}>
-              {t('dashboard_live.errors')}
-            </button>
-          </div>
-        </header>
-        <RequestTable requests={feed?.requests ?? []} onSelect={setSelected} models={models} />
-        {!feed?.requests.length ? (
-          <p className={styles.empty}>
-            {feed
-              ? t(errorsOnly ? 'dashboard_live.no_errors' : 'dashboard_live.no_requests')
-              : t(`dashboard_live.state_${state}`)}
-          </p>
-        ) : null}
-        <footer className={styles.feedFooter}>
-          <span>{t('dashboard_live.completed_requests')}</span>
-          <button
-            type="button"
-            className={styles.textButton}
-            disabled={!feed}
-            onClick={() => setHistory(true)}
-          >
-            {t('dashboard_live.view_all')} <span aria-hidden="true">↗</span>
-          </button>
-        </footer>
-      </section>
-      {history && !selected ? (
+      {view && !selected ? (
         <RequestHistory
-          key={`${timeWindow}:${errorsOnly}`}
+          key={timeWindow}
           models={models}
           timeWindow={timeWindow}
           errorsOnly={errorsOnly}
-          onClose={() => setHistory(false)}
+          onErrorsOnly={setErrorsOnly}
+          onClose={onClose}
           onSelect={setSelected}
         />
       ) : null}
@@ -99,7 +54,7 @@ export function DashboardRequests({
   );
 }
 
-function RequestTable({
+export function RequestTable({
   requests,
   onSelect,
   models = [],
@@ -201,12 +156,14 @@ function RequestHistory({
   models,
   timeWindow,
   errorsOnly,
+  onErrorsOnly,
   onClose,
   onSelect,
 }: {
   models: DashboardModel[];
   timeWindow: DashboardWindow;
   errorsOnly: boolean;
+  onErrorsOnly: (value: boolean) => void;
   onClose: () => void;
   onSelect: (request: DashboardRequest) => void;
 }) {
@@ -253,6 +210,32 @@ function RequestHistory({
       description={t('dashboard_live.completed_requests')}
       onClose={onClose}
     >
+      <div className={styles.historyFilter}>
+        <div
+          className={styles.segmented}
+          role="group"
+          aria-label={t('dashboard_live.request_filter')}
+        >
+          {[false, true].map((value) => (
+            <button
+              type="button"
+              key={String(value)}
+              aria-pressed={errorsOnly === value}
+              onClick={() => {
+                setCursor(null);
+                onErrorsOnly(value);
+              }}
+            >
+              {t(value ? 'dashboard_live.errors' : 'dashboard_live.all')}
+            </button>
+          ))}
+        </div>
+        <span>
+          {timeWindow === '1h'
+            ? t('dashboard_live.window_hour')
+            : t('dashboard_live.window', { hours: Number(timeWindow.slice(0, -1)) })}
+        </span>
+      </div>
       {loading ? (
         <p className={styles.empty} role="status">
           {t('dashboard_live.state_loading')}
