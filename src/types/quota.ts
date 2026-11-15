@@ -2,6 +2,8 @@
  * Quota management types.
  */
 
+import type { AnthropicResetGrantStatus } from '@/services/api/claudeResetGrants';
+
 // Theme types
 export type ThemeColors = { bg: string; text: string; border?: string };
 export type TypeColorSet = { light: ThemeColors; dark?: ThemeColors };
@@ -218,6 +220,8 @@ export interface ClaudeQuotaState {
   observedAt?: string | null;
   stale?: boolean;
   planType?: string | null;
+  /** Limit-reset grants from the same usage read; null when absent or malformed. */
+  resetGrants?: AnthropicResetGrantStatus | null;
   error?: string;
   errorStatus?: number;
 }

@@ -48,6 +48,19 @@ describe('Claude reset grant fail-closed parsing', () => {
     })!;
     expect(anthropicResetGrantBlocker(missing, grant.id)).toBe('not_usable');
   });
+  test('reads display-only kind hints leniently', () => {
+    const parsed = (fields: Record<string, unknown>) =>
+      parseAnthropicResetGrantStatus({ ...block, grants: [{ ...grant, ...fields }] })!.grants[0];
+    expect(parsed({})).toMatchObject({ type: null, givesBackWeekly: false });
+    expect(parsed({ type: 'full', gives_back_weekly: true })).toMatchObject({
+      type: 'full',
+      givesBackWeekly: true,
+    });
+    expect(parsed({ type: 'mystery', gives_back_weekly: 'yes' })).toMatchObject({
+      type: null,
+      givesBackWeekly: false,
+    });
+  });
   test('rejects malformed blocks and grants', () => {
     for (const value of [
       undefined,
@@ -630,10 +643,16 @@ test('all grant messages and confirmation are translated in six locales', async 
     for (const stage of ['organization', 'status', 'eligibility', 'request_id', 'operation']) {
       expect(locale[`failure_${stage}`]).toContain('{{code}}');
     }
-    expect(locale.confirm_text).toContain('{{name}}');
+    for (const kind of ['full', 'session', 'weekly', 'fable', 'other']) {
+      expect(locale[`confirm_${kind}`]).toContain('{{name}}');
+      expect(locale[`confirm_${kind}`]).toContain('{{left}}');
+      expect(typeof locale[`kind_${kind}`]).toBe('string');
+      expect(typeof locale[`clears_${kind}`]).toBe('string');
+    }
+    expect(locale.use_aria).toContain('{{kind}}');
     expect(locale.retry_confirm).toContain('{{name}}');
-    expect(typeof locale.remaining).toBe('string');
-    expect(locale.count).toContain('{{left}}');
+    expect(locale.left).toContain('{{left}}');
+    expect(locale.hint_cooldown).toContain('{{time}}');
     for (const key of [
       ...ANTHROPIC_RESET_RESULTS,
       'auth_error',
@@ -673,11 +692,11 @@ test('card selection prefers usable recommendation and has deterministic fallbac
 test('Claude card uses Codex count and action styles and shared confirmation, not a grant dialog', async () => {
   const card = await Bun.file('src/features/quota/components/QuotaCard.tsx').text();
   const hook = await Bun.file('src/features/quota/providers/claude/ClaudeResetGrants.tsx').text();
-  expect(card).toContain('quotaClasses.codexPlanValue}>{claudeReset.count');
-  expect(card).toContain('disabled={claudeReset.blocked}');
-  expect(card).toContain('onClick={claudeReset.confirm}');
+  expect(card).toContain('<ClaudeResetGrantDetails');
+  expect(card).toContain('onUse={claudeReset.confirm}');
+  expect(card).toContain('disabled={claudeReset.retryBlocked}');
   expect(hook).toContain('showConfirmation({');
-  expect(hook).toContain("pending ? 'claude_reset.retry_confirm'");
+  expect(hook).toContain("? t('claude_reset.retry_confirm'");
   expect(hook).not.toContain('<Modal');
   expect(hook).not.toContain('status.grants.map');
 });

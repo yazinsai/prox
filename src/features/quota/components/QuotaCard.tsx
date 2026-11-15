@@ -68,9 +68,9 @@ export function QuotaCard(props: QuotaCardProps) {
   const loading = status === 'loading';
   const claudeReset = useClaudeResetGrants(
     file,
-    entry.type === 'claude' && status !== 'idle',
+    entry.type === 'claude' ? (quota as ClaudeQuotaState | undefined)?.resetGrants : null,
+    entry.type === 'claude' && status === 'success',
     !canRefresh || loading || resetting,
-    quota,
     onRefresh
   );
   const providerType =
@@ -86,24 +86,29 @@ export function QuotaCard(props: QuotaCardProps) {
     quota?.errorStatus,
     quota?.error || t('common.unknown_error')
   );
-  // Claude banked resets join the plan chip row; their expiry list follows it.
+  // Claude limit resets sit under the usage they clear, beside the button that spends them.
   const showClaudeReset = entry.type === 'claude' && status === 'success';
-  const claudePlanItems = showClaudeReset ? (
-    <span className={quotaClasses.codexPlanItem}>
-      <span className={quotaClasses.codexPlanLabel}>{t('claude_reset.remaining')}</span>
-      <span className={quotaClasses.codexPlanValue}>{claudeReset.count ?? '--'}</span>
-    </span>
-  ) : undefined;
-  const claudeAfterPlan = showClaudeReset ? (
+  const claudeResetSection = showClaudeReset ? (
     <>
-      <ClaudeResetGrantDetails grants={claudeReset.grants} classes={quotaClasses} />
+      {claudeReset.loaded && (
+        <ClaudeResetGrantDetails
+          left={claudeReset.left}
+          groups={claudeReset.groups}
+          hint={claudeReset.hint}
+          cooldownUntil={claudeReset.cooldownUntil}
+          useDisabled={claudeReset.useDisabled}
+          busy={claudeReset.busy}
+          onUse={claudeReset.confirm}
+          classes={quotaClasses}
+        />
+      )}
       {claudeReset.message && (
         <div role="status" className={quotaClasses.codexResetCreditsError}>
           {t(`claude_reset.${claudeReset.message}`)}
         </div>
       )}
     </>
-  ) : undefined;
+  ) : null;
   const showReset =
     status === 'success' &&
     Boolean(adapter.resetQuota) &&
@@ -162,12 +167,7 @@ export function QuotaCard(props: QuotaCardProps) {
             {t(`${adapter.i18nPrefix}.load_failed`, { message: errorMessage })}
           </div>
         ) : quota && !retainedClaudeUsage ? (
-          <adapter.Body
-            quota={quota}
-            classes={quotaClasses}
-            planItems={claudePlanItems}
-            afterPlan={claudeAfterPlan}
-          />
+          <adapter.Body quota={quota} classes={quotaClasses} />
         ) : !retainedClaudeUsage ? (
           <div className={styles.idleHint}>{t(`${adapter.i18nPrefix}.idle`)}</div>
         ) : null}
@@ -176,28 +176,22 @@ export function QuotaCard(props: QuotaCardProps) {
             {t(`${adapter.i18nPrefix}.loading`)}
           </div>
         )}
-        {retainedClaudeUsage && quota && (
-          <adapter.Body
-            quota={quota}
-            classes={quotaClasses}
-            planItems={claudePlanItems}
-            afterPlan={claudeAfterPlan}
-          />
-        )}
+        {retainedClaudeUsage && quota && <adapter.Body quota={quota} classes={quotaClasses} />}
+        {claudeResetSection}
       </div>
 
       {status !== 'idle' && (
         <footer className={styles.actionRow}>
-          {entry.type === 'claude' && (
+          {entry.type === 'claude' && claudeReset.pending && (
             <button
               type="button"
               className={styles.actionPill}
-              disabled={claudeReset.blocked}
-              onClick={claudeReset.confirm}
-              title={t(`claude_reset.${claudeReset.buttonLabel}`)}
+              disabled={claudeReset.retryBlocked}
+              onClick={() => claudeReset.confirm()}
+              title={t('claude_reset.retry')}
             >
               <IconRefreshCw size={13} className={claudeReset.busy ? styles.spinning : undefined} />
-              {t(`claude_reset.${claudeReset.buttonLabel}`)}
+              {t('claude_reset.retry')}
             </button>
           )}
           {showReset && (

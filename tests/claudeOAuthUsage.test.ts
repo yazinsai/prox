@@ -218,6 +218,34 @@ describe('Claude quota usage reads', () => {
     });
   });
 
+  test('reads limit-reset grants from the same single usage call', async () => {
+    const requests: string[] = [];
+    apiCallApi.request = async (request) => {
+      requests.push(request.url);
+      return request.url === CLAUDE_USAGE_URL
+        ? result(200, {
+            ...fixture,
+            cedar_ember: {
+              eligible: true,
+              grants: [{ id: 'full', resets_total: 1, resets_left: 1, usable_now: true }],
+              next_grant_id: 'full',
+            },
+          })
+        : result(200, null);
+    };
+    const state = CLAUDE_CONFIG.buildSuccessState(
+      await CLAUDE_CONFIG.fetchQuota(file, translations.t)
+    );
+    expect(CLAUDE_USAGE_URL).toContain('cedar_ember=1');
+    expect(requests.filter((url) => url.includes('/api/oauth/usage'))).toHaveLength(1);
+    expect(state.resetGrants?.nextGrantId).toBe('full');
+    expect(state.resetGrants?.grants.map((grant) => grant.id)).toEqual(['full']);
+
+    apiCallApi.request = async (request) =>
+      request.url === CLAUDE_USAGE_URL ? result(200, fixture) : result(200, null);
+    expect((await CLAUDE_CONFIG.fetchQuota(file, translations.t)).resetGrants).toBeNull();
+  });
+
   test('keeps dollar-balance recovery after the fixture plan windows have expired', async () => {
     apiCallApi.request = async (request) =>
       request.url === CLAUDE_USAGE_URL ? result(200, fixture) : result(200, null);

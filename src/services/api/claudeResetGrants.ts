@@ -36,6 +36,9 @@ export type AnthropicResetUpstreamResult = (typeof ANTHROPIC_RESET_RESULTS)[numb
 export type AnthropicResetSettledCode =
   AnthropicResetUpstreamResult | 'rate_limited' | 'auth_error';
 
+export const ANTHROPIC_RESET_GRANT_TYPES = ['session', 'weekly', 'full'] as const;
+export type AnthropicResetGrantType = (typeof ANTHROPIC_RESET_GRANT_TYPES)[number];
+
 export interface AnthropicResetGrant {
   id: string;
   label: string;
@@ -48,6 +51,10 @@ export interface AnthropicResetGrant {
   usableNow: boolean;
   useRequiresLimit: boolean;
   percentUsed: Partial<Record<AnthropicResetWindow, number>>;
+  /** Upstream's own kind, when it says; Claude Code prefers it over `clears`. */
+  type: AnthropicResetGrantType | null;
+  /** Fable grants: also return Fable's share of the 7-day limit. */
+  givesBackWeekly: boolean;
 }
 
 export interface AnthropicResetGrantStatus {
@@ -177,6 +184,11 @@ function parseGrant(value: unknown): AnthropicResetGrant | null {
     usableNow,
     useRequiresLimit,
     percentUsed: parsePercentUsed(value.percent_used),
+    // Display-only hints: unknown values fall back like Claude Code does.
+    type: (ANTHROPIC_RESET_GRANT_TYPES as readonly unknown[]).includes(value.type)
+      ? (value.type as AnthropicResetGrantType)
+      : null,
+    givesBackWeekly: value.gives_back_weekly === true,
   };
 }
 

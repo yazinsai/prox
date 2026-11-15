@@ -24,7 +24,6 @@ const ratios = [
   ['providersPage.categories.activeCount', 'active'],
   ['providersPage.discovery.selectedCount', 'selected'],
   ['providersPage.toolbar.filter.selectedModels', 'selected'],
-  ['claude_reset.count', 'left'],
 ] as const;
 
 const translator = createInstance();

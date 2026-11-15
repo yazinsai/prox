@@ -91,7 +91,7 @@ export function QuotaPage() {
   const [futureUsage, setFutureUsage] = useState<FutureUsage>(
     () => readQuotaUiState()?.futureUsage ?? 'same'
   );
-  const [showAccounts, setShowAccounts] = useState(() => readQuotaUiState()?.showAccounts ?? false);
+  const [showAccounts, setShowAccounts] = useState(() => readQuotaUiState()?.showAccounts ?? true);
   const [showEmails, setShowEmails] = useState(() => readQuotaUiState()?.showEmails ?? false);
   const [rangeOffset, setRangeOffset] = useState(0);
   const [page, setPage] = useState(1);
