@@ -7,11 +7,19 @@ export interface RequestScopedErrorRule {
   action?: 'stop' | 'stop-and-cooldown' | 'continue' | 'continue-and-cooldown';
 }
 
+/** OpenAI-compatible model listing; the form toggles `enabled` and preserves the rest. */
+export interface ModelsDiscoveryOptions {
+  enabled: boolean;
+  refreshInterval?: string;
+  exclude?: string[];
+}
+
 export interface ProviderBehaviorOptions {
   alphaSearch?: boolean;
   disableCodexCloaking?: boolean;
   rebuildMidSystemMessage?: boolean;
   supportPromptCacheKey?: boolean;
+  modelsDiscovery?: ModelsDiscoveryOptions;
 }
 
 export interface ProviderRuntimePolicy {

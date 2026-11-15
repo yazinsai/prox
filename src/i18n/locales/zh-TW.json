@@ -2139,7 +2139,9 @@
       "rebuildMidSystemMessage": "重建系統訊息",
       "rebuildMidSystemMessageHint": "將 Claude 中 role 為 system 的訊息移至頂層 system 欄位。",
       "supportPromptCacheKey": "注入提示詞快取鍵",
-      "supportPromptCacheKeyHint": "為相容的請求衍生並注入 prompt_cache_key。僅在上游支援此欄位時啟用。"
+      "supportPromptCacheKeyHint": "為相容的請求衍生並注入 prompt_cache_key。僅在上游支援此欄位時啟用。",
+      "modelsDiscovery": "自動探索模型",
+      "modelsDiscoveryHint": "同時路由供應商 /models 端點列出的所有模型。預設每 6 小時重新整理一次，重新整理失敗時保留上次的清單。"
     },
     "modelOptions": {
       "displayName": "顯示名稱",

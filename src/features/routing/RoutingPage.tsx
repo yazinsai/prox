@@ -149,13 +149,14 @@ export function RoutingPage() {
       inFlightRef.current = true;
       setError(null);
       try {
-        const [config, files] = await Promise.all([
+        const [config, files, discovered] = await Promise.all([
           fetchConfig(true),
           routingApi.listCredentials(),
+          routingApi.loadDiscoveredModels(),
         ]);
         if (!isCurrent()) return;
         assertConnection();
-        const next = buildRoutingBoard(config.raw ?? {}, files);
+        const next = buildRoutingBoard(config.raw ?? {}, files, discovered);
         setFiles(files);
         setObservedAt(Date.now());
         // Quota, counters and cooldowns keep updating while configuration edits stay local.

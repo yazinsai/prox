@@ -19,5 +19,6 @@ export function pickProviderBehavior(
     ...(capabilities.supportPromptCacheKey
       ? { supportPromptCacheKey: input.supportPromptCacheKey }
       : {}),
+    ...(capabilities.modelsDiscovery ? { modelsDiscovery: input.modelsDiscovery } : {}),
   };
 }

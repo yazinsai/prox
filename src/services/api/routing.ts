@@ -164,13 +164,36 @@ function keyMembers(raw: unknown, family: RoutingKeyFamily): RoutingMember[] {
   return members;
 }
 
-function compatMembers(raw: unknown): RoutingMember[] {
+/** Model ids a compat provider lists upstream, keyed by lower-cased provider name. */
+export type DiscoveredCompatModels = Readonly<Record<string, readonly string[]>>;
+
+const discoveryEnabled = (group: Record<string, unknown>): boolean => {
+  const discovery = group['models-discovery'];
+  return isRecord(discovery) && discovery.enabled === true;
+};
+
+/** Configured aliases first, then discovered ids the configuration does not already expose. */
+const withDiscoveredModels = (configured: string[], discovered: readonly string[] = []) => {
+  const seen = new Set(configured.map((id) => id.toLowerCase()));
+  const extra = discovered.filter((id) => {
+    const key = id.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return extra.length ? [...configured, ...extra] : configured;
+};
+
+function compatMembers(raw: unknown, discovered: DiscoveredCompatModels): RoutingMember[] {
   const members: RoutingMember[] = [];
   readGroups(raw, ROUTING_COMPAT_FAMILY).forEach((group, groupIndex) => {
     if (!isRecord(group)) return;
     const keys = Array.isArray(group.keys) ? group.keys.filter(isRecord) : [];
     const name = readText(group.name);
-    const models = readModelIds(group.models);
+    const configured = readModelIds(group.models);
+    const models = discoveryEnabled(group)
+      ? withDiscoveredModels(configured, discovered[name.toLowerCase()])
+      : configured;
     members.push({
       key: `compat:${groupIndex}`,
       kind: 'compat',
@@ -232,12 +255,16 @@ function credentialMember(file: AuthFileItem): RoutingMember | null {
 }
 
 /** Every schedulable member of the stored configuration and the credential list. */
-export function buildRoutingBoard(raw: unknown, files: readonly AuthFileItem[]): RoutingBoard {
+export function buildRoutingBoard(
+  raw: unknown,
+  files: readonly AuthFileItem[],
+  discovered: DiscoveredCompatModels = {}
+): RoutingBoard {
   const aliases = normalizeOauthModelAlias(readPath(raw, ['oauth', 'model-alias']));
   return {
     members: [
       ...ROUTING_KEY_FAMILIES.flatMap((family) => keyMembers(raw, family)),
-      ...compatMembers(raw),
+      ...compatMembers(raw, discovered),
       ...files.flatMap((file) => {
         const member = credentialMember(file);
         if (!member) return [];
@@ -422,6 +449,30 @@ export const routingApi = {
   async listCredentials(): Promise<AuthFileItem[]> {
     const response = await authFilesApi.list();
     return Array.isArray(response.files) ? response.files : [];
+  },
+
+  /**
+   * Catalogs listed by compat providers with models-discovery enabled. Reads the backend's
+   * cache only; a backend without the endpoint reports none rather than failing the board.
+   */
+  async loadDiscoveredModels(): Promise<DiscoveredCompatModels> {
+    let data: unknown;
+    try {
+      data = await apiClient.get<unknown>('/routing/discovered-models');
+    } catch {
+      return {};
+    }
+    const providers = isRecord(data) && Array.isArray(data.providers) ? data.providers : [];
+    const result: Record<string, string[]> = {};
+    for (const provider of providers) {
+      if (!isRecord(provider)) continue;
+      const name = readText(provider.name).toLowerCase();
+      const models = Array.isArray(provider.models)
+        ? provider.models.filter((id): id is string => typeof id === 'string' && id.trim() !== '')
+        : [];
+      if (name) result[name] = models;
+    }
+    return result;
   },
 
   /** Built-in model ids per channel; a channel that cannot be read reports null. */

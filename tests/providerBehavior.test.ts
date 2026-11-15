@@ -110,6 +110,44 @@ test('OpenAI prompt cache key can be enabled on create and explicitly disabled o
   expect(groups()[0]['support-prompt-cache-key']).toBe(false);
   expect(key(groups())).toEqual({ 'api-key': 'fixture-key' });
 });
+test('OpenAI model discovery toggles without dropping its interval and exclusions', async () => {
+  const groups = backend('openai-compatibility', [
+    {
+      name: 'fixture',
+      'base-url': 'https://example.invalid',
+      keys: [{ 'api-key': 'fixture-key' }],
+      'models-discovery': { enabled: true, 'refresh-interval': '12h', exclude: ['*-free'] },
+    },
+  ]);
+  const config = normalizeProviderGroups(groups(), true)[0] as OpenAIProviderConfig;
+  expect(config.modelsDiscovery).toEqual({
+    enabled: true,
+    refreshInterval: '12h',
+    exclude: ['*-free'],
+  });
+  expect(pickProviderBehavior(config, 'openaiCompatibility').modelsDiscovery).toEqual(
+    config.modelsDiscovery
+  );
+  await providersApi.updateOpenAIProvider(config.name, 0, {
+    ...config,
+    modelsDiscovery: { ...config.modelsDiscovery!, enabled: false },
+  });
+  expect(groups()[0]['models-discovery']).toEqual({
+    enabled: false,
+    'refresh-interval': '12h',
+    exclude: ['*-free'],
+  });
+  const html = renderToStaticMarkup(
+    createElement(ProviderBehaviorEditor, {
+      brand: 'openaiCompatibility',
+      value: { modelsDiscovery: { enabled: true } },
+      onChange: () => {},
+      disabled: false,
+    })
+  );
+  expect(html).toContain('checked=""');
+  expect(html).toContain('-modelsDiscovery-hint');
+});
 test('UI and form projection gate behavior by actual provider or sponsor protocol', () => {
   const options = {
     alphaSearch: true,

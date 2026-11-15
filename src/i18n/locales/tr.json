@@ -2113,7 +2113,9 @@
       "rebuildMidSystemMessage": "Sistem İletilerini Yeniden Kur",
       "rebuildMidSystemMessageHint": "role system Olan Claude İletilerini Üst Düzey system Alanına Taşı.",
       "supportPromptCacheKey": "İstem Önbellek Anahtarı Ekle",
-      "supportPromptCacheKeyHint": "Uyumlu İstekler için prompt_cache_key Türet ve Ekle. Yalnızca Yukarı Akış Bu Alanı Destekliyorsa Etkinleştir."
+      "supportPromptCacheKeyHint": "Uyumlu İstekler için prompt_cache_key Türet ve Ekle. Yalnızca Yukarı Akış Bu Alanı Destekliyorsa Etkinleştir.",
+      "modelsDiscovery": "Modelleri otomatik keşfet",
+      "modelsDiscoveryHint": "Sağlayıcının /models uç noktasında listelenen tüm modelleri de yönlendirir. Liste varsayılan olarak 6 saatte bir yenilenir ve yenileme başarısız olursa önceki liste korunur."
     },
     "modelOptions": {
       "displayName": "Görünen Ad",

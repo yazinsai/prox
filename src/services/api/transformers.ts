@@ -7,7 +7,11 @@ import type {
   ProviderKeyConfig,
 } from '@/types';
 import type { Config } from '@/types/config';
-import type { ProviderRuntimePolicy, RequestScopedErrorRule } from '@/types/provider';
+import type {
+  ModelsDiscoveryOptions,
+  ProviderRuntimePolicy,
+  RequestScopedErrorRule,
+} from '@/types/provider';
 import { buildHeaderObject } from '@/utils/headers';
 import { isRecord } from '@/utils/helpers';
 import { readCredentialWeight } from '@/utils/credentialWeight';
@@ -253,6 +257,20 @@ const normalizeGeminiKeyConfig = (item: unknown): GeminiKeyConfig | null => {
   return config;
 };
 
+const normalizeModelsDiscovery = (value: unknown): ModelsDiscoveryOptions | undefined => {
+  if (!isRecord(value)) return undefined;
+  const result: ModelsDiscoveryOptions = { enabled: normalizeBoolean(value.enabled) === true };
+  const interval = value['refresh-interval'];
+  if (typeof interval === 'string' && interval.trim()) result.refreshInterval = interval.trim();
+  if (Array.isArray(value.exclude)) {
+    const exclude = value.exclude.filter(
+      (item): item is string => typeof item === 'string' && item.trim() !== ''
+    );
+    if (exclude.length) result.exclude = exclude;
+  }
+  return result;
+};
+
 const normalizeOpenAIProvider = (
   provider: unknown,
   sourceIndex?: number
@@ -284,6 +302,8 @@ const normalizeOpenAIProvider = (
 
   const supportPromptCacheKey = normalizeBoolean(provider['support-prompt-cache-key']);
   if (supportPromptCacheKey !== undefined) result.supportPromptCacheKey = supportPromptCacheKey;
+  const modelsDiscovery = normalizeModelsDiscovery(provider['models-discovery']);
+  if (modelsDiscovery) result.modelsDiscovery = modelsDiscovery;
   const disabled = normalizeBoolean(provider.disabled);
   if (disabled !== undefined) result.disabled = disabled;
   const disableCooling = normalizeBoolean(provider['disable-cooling']);

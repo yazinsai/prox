@@ -2113,7 +2113,9 @@
       "rebuildMidSystemMessage": "Rebuild system messages",
       "rebuildMidSystemMessageHint": "Move Claude messages with role system into the top-level system field.",
       "supportPromptCacheKey": "Inject prompt cache key",
-      "supportPromptCacheKeyHint": "Derive and inject prompt_cache_key for compatible requests. Enable only when the upstream supports this field."
+      "supportPromptCacheKeyHint": "Derive and inject prompt_cache_key for compatible requests. Enable only when the upstream supports this field.",
+      "modelsDiscovery": "Discover models automatically",
+      "modelsDiscoveryHint": "Also route every model listed by the provider's /models endpoint. The list refreshes every 6 hours by default and is kept when a refresh fails."
     },
     "modelOptions": {
       "displayName": "Display name",

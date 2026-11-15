@@ -2111,7 +2111,9 @@
       "rebuildMidSystemMessage": "重建系统消息",
       "rebuildMidSystemMessageHint": "将 Claude 中 role 为 system 的消息移至顶层 system 字段。",
       "supportPromptCacheKey": "注入提示词缓存键",
-      "supportPromptCacheKeyHint": "为兼容的请求派生并注入 prompt_cache_key。仅在上游支持此字段时启用。"
+      "supportPromptCacheKeyHint": "为兼容的请求派生并注入 prompt_cache_key。仅在上游支持此字段时启用。",
+      "modelsDiscovery": "自动发现模型",
+      "modelsDiscoveryHint": "同时路由提供商 /models 接口列出的所有模型。默认每 6 小时刷新一次，刷新失败时保留上次的列表。"
     },
     "modelOptions": {
       "displayName": "显示名称",

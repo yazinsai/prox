@@ -79,6 +79,28 @@ export function ProviderBehaviorEditor({
         ) : null}
         {capabilities.rebuildMidSystemMessage ? checkbox('rebuildMidSystemMessage') : null}
         {capabilities.supportPromptCacheKey ? checkbox('supportPromptCacheKey') : null}
+        {capabilities.modelsDiscovery ? (
+          <label className={styles.checkboxRow}>
+            <input
+              type="checkbox"
+              className={styles.checkboxBox}
+              checked={value.modelsDiscovery?.enabled === true}
+              disabled={disabled}
+              aria-describedby={`${id}-modelsDiscovery-hint`}
+              onChange={(event) =>
+                onChange({
+                  modelsDiscovery: { ...value.modelsDiscovery, enabled: event.target.checked },
+                })
+              }
+            />
+            <span className={styles.checkboxText}>
+              <span>{t('providersPage.behavior.modelsDiscovery')}</span>
+              <small id={`${id}-modelsDiscovery-hint`}>
+                {t('providersPage.behavior.modelsDiscoveryHint')}
+              </small>
+            </span>
+          </label>
+        ) : null}
       </div>
     </Collapsible>
   );

@@ -2113,7 +2113,9 @@
       "rebuildMidSystemMessage": "시스템 메시지 재구성",
       "rebuildMidSystemMessageHint": "role이 system인 Claude 메시지를 최상위 system 필드로 이동합니다.",
       "supportPromptCacheKey": "프롬프트 캐시 키 주입",
-      "supportPromptCacheKeyHint": "호환되는 요청에 대해 prompt_cache_key를 파생하고 주입합니다. 업스트림에서 이 필드를 지원하는 경우에만 활성화하세요."
+      "supportPromptCacheKeyHint": "호환되는 요청에 대해 prompt_cache_key를 파생하고 주입합니다. 업스트림에서 이 필드를 지원하는 경우에만 활성화하세요.",
+      "modelsDiscovery": "모델 자동 검색",
+      "modelsDiscoveryHint": "공급자의 /models 엔드포인트에 나열된 모든 모델도 라우팅합니다. 목록은 기본적으로 6시간마다 새로 고쳐지며, 새로 고침에 실패하면 이전 목록을 유지합니다."
     },
     "modelOptions": {
       "displayName": "표시 이름",

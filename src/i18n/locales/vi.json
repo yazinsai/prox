@@ -2372,7 +2372,9 @@
       "rebuildMidSystemMessage": "Tái cấu trúc thông điệp hệ thống",
       "rebuildMidSystemMessageHint": "Chuyển các tin nhắn Claude có role là system vào trường system ở cấp cao nhất.",
       "supportPromptCacheKey": "Chèn prompt cache key",
-      "supportPromptCacheKeyHint": "Tạo và chèn prompt_cache_key cho các yêu cầu tương thích. Chỉ bật khi upstream hỗ trợ trường này."
+      "supportPromptCacheKeyHint": "Tạo và chèn prompt_cache_key cho các yêu cầu tương thích. Chỉ bật khi upstream hỗ trợ trường này.",
+      "modelsDiscovery": "Tự động phát hiện mô hình",
+      "modelsDiscoveryHint": "Định tuyến thêm mọi mô hình mà điểm cuối /models của nhà cung cấp liệt kê. Danh sách mặc định làm mới mỗi 6 giờ và được giữ lại khi làm mới thất bại."
     },
     "modelOptions": {
       "displayName": "Tên hiển thị",
