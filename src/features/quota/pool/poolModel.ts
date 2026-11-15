@@ -19,9 +19,6 @@ import type { QuotaProviderType } from '../providers/types';
 
 export { DAY_MS, HOUR_MS };
 
-export const POOL_MODES = ['remaining', 'drain'] as const;
-export type PoolMode = (typeof POOL_MODES)[number];
-
 export const BURN_WINDOW_HOURS = [1, 3, 6] as const;
 export type BurnWindowHours = (typeof BURN_WINDOW_HOURS)[number];
 
@@ -80,6 +77,8 @@ export interface PoolAccount {
   /** Recorded remaining percent over time; resets appear as two points sharing a time. */
   history: PoolPoint[];
   source: 'live' | 'history' | 'none';
+  /** Live quota loaded, even if it reported no window this pool can use. */
+  loaded?: boolean;
 }
 
 /** Visible span: today minus a few days, two weeks long, stepped a week at a time. */
@@ -198,6 +197,7 @@ export function buildPoolAccount(
     periodMs: null,
     history: samples,
     source: 'none',
+    loaded: input.quota?.status === 'success',
   };
 
   if (lane.anchorMs !== null && lane.periodHours && lane.remaining !== null) {
@@ -335,53 +335,153 @@ export function burnRate(history: PoolPoint[], now: number, windowHours: number)
 
 /* ---------------------------------------------------------- projection */
 
+/** How far ahead the outlook looks, whatever range the chart shows. */
+export const OUTLOOK_HORIZON_MS = POOL_SPAN_DAYS * DAY_MS;
+
+/** Below this many percent the remaining quota counts as gone. */
+const DRY = EPSILON;
+
 export interface AccountProjection {
   key: string;
   points: PoolPoint[];
   emptyAtMs: number | null;
 }
 
+/** A stretch where every account in the pool is out of quota. */
+export interface DrySpell {
+  startMs: number;
+  /** When a reset brings quota back; the projection end when none does. */
+  endMs: number;
+  refilled: boolean;
+}
+
+export interface PoolProjection {
+  accounts: AccountProjection[];
+  dry: DrySpell[];
+}
+
 /**
- * Project one account forward from `now` to `endMs`: draining at `burnPerHour`
- * until empty, refilling to 100% at each reset.
+ * Project accounts forward from `now` to `endMs`, each draining at its rate in
+ * percent per hour and refilling to 100% at every reset. When one runs dry its
+ * demand moves, evenly, onto the accounts that still have quota, the way the
+ * proxy routes around an exhausted credential; the pool is dry only when all are.
  */
+export function projectPool(
+  accounts: PoolAccount[],
+  ratesPerHour: number[],
+  now: number,
+  endMs: number
+): PoolProjection {
+  const known = accounts.filter((account) => account.remaining !== null);
+  const result: PoolProjection = {
+    accounts: known.map((account) => ({ key: account.key, points: [], emptyAtMs: null })),
+    dry: [],
+  };
+  if (known.length === 0 || endMs <= now) return result;
+
+  const value = known.map((account) => Math.max(0, account.remaining as number));
+  const base = known.map((account) => {
+    const rate = ratesPerHour[accounts.indexOf(account)] ?? 0;
+    return Math.max(0, Number.isFinite(rate) ? rate : 0) / HOUR_MS;
+  });
+  const period = known.map((account) =>
+    account.periodMs && account.periodMs >= HOUR_MS ? account.periodMs : null
+  );
+  const reset = known.map((account) =>
+    account.nextResetMs !== null && account.nextResetMs > now ? account.nextResetMs : null
+  );
+  const lines = result.accounts;
+  const isDry = () => value.every((amount) => amount <= DRY);
+
+  lines.forEach((line, i) => {
+    line.points.push({ atMs: now, value: value[i] });
+    if (value[i] <= DRY) line.emptyAtMs = now;
+  });
+  let dryStart: number | null = isDry() ? now : null;
+  let t = now;
+
+  for (let guard = 0; guard < 5000 && t < endMs; guard += 1) {
+    const active = value.flatMap((amount, i) => (amount > DRY ? [i] : []));
+    const orphaned = base.reduce((sum, rate, i) => (value[i] > DRY ? sum : sum + rate), 0);
+    const effective = value.map((amount, i) =>
+      amount > DRY ? base[i] + orphaned / active.length : 0
+    );
+
+    let next = endMs;
+    reset.forEach((at) => {
+      if (at !== null && at < next) next = at;
+    });
+    active.forEach((i) => {
+      if (effective[i] > 0) next = Math.min(next, t + value[i] / effective[i]);
+    });
+
+    const elapsed = next - t;
+    active.forEach((i) => {
+      const left = value[i] - effective[i] * elapsed;
+      value[i] = left <= 1e-9 ? 0 : left;
+      if (value[i] <= DRY) lines[i].emptyAtMs ??= next;
+    });
+    t = next;
+    lines.forEach((line, i) => line.points.push({ atMs: t, value: value[i] }));
+    if (dryStart === null && isDry()) dryStart = t;
+
+    reset.forEach((at, i) => {
+      if (at === null || at > t) return;
+      value[i] = 100;
+      lines[i].points.push({ atMs: t, value: 100 });
+      reset[i] = period[i] ? at + (period[i] as number) : null;
+    });
+    if (dryStart !== null && !isDry()) {
+      result.dry.push({ startMs: dryStart, endMs: t, refilled: true });
+      dryStart = null;
+    }
+  }
+  if (dryStart !== null) result.dry.push({ startMs: dryStart, endMs: endMs, refilled: false });
+  return result;
+}
+
+/** One account on its own: drains at `burnPerHour`, refills at each reset. */
 export function projectAccount(
   account: PoolAccount,
   burnPerHour: number,
   now: number,
   endMs: number
 ): AccountProjection {
-  const result: AccountProjection = { key: account.key, points: [], emptyAtMs: null };
-  if (account.remaining === null || endMs <= now) return result;
-  const rate = Math.max(0, burnPerHour) / HOUR_MS;
-  let value = account.remaining;
-  let t = now;
-  let nextReset =
-    account.nextResetMs !== null && account.nextResetMs > now ? account.nextResetMs : null;
-  const period = account.periodMs && account.periodMs >= HOUR_MS ? account.periodMs : null;
-  if (value <= EPSILON) result.emptyAtMs = now;
-  result.points.push({ atMs: t, value });
-
-  for (let guard = 0; guard < 2000; guard += 1) {
-    const segmentEnd = Math.min(nextReset ?? Infinity, endMs);
-    if (rate > 0 && value > 0) {
-      const emptyAt = t + value / rate;
-      if (emptyAt < segmentEnd) {
-        result.points.push({ atMs: emptyAt, value: 0 });
-        result.emptyAtMs ??= emptyAt;
-        value = 0;
-        t = emptyAt;
-      }
+  return (
+    projectPool([account], [burnPerHour], now, endMs).accounts[0] ?? {
+      key: account.key,
+      points: [],
+      emptyAtMs: null,
     }
-    value = Math.max(0, value - (segmentEnd - t) * rate);
-    t = segmentEnd;
-    result.points.push({ atMs: t, value });
-    if (t >= endMs || nextReset === null) break;
-    value = 100;
-    result.points.push({ atMs: t, value });
-    nextReset = period ? nextReset + period : null;
+  );
+}
+
+/* ----------------------------------------------------------- allowance */
+
+/**
+ * The pace that spends each window exactly by its reset: 100% at the window's
+ * start falling to 0% at its end, repeated every period. Null when the account
+ * has no known reset schedule.
+ */
+export function evenPaceLine(
+  account: Pick<PoolAccount, 'nextResetMs' | 'periodMs'>,
+  span: { startMs: number; endMs: number }
+): PoolPoint[] | null {
+  const { nextResetMs: resetMs, periodMs } = account;
+  if (resetMs === null || !periodMs || periodMs < HOUR_MS || span.endMs <= span.startMs) {
+    return null;
   }
-  return result;
+  const level = (boundary: number, t: number) => (100 * (boundary - t)) / periodMs;
+  let boundary = resetMs - Math.floor((resetMs - span.startMs) / periodMs) * periodMs;
+  const points: PoolPoint[] = [{ atMs: span.startMs, value: level(boundary, span.startMs) }];
+  for (let guard = 0; guard < 2000 && boundary <= span.endMs; guard += 1) {
+    if (boundary > span.startMs) points.push({ atMs: boundary, value: 0 });
+    if (boundary < span.endMs) points.push({ atMs: boundary, value: 100 });
+    boundary += periodMs;
+  }
+  const last = points[points.length - 1];
+  if (last.atMs < span.endMs) points.push({ atMs: span.endMs, value: level(boundary, span.endMs) });
+  return points;
 }
 
 /* ---------------------------------------------------------------- pool */
@@ -389,6 +489,34 @@ export function projectAccount(
 export interface PoolResetEvent {
   atMs: number;
   added: number;
+}
+
+/**
+ * The answer the page leads with.
+ * - `runs-out`: the pool goes dry before every account has had its next reset.
+ * - `lasts` / `tight`: it makes it to that reset (tight: under a tenth left).
+ * - `empty`: dry right now. `idle`: no recent use. `unmeasured`: too little
+ *   history to measure a pace. `unknown`: quota not loaded.
+ */
+export type PoolOutlookKind =
+  'unknown' | 'empty' | 'unmeasured' | 'idle' | 'runs-out' | 'tight' | 'lasts';
+
+export interface PoolOutlook {
+  kind: PoolOutlookKind;
+  /** When the pool runs dry: 'runs-out' (future) or 'empty' (now). */
+  emptyAtMs: number | null;
+  /** When quota comes back after running dry; null when no reset is known. */
+  refillAtMs: number | null;
+  /** The reset closing the current cycle: every account has refilled by then. */
+  resetAtMs: number | null;
+  /** Pool left just before `resetAtMs` at the projected pace. */
+  leftAtReset: number | null;
+  /** The pool's low point between now and `resetAtMs`. */
+  lowest: PoolPoint | null;
+  /** A dry spell after the current cycle, still within the outlook horizon. */
+  laterEmptyAtMs: number | null;
+  /** End of the outlook horizon, for "not before …" copy. */
+  horizonMs: number;
 }
 
 export interface PoolSummary {
@@ -399,15 +527,20 @@ export interface PoolSummary {
   capacity: number;
   /** Pool burn over the selected window, percent per hour; null without history. */
   burnPerHour: number | null;
+  /** Pace that spends every window exactly by its reset, percent per hour. */
+  allowancePerHour: number | null;
   recorded: PoolPoint[];
   recordedJumps: PoolJump[];
   projected: PoolPoint[];
   projectedJumps: PoolJump[];
-  /** Per-account lines (recorded joined with projected), for the accounts overlay. */
-  accountLines: { key: string; label: string; points: PoolPoint[] }[];
+  /** Even-pace reference across the span; empty when a reset schedule is unknown. */
+  evenPace: PoolPoint[];
+  /** Spells with every account dry, unclipped. */
+  dry: DrySpell[];
   poolEmptyAtMs: number | null;
   firstEmpty: { atMs: number; account: PoolAccount } | null;
   nextReset: PoolResetEvent | null;
+  outlook: PoolOutlook;
 }
 
 export interface PoolOptions {
@@ -416,6 +549,11 @@ export interface PoolOptions {
   burnWindowHours: number;
   futureUsage: FutureUsage;
 }
+
+/** Share of capacity below which making it to the reset counts as tight. */
+const TIGHT_SHARE = 0.1;
+/** Measured burn below this (percent per hour) is no use at all. */
+const IDLE_BURN = 0.005;
 
 export function summarizePool(accounts: PoolAccount[], options: PoolOptions): PoolSummary {
   const { now, span, burnWindowHours, futureUsage } = options;
@@ -428,6 +566,12 @@ export function summarizePool(accounts: PoolAccount[], options: PoolOptions): Po
   );
   const measured = Array.from(burns.values()).filter((value): value is number => value !== null);
   const burnPerHour = measured.length > 0 ? measured.reduce((sum, value) => sum + value, 0) : null;
+
+  const periods = known.flatMap((account) =>
+    account.periodMs && account.periodMs >= HOUR_MS ? [account.periodMs] : []
+  );
+  const allowancePerHour =
+    periods.length > 0 ? periods.reduce((sum, period) => sum + (100 * HOUR_MS) / period, 0) : null;
 
   // Recorded: from the earliest archived reading (inside the span) up to now.
   const recordedEnd = Math.min(now, span.endMs);
@@ -457,120 +601,105 @@ export function summarizePool(accounts: PoolAccount[], options: PoolOptions): Po
   }
   const recorded = sumPolylines(Array.from(recordedLines.values()));
 
-  // Projected: from now (or the span start, when looking ahead) to the span end.
-  const projections = known.map((account) =>
-    projectAccount(account, (burns.get(account.key) ?? 0) * factor, now, Math.max(span.endMs, now))
+  // Projected: far enough to cover the span, the outlook horizon and every next reset.
+  const upcoming = known
+    .map((account) => account.nextResetMs)
+    .filter((at): at is number => at !== null && at > now)
+    .sort((a, b) => a - b);
+  const cycleEnd = upcoming.length > 0 ? upcoming[upcoming.length - 1] : null;
+  const horizonMs = Math.max(span.endMs, now + OUTLOOK_HORIZON_MS, (cycleEnd ?? now) + HOUR_MS);
+  const projection = projectPool(
+    known,
+    known.map((account) => (burns.get(account.key) ?? 0) * factor),
+    now,
+    horizonMs
   );
   const projectedStart = Math.max(now, span.startMs);
-  const projectedLines = projections.map((projection) =>
-    clipPolyline(projection.points, projectedStart, span.endMs)
+  const projectedLines = projection.accounts.map((line) =>
+    clipPolyline(line.points, projectedStart, span.endMs)
   );
   const projected = sumPolylines(projectedLines);
+  const full = sumPolylines(projection.accounts.map((line) => line.points)).points;
 
-  let poolEmptyAtMs: number | null = null;
-  if (known.length > 0) {
-    const full = sumPolylines(projections.map((projection) => projection.points)).points;
-    const index = full.findIndex((point) => point.value <= EPSILON);
-    if (index === 0) poolEmptyAtMs = now;
-    else if (index > 0) {
-      const before = full[index - 1];
-      const at = full[index];
-      poolEmptyAtMs =
-        before.value <= at.value
-          ? at.atMs
-          : before.atMs + ((at.atMs - before.atMs) * before.value) / (before.value - at.value);
-    }
-  }
-
-  const firstEmpty = projections.reduce<PoolSummary['firstEmpty']>((best, projection, index) => {
-    if (projection.emptyAtMs === null) return best;
-    if (best && best.atMs <= projection.emptyAtMs) return best;
-    return { atMs: projection.emptyAtMs, account: known[index] };
+  const firstEmpty = projection.accounts.reduce<PoolSummary['firstEmpty']>((best, line, index) => {
+    if (line.emptyAtMs === null) return best;
+    if (best && best.atMs <= line.emptyAtMs) return best;
+    return { atMs: line.emptyAtMs, account: known[index] };
   }, null);
 
-  const upcoming = known
-    .filter((account) => account.nextResetMs !== null && account.nextResetMs > now)
-    .sort((a, b) => (a.nextResetMs as number) - (b.nextResetMs as number));
   let nextReset: PoolResetEvent | null = null;
-  if (upcoming.length > 0) {
-    const atMs = upcoming[0].nextResetMs as number;
-    const added = upcoming
-      .filter((account) => (account.nextResetMs as number) - atMs <= RESET_GROUP_MS)
-      .reduce((sum, account) => {
-        const burn = (burns.get(account.key) ?? 0) * factor;
-        const before = Math.max(0, (account.remaining as number) - (burn * (atMs - now)) / HOUR_MS);
-        return sum + (100 - before);
-      }, 0);
-    nextReset = { atMs, added };
+  if (upcoming.length > 0 && full.length > 0) {
+    const atMs = upcoming[0];
+    nextReset = { atMs, added: valueAt(full, atMs, 'right') - valueAt(full, atMs, 'left') };
+  }
+
+  const evenLines = known.map((account) => evenPaceLine(account, span));
+  const evenPace =
+    known.length > 0 && evenLines.every((line) => line !== null)
+      ? sumPolylines(evenLines as PoolPoint[][]).points
+      : [];
+
+  const total =
+    known.length > 0
+      ? known.reduce((sum, account) => sum + (account.remaining as number), 0)
+      : null;
+  const capacity = known.length * 100;
+  const firstDry = projection.dry[0] ?? null;
+
+  const outlook: PoolOutlook = {
+    kind: 'unknown',
+    emptyAtMs: null,
+    refillAtMs: null,
+    resetAtMs: cycleEnd,
+    leftAtReset: null,
+    lowest: null,
+    laterEmptyAtMs: null,
+    horizonMs,
+  };
+  if (total === null) {
+    outlook.kind = 'unknown';
+  } else if (total <= DRY) {
+    outlook.kind = 'empty';
+    outlook.emptyAtMs = now;
+    outlook.refillAtMs = firstDry?.refilled ? firstDry.endMs : null;
+  } else if (burnPerHour === null) {
+    outlook.kind = 'unmeasured';
+  } else if (burnPerHour < IDLE_BURN) {
+    outlook.kind = 'idle';
+  } else if (firstDry && (cycleEnd === null || firstDry.startMs < cycleEnd)) {
+    outlook.kind = 'runs-out';
+    outlook.emptyAtMs = firstDry.startMs;
+    outlook.refillAtMs = firstDry.refilled ? firstDry.endMs : null;
+  } else {
+    if (cycleEnd !== null) {
+      outlook.leftAtReset = valueAt(full, cycleEnd, 'left');
+      outlook.lowest = full.reduce<PoolPoint>(
+        (low, point) =>
+          point.atMs > now && point.atMs <= cycleEnd && point.value < low.value ? point : low,
+        { atMs: now, value: total }
+      );
+    }
+    outlook.laterEmptyAtMs = firstDry?.startMs ?? null;
+    outlook.kind =
+      outlook.lowest !== null && outlook.lowest.value < capacity * TIGHT_SHARE ? 'tight' : 'lasts';
   }
 
   return {
     accounts,
     knownCount: known.length,
-    total:
-      known.length > 0
-        ? known.reduce((sum, account) => sum + (account.remaining as number), 0)
-        : null,
-    capacity: known.length * 100,
+    total,
+    capacity,
     burnPerHour,
+    allowancePerHour,
     recorded: recorded.points,
     recordedJumps: recorded.jumps,
     projected: projected.points,
     projectedJumps: projected.jumps,
-    accountLines: known.map((account, index) => ({
-      key: account.key,
-      label: account.label,
-      points: [...(recordedLines.get(account.key) ?? []), ...projectedLines[index]],
-    })),
-    poolEmptyAtMs,
+    evenPace,
+    dry: projection.dry,
+    poolEmptyAtMs: firstDry?.startMs ?? null,
     firstEmpty,
     nextReset,
+    outlook,
   };
-}
-
-/* --------------------------------------------------------------- drain */
-
-/**
- * Consumption rate over time in percent per hour: hourly buckets across the
- * recorded line, then the projected rate as a step line.
- */
-export function drainSeries(
-  recorded: PoolPoint[],
-  projected: PoolPoint[],
-  bucketMs = HOUR_MS
-): { recorded: PoolPoint[]; projected: PoolPoint[] } {
-  const recordedOut: PoolPoint[] = [];
-  if (recorded.length > 1) {
-    const start = recorded[0].atMs;
-    const end = recorded[recorded.length - 1].atMs;
-    for (let from = start; from < end; from += bucketMs) {
-      const to = Math.min(end, from + bucketMs);
-      const segment = clipPolyline(recorded, from, to);
-      let spent = 0;
-      for (let i = 1; i < segment.length; i += 1) {
-        if (segment[i].atMs > segment[i - 1].atMs) {
-          spent += Math.max(0, segment[i - 1].value - segment[i].value);
-        }
-      }
-      const rate = spent / ((to - from) / HOUR_MS);
-      recordedOut.push({ atMs: from, value: rate }, { atMs: to, value: rate });
-    }
-  }
-  const projectedOut: PoolPoint[] = [];
-  for (let i = 1; i < projected.length; i += 1) {
-    const a = projected[i - 1];
-    const b = projected[i];
-    if (b.atMs <= a.atMs) continue;
-    const rate = Math.max(0, (a.value - b.value) / ((b.atMs - a.atMs) / HOUR_MS));
-    projectedOut.push({ atMs: a.atMs, value: rate }, { atMs: b.atMs, value: rate });
-  }
-  return { recorded: recordedOut, projected: projectedOut };
-}
-
-/** A round axis maximum for drain rates. */
-export function niceCeiling(value: number): number {
-  if (!(value > 0)) return 1;
-  const magnitude = 10 ** Math.floor(Math.log10(value));
-  const step = [1, 2, 2.5, 5, 10].find((candidate) => candidate * magnitude >= value) ?? 10;
-  return step * magnitude;
 }

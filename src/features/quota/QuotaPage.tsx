@@ -1,6 +1,7 @@
 /**
- * Quota page: provider tabs, then one pooled chart per provider (recorded
- * history + projection), with per-account cards behind the Accounts toggle.
+ * Quota page: provider tabs, then one pool per provider that leads with the
+ * answer (does it last until the reset at the current pace?) above a chart of
+ * recorded and projected quota. Per-account cards sit behind Account details.
  *
  * 保留的行为契约（重设计不改）：
  * - 进入页面自动分批查询全部支持的凭据额度，不轮询；
@@ -15,7 +16,7 @@ import { authFilesApi, quotaHistoryApi } from '@/services/api';
 import type { QuotaHistory } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { IconSearch, IconX } from '@/components/ui/icons';
+import { IconChevronDown, IconEye, IconEyeOff, IconSearch, IconX } from '@/components/ui/icons';
 import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
@@ -38,9 +39,8 @@ import {
   summarizePool,
   type BurnWindowHours,
   type FutureUsage,
-  type PoolMode,
 } from './pool/poolModel';
-import { POOL_ACCENTS, formatDate } from './pool/poolFormat';
+import { POOL_ACCENTS, formatDateRange } from './pool/poolFormat';
 import {
   CARD_ENTRANCE_BUDGET_MS,
   QUOTA_PAGE_SIZE,
@@ -85,7 +85,6 @@ export function QuotaPage() {
   const [sortMode, setSortMode] = useState<QuotaSortMode>(
     () => readQuotaUiState()?.sortMode ?? 'default'
   );
-  const [mode, setMode] = useState<PoolMode>(() => readQuotaUiState()?.mode ?? 'remaining');
   const [burnWindowHours, setBurnWindowHours] = useState<BurnWindowHours>(
     () => readQuotaUiState()?.burnWindowHours ?? 3
   );
@@ -230,11 +229,6 @@ export function QuotaPage() {
     setSortMode(next as QuotaSortMode);
     setPage(1);
     writeQuotaUiState({ sortMode: next as QuotaSortMode });
-  }, []);
-
-  const handleModeChange = useCallback((next: PoolMode) => {
-    setMode(next);
-    writeQuotaUiState({ mode: next });
   }, []);
 
   const handleBurnWindowChange = useCallback((next: BurnWindowHours) => {
@@ -463,8 +457,6 @@ export function QuotaPage() {
         attentionCount={attentionCount}
         refreshing={loading || batchLoading}
         disableControls={disableControls}
-        showEmails={showEmails}
-        onToggleEmails={handleToggleEmails}
         onRefreshAll={handleRefreshAll}
       />
 
@@ -479,19 +471,12 @@ export function QuotaPage() {
         </div>
 
         <QuotaControls
-          mode={mode}
           burnWindowHours={burnWindowHours}
           futureUsage={futureUsage}
-          showAccounts={showAccounts}
-          rangeLabel={t('quota_management.range', {
-            from: formatDate(span.startMs, locale),
-            to: formatDate(span.endMs - 1, locale),
-          })}
+          rangeLabel={formatDateRange(span.startMs, span.endMs - 1, locale)}
           isCurrentRange={rangeOffset === 0}
-          onModeChange={handleModeChange}
           onBurnWindowChange={handleBurnWindowChange}
           onFutureUsageChange={handleFutureUsageChange}
-          onToggleAccounts={handleToggleAccounts}
           onPrevRange={() => setRangeOffset((value) => value - 1)}
           onNextRange={() => setRangeOffset((value) => value + 1)}
           onToday={() => setRangeOffset(0)}
@@ -506,7 +491,7 @@ export function QuotaPage() {
         {loading ? (
           <div className={styles.pools} aria-hidden="true">
             {Array.from({ length: SKELETON_PANEL_COUNT }, (_, index) => (
-              <Skeleton key={index} height={484} rounded={14} />
+              <Skeleton key={index} height={460} rounded={14} />
             ))}
           </div>
         ) : isTabEmpty ? (
@@ -538,7 +523,6 @@ export function QuotaPage() {
                 accent={POOL_ACCENTS[pool.type]}
                 accountCount={pool.count}
                 summary={pool.summary}
-                mode={mode}
                 burnWindowHours={burnWindowHours}
                 span={span}
                 days={days}
@@ -551,8 +535,26 @@ export function QuotaPage() {
           </div>
         )}
 
+        {!loading && !isTabEmpty && (
+          <button
+            type="button"
+            className={styles.accountsToggle}
+            aria-expanded={showAccounts}
+            aria-controls="quota-account-details"
+            onClick={handleToggleAccounts}
+          >
+            <span>{t('quota_management.account_details')}</span>
+            <span className={styles.accountsCount}>{tabEntries.length}</span>
+            <IconChevronDown size={16} className={styles.accountsChevron} aria-hidden="true" />
+          </button>
+        )}
+
         {showAccounts && !isTabEmpty && (
-          <section className={styles.accounts} aria-label={t('quota_management.accounts')}>
+          <section
+            id="quota-account-details"
+            className={styles.accounts}
+            aria-label={t('quota_management.account_details')}
+          >
             <div className={styles.toolbar}>
               <div className={styles.search}>
                 <IconSearch size={16} className={styles.searchIcon} aria-hidden="true" />
@@ -580,14 +582,31 @@ export function QuotaPage() {
                   </button>
                 )}
               </div>
-              <div className={styles.sort}>
-                <Select
-                  value={sortMode}
-                  options={sortOptions}
-                  onChange={handleSortModeChange}
-                  ariaLabel={t('quota_management.sort_label')}
-                  size="sm"
-                />
+              <div className={styles.toolbarEnd}>
+                <button
+                  type="button"
+                  className={styles.emailsToggle}
+                  aria-pressed={showEmails}
+                  onClick={handleToggleEmails}
+                >
+                  {showEmails ? (
+                    <IconEyeOff size={15} aria-hidden="true" />
+                  ) : (
+                    <IconEye size={15} aria-hidden="true" />
+                  )}
+                  {showEmails
+                    ? t('quota_management.hide_emails')
+                    : t('quota_management.show_emails')}
+                </button>
+                <div className={styles.sort}>
+                  <Select
+                    value={sortMode}
+                    options={sortOptions}
+                    onChange={handleSortModeChange}
+                    ariaLabel={t('quota_management.sort_label')}
+                    size="sm"
+                  />
+                </div>
               </div>
             </div>
 

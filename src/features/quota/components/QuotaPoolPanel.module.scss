@@ -1,243 +1,229 @@
 @use '../../../styles/mixins' as *;
 
-/* Provider quota pool panel. --pool-accent is set inline per provider. */
+/* Provider quota pool panel. --pool-accent is set inline per provider;
+ * data-tone (danger | warning | success | neutral) colours the verdict. */
 
 .panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  --tone: var(--text-quaternary);
+
+  container-type: inline-size;
   min-width: 0;
-  padding: 24px;
+  padding: 22px 24px 20px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   background: var(--bg-primary);
+
+  &[data-tone='danger'] {
+    --tone: var(--danger-color);
+  }
+
+  &[data-tone='warning'] {
+    --tone: var(--amber-color);
+  }
+
+  &[data-tone='success'] {
+    --tone: var(--success-color);
+  }
 }
 
-.top {
+.layout {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 20px;
   min-width: 0;
 }
 
-.titleRow {
+.chart {
+  min-width: 0;
+  /* Room above the plot for the hover tooltip and the Now label. */
+  padding-top: 4px;
+}
+
+/* ---------- identity ---------- */
+
+.head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
 .swatch {
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
   background: var(--pool-accent);
 }
 
 .title {
   margin: 0;
-  font-size: 17px;
-  line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  line-height: 20px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .count {
-  font-size: 15px;
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.figures {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 12px 40px;
-  min-width: 0;
-}
-
-.headline {
-  display: flex;
-  align-items: baseline;
-  flex: 1 1 auto;
-  gap: 10px;
-  min-width: 0;
-}
-
-.total {
-  font-size: 48px;
-  line-height: 56px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 13px;
+  line-height: 20px;
   font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
+  color: var(--text-tertiary);
 }
 
-.totalEmpty {
-  color: var(--text-quaternary);
-}
+/* ---------- verdict ---------- */
 
-.capacity {
-  font-size: 15px;
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.stat {
+.verdict {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   min-width: 0;
 }
 
-.statLabel {
-  font-size: 14px;
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.statValue {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  line-height: 18px;
-  font-weight: 500;
+.verdictTitle {
+  position: relative;
+  margin: 0;
+  padding-left: 22px;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  text-wrap: balance;
   color: var(--text-primary);
 }
 
-.redacted {
-  flex-shrink: 0;
-  width: 34px;
-  height: 14px;
-  border-radius: 4px;
-  background: var(--bg-hover);
+.toneDot {
+  position: absolute;
+  top: 10px;
+  left: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 16%, transparent);
 }
 
-.identity {
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.verdictDetail,
+.verdictNote {
+  margin: 0;
+  padding-left: 22px;
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+
+.verdictDetail {
+  font-size: 15px;
+  line-height: 21px;
   color: var(--text-secondary);
-  font-weight: 400;
 }
 
-/* ---------- chart ---------- */
+.verdictNote {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-tertiary);
+}
 
-.chartWrap {
-  position: relative;
+/* ---------- facts ---------- */
+
+.facts {
+  display: grid;
+  /* Left holds the shortest copy; pace and allowance get the room. */
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.1fr) minmax(0, 1.1fr);
+  margin: 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
-}
+  padding: 0 12px;
 
-.chart {
-  display: block;
-  max-width: 100%;
-  overflow: visible;
-  font-family: inherit;
-  touch-action: pan-y;
+  &:first-child {
+    padding-left: 0;
+  }
 
-  &:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 4px;
-    border-radius: 6px;
+  & + & {
+    border-left: 1px solid var(--border-color);
+  }
+
+  dt {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--text-tertiary);
+  }
+
+  dd {
+    margin: 0;
   }
 }
 
-.axisText {
-  font-size: 12px;
-  fill: var(--text-quaternary);
-}
-
-.dayText {
-  font-size: 12px;
-  fill: var(--text-tertiary);
-}
-
-.gridLine {
-  stroke: var(--border-color);
-}
-
-.dayLine {
-  stroke: color-mix(in srgb, var(--border-color) 70%, transparent);
-}
-
-.nowLine {
-  stroke: var(--border-primary);
-  stroke-opacity: 0.6;
-}
-
-.nowText {
-  font-size: 12px;
-  fill: var(--text-secondary);
-}
-
-.recordedLine,
-.projectedLine,
-.accountLine {
-  fill: none;
-  stroke-linejoin: round;
-}
-
-.recordedLine {
-  stroke-width: 2;
-}
-
-.projectedLine {
-  stroke-width: 2;
-  stroke-dasharray: 6 5;
-}
-
-.accountLine {
-  stroke-width: 1;
-  stroke-opacity: 0.4;
-}
-
-.nowDot {
-  stroke: var(--bg-primary);
-  stroke-width: 2;
-}
-
-.jumpText {
-  font-size: 12px;
-  fill: var(--text-secondary);
-}
-
-.emptyDot {
-  fill: var(--bg-primary);
-  stroke: var(--text-primary);
-  stroke-width: 2;
-}
-
-.emptyText {
-  font-size: 13px;
-  font-weight: 500;
-  fill: var(--text-primary);
-}
-
-.cursorLine {
-  stroke-opacity: 0.6;
-}
-
-.tooltipBox {
-  fill: var(--bg-tertiary);
-}
-
-.tooltipText {
-  font-size: 13px;
-  fill: var(--text-primary);
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+.factValue {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  color: var(--text-primary);
+
+  &[data-over='true'] {
+    color: var(--warning-text);
+  }
+}
+
+.factSub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+/* Wide panels: verdict on the left, facts on the right, the rest full width.
+ * Placement by column only, so a missing block leaves no empty row behind. */
+@container (min-width: 720px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+    column-gap: 48px;
+  }
+
+  .head,
+  .chart,
+  .legend,
+  .accounts {
+    grid-column: 1 / -1;
+  }
+
+  .verdict {
+    grid-column: 1;
+  }
+
+  .facts {
+    grid-column: 2;
+    align-self: end;
+    padding: 0;
+    border-top: 0;
+  }
+
+  .fact:first-child {
+    padding-left: 12px;
+    border-left: 1px solid var(--border-color);
+  }
 }
 
 /* ---------- legend ---------- */
@@ -246,38 +232,53 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 28px;
-  font-size: 14px;
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.legendTitle {
-  flex-shrink: 0;
-  width: 70px;
+  gap: 6px 18px;
+  margin-top: -6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
 }
 
 .legendItem {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
-.legendSolid {
-  width: 18px;
-  height: 2px;
-  background: var(--pool-accent);
-}
-
-.legendDash {
-  stroke: var(--pool-accent);
+.legendUsed,
+.legendForecast,
+.legendEven {
   stroke-width: 2;
+}
+
+.legendUsed {
+  stroke: var(--pool-accent);
+  stroke-linecap: round;
+}
+
+.legendForecast {
+  stroke: var(--pool-accent);
   stroke-dasharray: 4 3;
 }
 
+.legendEven {
+  stroke: var(--text-quaternary);
+  stroke-width: 1.5;
+  stroke-dasharray: 1 3;
+  stroke-linecap: round;
+}
+
+.legendDry {
+  width: 14px;
+  height: 8px;
+  border-bottom: 2px solid var(--danger-color);
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--danger-color) 12%, transparent);
+}
+
 .legendNote {
-  margin-left: auto;
-  font-size: 13px;
+  flex-basis: 100%;
   color: var(--text-tertiary);
 }
 
@@ -285,47 +286,92 @@
 
 .accounts {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-  gap: 8px 24px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 10px 32px;
   margin: 0;
-  padding: 12px 0 0;
+  padding: 16px 0 0;
   border-top: 1px solid var(--border-color);
   list-style: none;
 }
 
 .account {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56px 40px auto;
   align-items: center;
   gap: 10px;
   min-width: 0;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 18px;
 }
 
+.accountBar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--bg-tertiary);
+
+  > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--pool-accent);
+  }
+}
+
 .accountValue {
-  margin-left: auto;
+  text-align: right;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
 .accountReset {
-  font-size: 13px;
+  min-width: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
 
+.redacted {
+  width: 72px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+}
+
+.identity {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
 @include mobile {
   .panel {
-    padding: 16px;
+    padding: 18px 16px 16px;
   }
 
-  .total {
-    font-size: 36px;
-    line-height: 44px;
+  .layout {
+    gap: 18px;
   }
 
-  .legendTitle {
-    width: auto;
+  .verdictTitle {
+    font-size: 21px;
+    line-height: 27px;
+  }
+
+  .toneDot {
+    top: 9px;
+  }
+
+  .verdictDetail {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .factValue {
+    font-size: 18px;
+    line-height: 24px;
   }
 }

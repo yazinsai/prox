@@ -81,14 +81,93 @@
 .controls {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
+  margin-top: -6px;
+}
+
+/* ---------- forecast assumptions ---------- */
+
+.forecast {
+  position: relative;
+  min-width: 0;
+  /* Optical alignment: the trigger's text lines up with the panels' edge. */
+  margin-left: -10px;
+}
+
+.forecastTrigger {
+  @extend %control;
+  flex-shrink: 1;
+  gap: 8px;
+  max-width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+
+  &[aria-expanded='true'] {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+}
+
+.forecastSummary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-quaternary);
+  transition: transform var(--dur-hover) var(--ease-out-strong);
+
+  [aria-expanded='true'] > & {
+    transform: rotate(180deg);
+  }
+}
+
+.forecastPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--floating-surface);
+  box-shadow:
+    0 0 0 1px var(--border-color),
+    var(--floating-shadow);
+  transform-origin: top left;
+  animation: forecast-in var(--dur-hover) var(--ease-out-strong);
+}
+
+@keyframes forecast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.forecastField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.forecastFieldLabel {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
 }
 
 .segmented {
-  display: inline-flex;
-  flex-shrink: 0;
+  display: flex;
   padding: 3px;
   border-radius: var(--radius-md);
   background: var(--bg-tertiary);
@@ -96,97 +175,56 @@
 
 .segment {
   @extend %control;
-  height: 32px;
-  border-radius: 7px;
+  flex: 1 1 0;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 13px;
 
   &[aria-pressed='true'] {
-    background: var(--bg-hover);
+    background: var(--bg-primary);
     color: var(--text-primary);
     font-weight: 500;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
   }
 }
 
-.field {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.fieldLabel {
-  font-size: 14px;
-  line-height: 18px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.select {
-  min-width: 150px;
-
-  button[aria-haspopup='listbox'] {
-    height: 38px;
-    border-color: transparent;
-    border-radius: var(--radius-md);
-    background: var(--bg-tertiary);
-    box-shadow: none;
-    color: var(--text-primary);
-    font-weight: 500;
-
-    &:focus-visible,
-    &[aria-expanded='true'] {
-      outline: 2px solid var(--primary-color);
-      outline-offset: 2px;
-    }
-  }
-}
-
-.toggle {
-  @extend %control;
-  background: var(--bg-tertiary);
-
-  &[aria-pressed='true'] {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-    font-weight: 500;
-  }
-}
+/* ---------- date range ---------- */
 
 .range {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  margin-left: auto;
+  flex-shrink: 0;
+  gap: 2px;
+  margin-right: -6px;
 }
 
 .rangeLabel {
-  font-size: 14px;
+  padding: 0 2px;
+  font-size: 13px;
   line-height: 18px;
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
-.rangeNav {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .iconButton {
   @extend %control;
-  width: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
+  color: var(--text-tertiary);
 }
 
 .todayButton {
   @extend %control;
-  padding: 0 16px;
+  height: 28px;
+  margin-right: 6px;
+  padding: 0 10px;
   background: var(--bg-tertiary);
   color: var(--text-primary);
+  font-size: 13px;
   font-weight: 500;
-
-  &:disabled {
-    cursor: default;
-  }
 }
 
 .flip {
@@ -196,18 +234,18 @@
 @media (hover: hover) and (pointer: fine) {
   .tab:hover,
   .segment:hover,
-  .toggle:hover,
+  .forecastTrigger:hover,
   .iconButton:hover {
     color: var(--text-primary);
   }
 
   .tab:hover:not([aria-pressed='true']),
+  .forecastTrigger:hover,
   .iconButton:hover {
     background: var(--bg-tertiary);
   }
 
-  .toggle:hover,
-  .todayButton:hover:not(:disabled) {
+  .todayButton:hover {
     background: var(--bg-hover);
   }
 }
@@ -215,7 +253,7 @@
 @media (prefers-reduced-motion: reduce) {
   .tab,
   .segment,
-  .toggle,
+  .forecastTrigger,
   .iconButton,
   .todayButton {
     transition: none;
@@ -224,10 +262,12 @@
       transform: none;
     }
   }
-}
 
-@include mobile {
-  .range {
-    margin-left: 0;
+  .chevron {
+    transition: none;
+  }
+
+  .forecastPanel {
+    animation: none;
   }
 }

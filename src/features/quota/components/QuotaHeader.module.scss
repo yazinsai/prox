@@ -73,27 +73,32 @@
   flex-shrink: 0;
 }
 
-/* Secondary filled button (Show emails). */
-.secondaryAction {
+/* Quiet refresh: the global header refreshes too, so this stays secondary. */
+.refreshAction {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 16px;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px;
   border: 0;
   border-radius: var(--radius-md);
   background: var(--bg-tertiary);
   color: var(--text-primary);
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
   cursor: pointer;
   transition:
-    transform var(--dur-press, 160ms) var(--ease-out-strong, ease-out),
-    background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
+    transform var(--dur-press) var(--ease-out-strong),
+    background-color var(--dur-hover) var(--ease-out-strong);
 
-  &:active {
+  &:disabled {
+    cursor: default;
+    color: var(--text-tertiary);
+  }
+
+  &:active:not(:disabled) {
     transform: scale(0.97);
   }
 
@@ -103,50 +108,9 @@
   }
 }
 
-/* Primary button (inverts with the theme). */
-.primaryAction {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 0;
-  cursor: pointer;
-  background: var(--text-primary);
-  color: var(--primary-contrast);
-  border-radius: var(--radius-md);
-  height: 38px;
-  padding: 0 16px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1;
-  transition:
-    transform var(--dur-press, 160ms) var(--ease-out-strong, ease-out),
-    background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
-    box-shadow var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0) scale(0.97);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-  }
-}
-
 @media (hover: hover) and (pointer: fine) {
-  .secondaryAction:hover {
+  .refreshAction:hover:not(:disabled) {
     background: var(--bg-hover);
-  }
-
-  .primaryAction:hover:not(:disabled) {
-    transform: none;
-    background: color-mix(in srgb, var(--text-primary) 86%, var(--bg-secondary));
-    box-shadow: none;
   }
 }
 
@@ -162,23 +126,35 @@
 
 @include mobile {
   .header {
-    align-items: stretch;
-    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
   }
 
-  .actions {
-    justify-content: flex-start;
+  .title {
+    font-size: 22px;
+  }
+
+  .meta {
+    font-size: 13px;
+  }
+
+  .refreshAction {
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .refreshLabel {
+    display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .primaryAction,
-  .secondaryAction {
+  .refreshAction {
     transition: none;
   }
 
-  .secondaryAction:active,
-  .primaryAction:active:not(:disabled) {
+  .refreshAction:active:not(:disabled) {
     transform: none;
   }
 

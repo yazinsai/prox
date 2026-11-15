@@ -7,17 +7,14 @@ import {
 import {
   BURN_WINDOW_HOURS,
   FUTURE_USAGE_OPTIONS,
-  POOL_MODES,
   type BurnWindowHours,
   type FutureUsage,
-  type PoolMode,
 } from './pool/poolModel';
 
 /** 额度页 UI 偏好：会话级持久化（sessionStorage），跨会话不携带。 */
 export type QuotaUiState = {
   tab?: QuotaTabId;
   sortMode?: QuotaSortMode;
-  mode?: PoolMode;
   burnWindowHours?: BurnWindowHours;
   futureUsage?: FutureUsage;
   showAccounts?: boolean;
@@ -48,7 +45,6 @@ export const readQuotaUiState = (): QuotaUiState | null => {
     return {
       tab: isQuotaTabId(parsed.tab) ? parsed.tab : undefined,
       sortMode: isQuotaSortMode(parsed.sortMode) ? parsed.sortMode : undefined,
-      mode: isOneOf(POOL_MODES, parsed.mode) ? parsed.mode : undefined,
       burnWindowHours: isOneOf(BURN_WINDOW_HOURS, parsed.burnWindowHours)
         ? parsed.burnWindowHours
         : undefined,

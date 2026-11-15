@@ -1,23 +1,24 @@
 /**
- * Quota page navigation: provider tabs with brand swatches, then the chart
- * controls (mode, burn window, future usage, accounts overlay) and the date
- * range navigator.
+ * Quota page navigation: provider tabs with brand swatches, then one quiet row
+ * holding the forecast assumptions (behind a single button) and the date range.
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconChevronLeft, IconFilterAll } from '@/components/ui/icons';
-import { Select } from '@/components/ui/Select';
+import {
+  IconChevronDown,
+  IconChevronLeft,
+  IconFilterAll,
+  IconSlidersHorizontal,
+} from '@/components/ui/icons';
 import { getTypeLabel } from '@/features/authFiles/constants';
 import { scrollProviderTabs } from '@/features/authFiles/components/providerTabsWheel';
 import {
   BURN_WINDOW_HOURS,
   FUTURE_USAGE_OPTIONS,
-  POOL_MODES,
   type BurnWindowHours,
   type FutureUsage,
-  type PoolMode,
 } from '../pool/poolModel';
 import { POOL_ACCENTS } from '../pool/poolFormat';
 import type { QuotaProviderType } from '../providers/types';
@@ -87,14 +88,14 @@ interface SegmentedProps<T extends string | number> {
   value: T;
   options: readonly T[];
   label: (value: T) => string;
-  ariaLabel: string;
+  labelledBy: string;
   onChange: (value: T) => void;
 }
 
 function Segmented<T extends string | number>(props: SegmentedProps<T>) {
-  const { value, options, label, ariaLabel, onChange } = props;
+  const { value, options, label, labelledBy, onChange } = props;
   return (
-    <div className={styles.segmented} role="group" aria-label={ariaLabel}>
+    <div className={styles.segmented} role="group" aria-labelledby={labelledBy}>
       {options.map((option) => (
         <button
           key={option}
@@ -110,17 +111,121 @@ function Segmented<T extends string | number>(props: SegmentedProps<T>) {
   );
 }
 
-export interface QuotaControlsProps {
-  mode: PoolMode;
+interface ForecastMenuProps {
   burnWindowHours: BurnWindowHours;
   futureUsage: FutureUsage;
-  showAccounts: boolean;
-  rangeLabel: string;
-  isCurrentRange: boolean;
-  onModeChange: (mode: PoolMode) => void;
   onBurnWindowChange: (hours: BurnWindowHours) => void;
   onFutureUsageChange: (usage: FutureUsage) => void;
-  onToggleAccounts: () => void;
+}
+
+/** The forecast's two assumptions, summarized on one button and set in a small popover. */
+function ForecastMenu(props: ForecastMenuProps) {
+  const { burnWindowHours, futureUsage, onBurnWindowChange, onFutureUsageChange } = props;
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const id = useId();
+  const paceLabelId = `${id}-pace`;
+  const usageLabelId = `${id}-usage`;
+
+  const close = useCallback((restoreFocus: boolean) => {
+    setOpen(false);
+    if (restoreFocus) triggerRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    panelRef.current?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')?.focus();
+    const onPointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) close(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close(true);
+      }
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open, close]);
+
+  const summary =
+    futureUsage === 'same'
+      ? t('quota_management.forecast_summary', { hours: burnWindowHours })
+      : t('quota_management.forecast_summary_scaled', {
+          hours: burnWindowHours,
+          usage: t(`quota_management.future_${futureUsage}`),
+        });
+
+  return (
+    <div
+      ref={rootRef}
+      className={styles.forecast}
+      onBlur={(event) => {
+        if (open && !event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          close(false);
+        }
+      }}
+    >
+      <button
+        ref={triggerRef}
+        type="button"
+        className={styles.forecastTrigger}
+        aria-expanded={open}
+        aria-controls={`${id}-panel`}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <IconSlidersHorizontal size={15} aria-hidden="true" />
+        <span className={styles.forecastSummary}>{summary}</span>
+        <IconChevronDown size={14} className={styles.chevron} aria-hidden="true" />
+      </button>
+      {open && (
+        <div
+          ref={panelRef}
+          id={`${id}-panel`}
+          className={styles.forecastPanel}
+          role="group"
+          aria-label={t('quota_management.forecast_label')}
+        >
+          <div className={styles.forecastField}>
+            <span id={paceLabelId} className={styles.forecastFieldLabel}>
+              {t('quota_management.burn_rate')}
+            </span>
+            <Segmented
+              value={burnWindowHours}
+              options={BURN_WINDOW_HOURS}
+              label={(hours) => t('quota_management.burn_hours', { hours })}
+              labelledBy={paceLabelId}
+              onChange={onBurnWindowChange}
+            />
+          </div>
+          <div className={styles.forecastField}>
+            <span id={usageLabelId} className={styles.forecastFieldLabel}>
+              {t('quota_management.future_usage')}
+            </span>
+            <Segmented
+              value={futureUsage}
+              options={FUTURE_USAGE_OPTIONS}
+              label={(usage) => t(`quota_management.future_${usage}_short`)}
+              labelledBy={usageLabelId}
+              onChange={onFutureUsageChange}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export interface QuotaControlsProps extends ForecastMenuProps {
+  rangeLabel: string;
+  isCurrentRange: boolean;
   onPrevRange: () => void;
   onNextRange: () => void;
   onToday: () => void;
@@ -128,86 +233,41 @@ export interface QuotaControlsProps {
 
 export function QuotaControls(props: QuotaControlsProps) {
   const { t } = useTranslation();
-  const futureLabelId = 'quota-future-label';
 
   return (
     <div className={styles.controls}>
-      <Segmented
-        value={props.mode}
-        options={POOL_MODES}
-        label={(mode) => t(`quota_management.mode_${mode}`)}
-        ariaLabel={t('quota_management.mode_label')}
-        onChange={props.onModeChange}
+      <ForecastMenu
+        burnWindowHours={props.burnWindowHours}
+        futureUsage={props.futureUsage}
+        onBurnWindowChange={props.onBurnWindowChange}
+        onFutureUsageChange={props.onFutureUsageChange}
       />
 
-      <div className={styles.field}>
-        <span className={styles.fieldLabel} aria-hidden="true">
-          {t('quota_management.burn_rate')}
-        </span>
-        <Segmented
-          value={props.burnWindowHours}
-          options={BURN_WINDOW_HOURS}
-          label={(hours) => t('quota_management.burn_hours', { hours })}
-          ariaLabel={t('quota_management.burn_rate')}
-          onChange={props.onBurnWindowChange}
-        />
-      </div>
-
-      <div className={styles.field}>
-        <span id={futureLabelId} className={styles.fieldLabel}>
-          {t('quota_management.future_usage')}
-        </span>
-        <div className={styles.select}>
-          <Select
-            value={props.futureUsage}
-            options={FUTURE_USAGE_OPTIONS.map((usage) => ({
-              value: usage,
-              label: t(`quota_management.future_${usage}`),
-            }))}
-            onChange={(value) => props.onFutureUsageChange(value as FutureUsage)}
-            ariaLabelledBy={futureLabelId}
-            size="sm"
-          />
-        </div>
-      </div>
-
-      <button
-        type="button"
-        className={styles.toggle}
-        aria-pressed={props.showAccounts}
-        onClick={props.onToggleAccounts}
-      >
-        {t('quota_management.accounts')}
-      </button>
-
       <div className={styles.range}>
-        <span className={styles.rangeLabel}>{props.rangeLabel}</span>
-        <div className={styles.rangeNav}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            onClick={props.onPrevRange}
-            aria-label={t('quota_management.range_prev')}
-          >
-            <IconChevronLeft size={16} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={styles.todayButton}
-            onClick={props.onToday}
-            disabled={props.isCurrentRange}
-          >
+        {!props.isCurrentRange && (
+          <button type="button" className={styles.todayButton} onClick={props.onToday}>
             {t('quota_management.windows_today')}
           </button>
-          <button
-            type="button"
-            className={styles.iconButton}
-            onClick={props.onNextRange}
-            aria-label={t('quota_management.range_next')}
-          >
-            <IconChevronLeft size={16} className={styles.flip} aria-hidden="true" />
-          </button>
-        </div>
+        )}
+        <button
+          type="button"
+          className={styles.iconButton}
+          onClick={props.onPrevRange}
+          aria-label={t('quota_management.range_prev')}
+          title={t('quota_management.range_prev')}
+        >
+          <IconChevronLeft size={16} aria-hidden="true" />
+        </button>
+        <span className={styles.rangeLabel}>{props.rangeLabel}</span>
+        <button
+          type="button"
+          className={styles.iconButton}
+          onClick={props.onNextRange}
+          aria-label={t('quota_management.range_next')}
+          title={t('quota_management.range_next')}
+        >
+          <IconChevronLeft size={16} className={styles.flip} aria-hidden="true" />
+        </button>
       </div>
     </div>
   );

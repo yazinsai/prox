@@ -8,18 +8,21 @@ import type { QuotaHistoryCredential } from '../src/services/api/quotaHistory';
 import {
   buildPoolAccount,
   burnRate,
-  drainSeries,
+  evenPaceLine,
   findHistory,
   historySamples,
-  niceCeiling,
   poolDays,
   poolSpan,
   projectAccount,
+  projectPool,
   summarizePool,
   HOUR_MS,
   type PoolAccount,
 } from '../src/features/quota/pool/poolModel';
+import { formatDateRange, formatDuration } from '../src/features/quota/pool/poolFormat';
 import { QuotaPoolPanel } from '../src/features/quota/components/QuotaPoolPanel';
+import { describeOutlook, paceVersus } from '../src/features/quota/pool/poolOutlookCopy';
+import { dayLabelStep, splitAtJumps } from '../src/features/quota/pool/chartGeometry';
 
 const NOW = new Date(2026, 10, 5, 12).getTime();
 const H = HOUR_MS;
@@ -281,10 +284,15 @@ describe('burn and projection', () => {
     expect(summary.burnPerHour).toBeCloseTo(10, 6);
     expect(summary.firstEmpty?.account.key).toBe('busy');
     expect(summary.firstEmpty?.atMs).toBe(NOW + 3 * H);
-    // Both resets fall within a minute: one event restoring busy (empty) + idle (unused).
+    // Once busy is dry its 10%/h moves to idle, which lasts 8h more: the pool is dry
+    // from 11h until busy's reset at 48h refills it.
+    expect(summary.poolEmptyAtMs).toBeCloseTo(NOW + 11 * H, -2);
+    expect(summary.dry[0]).toMatchObject({ endMs: NOW + 48 * H, refilled: true });
     expect(summary.nextReset?.atMs).toBe(NOW + 48 * H);
-    expect(summary.nextReset?.added).toBeCloseTo(100 + 20, 6);
-    expect(summary.poolEmptyAtMs).toBeNull();
+    expect(summary.nextReset?.added).toBeCloseTo(100, 6);
+    expect(summary.outlook.kind).toBe('runs-out');
+    expect(summary.outlook.refillAtMs).toBe(NOW + 48 * H);
+    expect(summary.allowancePerHour).toBeCloseTo(200 / 168, 6);
     expect(summary.recorded[0]).toEqual({ atMs: NOW - 3 * H, value: 140 });
     expect(summary.projectedJumps.length).toBeGreaterThan(0);
 
@@ -322,26 +330,36 @@ describe('burn and projection', () => {
     expect(summary.poolEmptyAtMs).toBe(NOW + 2 * H);
   });
 
-  test('derives drain-rate steps from the recorded and projected pool', () => {
-    const drain = drainSeries(
+  test("moves a dry account's demand onto the accounts that still have quota", () => {
+    const projection = projectPool(
       [
-        { atMs: 0, value: 100 },
-        { atMs: H, value: 90 },
-        { atMs: H, value: 190 },
-        { atMs: 2 * H, value: 185 },
+        account({ key: 'a', remaining: 10, nextResetMs: NOW + 20 * H, periodMs: 24 * H }),
+        account({ key: 'b', remaining: 30, nextResetMs: NOW + 40 * H, periodMs: 24 * H }),
       ],
-      [
-        { atMs: 2 * H, value: 185 },
-        { atMs: 4 * H, value: 175 },
-      ]
+      [5, 0],
+      NOW,
+      NOW + 30 * H
     );
-    expect(drain.recorded.map((point) => point.value)).toEqual([10, 10, 5, 5]);
-    expect(drain.projected).toEqual([
-      { atMs: 2 * H, value: 5 },
-      { atMs: 4 * H, value: 5 },
+    const [a, b] = projection.accounts;
+    expect(a.emptyAtMs).toBe(NOW + 2 * H);
+    // b picks up a's 5%/h at 2h and runs dry 6h later.
+    expect(b.emptyAtMs).toBe(NOW + 8 * H);
+    expect(projection.dry).toEqual([{ startMs: NOW + 8 * H, endMs: NOW + 20 * H, refilled: true }]);
+    // After a refills at 20h it carries the whole demand again.
+    expect(a.points.at(-1)).toEqual({ atMs: NOW + 30 * H, value: 50 });
+  });
+
+  test('draws the even pace that spends each window exactly by its reset', () => {
+    const span = { startMs: NOW, endMs: NOW + 30 * H };
+    const line = evenPaceLine({ nextResetMs: NOW + 6 * H, periodMs: 24 * H }, span);
+    expect(line).toEqual([
+      { atMs: NOW, value: 25 },
+      { atMs: NOW + 6 * H, value: 0 },
+      { atMs: NOW + 6 * H, value: 100 },
+      { atMs: NOW + 30 * H, value: 0 },
     ]);
-    expect(niceCeiling(7.3)).toBe(10);
-    expect(niceCeiling(0)).toBe(1);
+    expect(evenPaceLine({ nextResetMs: null, periodMs: 24 * H }, span)).toBeNull();
+    expect(splitAtJumps(line ?? [])).toHaveLength(2);
   });
 
   test('spans two weeks starting three days before today, stepping by weeks', () => {
@@ -391,19 +409,23 @@ describe('pool panel', () => {
     showEmails: false,
   };
 
-  test('renders the pooled figure, the four stats and the chart', () => {
+  test('leads with the outlook, then left, pace and allowance, then the chart', () => {
     const markup = renderToStaticMarkup(createElement(QuotaPoolPanel, props));
+    expect(markup).toContain('data-tone="danger"');
+    expect(markup).toContain('Runs out in 11h');
+    expect(markup).toContain('before it resets');
     expect(markup).toContain('110%');
     expect(markup).toContain('of 200%');
     expect(markup).toContain('2 accounts');
-    expect(markup).toContain('Pool empty');
-    expect(markup).toContain('First empty');
-    expect(markup).toContain('in 3h 0m');
-    expect(markup).toContain('Burn, last 3h');
+    expect(markup).toContain('Pace · last 3h');
     expect(markup).toContain('10%/h');
+    expect(markup).toContain('8.4× allowance');
+    expect(markup).toContain('200% per 7d');
     expect(markup).toContain('role="img"');
-    expect(markup).toContain('Recorded');
-    expect(markup).toContain('Projected');
+    expect(markup).toContain('Forecast');
+    expect(markup).toContain('Even pace');
+    expect(markup).toContain('Out of quota');
+    expect(markup.indexOf('Runs out in 11h')).toBeLessThan(markup.indexOf('role="img"'));
   });
 
   test('hides account emails until asked, then shows them', () => {
@@ -432,5 +454,112 @@ describe('pool panel', () => {
     );
     expect(markup).toContain('Not loaded yet');
     expect(markup).not.toContain('role="img"');
+  });
+});
+
+describe('pool outlook', () => {
+  const originalLanguage = i18n.language;
+  beforeAll(async () => {
+    await i18n.changeLanguage('en');
+  });
+  afterAll(async () => {
+    await i18n.changeLanguage(originalLanguage);
+  });
+  const span = { startMs: NOW - 3 * 24 * H, endMs: NOW + 11 * 24 * H };
+  const options = { now: NOW, span, burnWindowHours: 3, futureUsage: 'same' as const };
+  const burning = (remaining: number, perHour: number, resetInHours: number) =>
+    account({
+      remaining,
+      nextResetMs: NOW + resetInHours * H,
+      history: [
+        { atMs: NOW - 3 * H, value: remaining + 3 * perHour },
+        { atMs: NOW, value: remaining },
+      ],
+    });
+  const copyOf = (accounts: PoolAccount[], usage: 'same' | 'none' = 'same') => {
+    const summary = summarizePool(accounts, { ...options, futureUsage: usage });
+    return { summary, copy: describeOutlook(summary, NOW, 3, i18n.t, 'en') };
+  };
+
+  test('runs out before the reset: when, and how long until it refills', () => {
+    const { summary, copy } = copyOf([burning(30, 2, 48)]);
+    expect(summary.outlook).toMatchObject({
+      kind: 'runs-out',
+      emptyAtMs: NOW + 15 * H,
+      refillAtMs: NOW + 48 * H,
+    });
+    expect(copy.tone).toBe('danger');
+    expect(copy.title).toBe('Runs out in 15h');
+    expect(copy.detail).toContain('1d 9h before it resets');
+  });
+
+  test('lasts until the reset, tight when little is left, and warns about the next cycle', () => {
+    const lasts = copyOf([burning(60, 0.5, 48)]);
+    expect(lasts.summary.outlook.kind).toBe('lasts');
+    expect(lasts.copy.tone).toBe('success');
+    expect(lasts.copy.title).toBe('Lasts until the reset');
+    expect(lasts.copy.detail).toContain('About 36% left when it resets');
+
+    const tight = copyOf([burning(30, 0.6, 48)]);
+    expect(tight.summary.outlook.kind).toBe('tight');
+    expect(tight.copy.tone).toBe('warning');
+    expect(tight.copy.title).toBe('Just lasts until the reset');
+    expect(tight.copy.detail).toContain('About 1% left');
+    // 100% at 0.6%/h lasts about 167h of the next 168h window: no dry spell yet.
+    const harder = copyOf([burning(30, 0.62, 48)]);
+    expect(harder.summary.outlook.kind).toBe('tight');
+    expect(harder.copy.note).toContain('the next cycle runs out');
+  });
+
+  test('a pool reports its low point rather than its level at the last reset', () => {
+    const { summary, copy } = copyOf([
+      { ...burning(80, 1, 20), key: 'a' },
+      { ...burning(90, 0, 60), key: 'b' },
+    ]);
+    expect(summary.outlook.kind).toBe('lasts');
+    expect(summary.outlook.lowest).toEqual({ atMs: NOW + 20 * H, value: 150 });
+    expect(copy.detail).toContain('Lowest point about 150%');
+  });
+
+  test('says empty, idle, unmeasured and not loaded plainly', () => {
+    expect(copyOf([burning(0, 0, 30)]).copy).toMatchObject({
+      tone: 'danger',
+      title: 'Out of quota',
+    });
+    expect(copyOf([burning(0, 0, 30)]).copy.detail).toContain('Refills');
+    expect(copyOf([burning(50, 0, 30)]).summary.outlook.kind).toBe('idle');
+    expect(copyOf([account({ remaining: 50, nextResetMs: NOW + 9 * H })]).copy.title).toBe(
+      'No pace to forecast from yet'
+    );
+    // A "none" what-if keeps the measured pace but projects no use: it lasts.
+    expect(copyOf([burning(30, 2, 48)], 'none').summary.outlook.kind).toBe('lasts');
+    expect(copyOf([account({ remaining: null, loaded: true })]).copy.title).toBe(
+      'Nothing counting down'
+    );
+  });
+
+  test('compares pace with the allowance in a few words', () => {
+    expect(paceVersus(null, i18n.t)).toBe('Needs history');
+    expect(paceVersus(0, i18n.t)).toBe('Idle');
+    expect(paceVersus(1.02, i18n.t)).toBe('On pace');
+    expect(paceVersus(1.18, i18n.t)).toBe('18% over');
+    expect(paceVersus(0.6, i18n.t)).toBe('40% under');
+    expect(paceVersus(3.24, i18n.t)).toBe('3.2× allowance');
+  });
+
+  test('formats durations and ranges compactly', () => {
+    expect(formatDuration(3 * H, 'en')).toBe('3h');
+    expect(formatDuration(3 * H + 5 * 60_000, 'en')).toBe('3h 5m');
+    expect(formatDuration(48 * H, 'en')).toBe('2d');
+    expect(formatDuration(51 * H, 'en')).toBe('2d 3h');
+    expect(
+      formatDateRange(new Date(2026, 10, 12).getTime(), new Date(2026, 10, 25).getTime(), 'en')
+    ).toBe('Nov 12 – 25');
+  });
+
+  test('thins day labels to fit narrow charts', () => {
+    expect(dayLabelStep(75)).toBe(1);
+    expect(dayLabelStep(24)).toBe(3);
+    expect(dayLabelStep(10)).toBe(7);
   });
 });
