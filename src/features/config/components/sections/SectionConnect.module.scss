@@ -1,0 +1,66 @@
+@use '../../../../styles/mixins' as *;
+
+/* Client endpoints: label and hint on the left, the address and its copy button on the right. */
+
+.endpoints {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.endpoint {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: 6px 24px;
+  min-height: 64px;
+  padding: 12px 18px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 0 var(--border-color);
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.hint {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+
+  code {
+    min-width: 0;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: $font-mono;
+    font-size: 12.5px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    user-select: all;
+  }
+}
+
+@include mobile {
+  .endpoint {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px 14px;
+  }
+}

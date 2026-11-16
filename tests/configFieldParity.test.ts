@@ -8,9 +8,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'bun:test';
 import {
-  COMMON_FIELD_IDS,
   CONFIG_SECTION_IDS,
-  CONFIG_TAB_IDS,
+  CONFIG_TAB_ICONS,
   FIELD_VALUE_KEYS,
   SECTION_VALIDATION_FIELDS,
 } from '@/features/config/constants';
@@ -113,8 +112,20 @@ describe('JSX anchor parity (source scan)', () => {
 });
 
 describe('registry consistency', () => {
-  test('tab id registry is common + the canonical sections', () => {
-    expect([...CONFIG_TAB_IDS]).toEqual(['common', ...CONFIG_SECTION_IDS]);
+  test('sections start with Connect, and every one has an icon and a search label', () => {
+    expect(CONFIG_SECTION_IDS[0]).toBe('connect');
+    expect(Object.keys(CONFIG_TAB_ICONS).sort()).toEqual([...CONFIG_SECTION_IDS].sort());
+    const indexed = new Set(CONFIG_FIELD_SEARCH_INDEX.map((entry) => entry.sectionId));
+    for (const sectionId of indexed) expect(CONFIG_SECTION_IDS).toContain(sectionId);
+  });
+
+  test('client API keys live in Connect, nowhere else', () => {
+    expect(findConfigFieldById('apiKeys')?.sectionId).toBe('connect');
+    const connectivity = readFileSync(
+      'src/features/config/components/sections/SectionConnectivity.tsx',
+      'utf8'
+    );
+    expect(connectivity).not.toContain('ApiKeysField');
   });
 
   test('every validation field path lives in exactly one section bucket', () => {
@@ -127,12 +138,6 @@ describe('registry consistency', () => {
   test('validation field paths are real value keys', () => {
     for (const path of Object.values(SECTION_VALIDATION_FIELDS).flat()) {
       expect(LEAF_VALUE_KEYS.has(path)).toBe(true);
-    }
-  });
-
-  test('common tab fields are a subset of the index', () => {
-    for (const fieldId of COMMON_FIELD_IDS) {
-      expect(INDEX_FIELD_ID_SET.has(fieldId)).toBe(true);
     }
   });
 });

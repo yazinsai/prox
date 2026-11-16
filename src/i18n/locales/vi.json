@@ -96,9 +96,6 @@
     "refresh_all": "Làm mới tất cả",
     "logout": "Đăng xuất"
   },
-  "connection": {
-    "status": "Trạng thái kết nối:"
-  },
   "nav": {
     "dashboard": "Bảng điều khiển",
     "quick_start": "Bắt đầu nhanh",
@@ -111,7 +108,12 @@
     "plugin_store": "Cửa hàng Plugin",
     "config_management": "Bảng cấu hình",
     "logs": "Trình xem Log",
-    "system_info": "Thông tin Trung tâm Quản lý"
+    "system_info": "Thông tin Trung tâm Quản lý",
+    "overview": "Tổng quan",
+    "quota": "Hạn mức",
+    "accounts": "Tài khoản",
+    "requests": "Yêu cầu",
+    "settings": "Cài đặt"
   },
   "nav_groups": {
     "operate": "Vận hành",
@@ -132,7 +134,12 @@
     "plugin_store": "Khám phá & cài đặt plugin",
     "logs": "Truy vết yêu cầu",
     "config_management": "Cấu hình gateway",
-    "system_info": "Runtime & chẩn đoán"
+    "system_info": "Runtime & chẩn đoán",
+    "overview": "Mọi thứ có ổn không",
+    "quota": "Có bị hết hạn mức không",
+    "accounts": "Ai phục vụ yêu cầu, theo thứ tự",
+    "requests": "Điều gì đã xảy ra và vì sao",
+    "settings": "Kết nối, cấu hình, giới thiệu"
   },
   "dashboard": {
     "hero_verdict_good": "Mọi hệ thống ổn định",
@@ -232,9 +239,7 @@
     "proxy_url_label": "URL Proxy:",
     "retry_count_label": "Số lần thử lại:",
     "logging_to_file_enable": "Bật ghi log ra file",
-    "request_log_title": "Ghi log yêu cầu",
     "request_log_enable": "Bật ghi log yêu cầu",
-    "request_log_warning": "Hãy tắt tính năng này trừ khi bạn cần gỡ lỗi chi tiết.",
     "ws_auth_enable": "Yêu cầu xác thực cho /ws/*",
     "routing_strategy_round_robin": "round-robin (luân phiên)",
     "routing_strategy_weighted_round_robin": "weighted-round-robin (luân phiên có trọng số)",
@@ -876,7 +881,7 @@
     "oauth_callback_status_error": "Gửi URL callback thất bại:",
     "missing_state": "Không thể lấy tham số trạng thái xác thực",
     "login_another_account": "Đăng nhập tài khoản khác",
-    "view_auth_files": "Xem file xác thực",
+    "view_auth_files": "Về tài khoản",
     "iflow_oauth_title": "iFlow OAuth",
     "iflow_oauth_button": "Bắt đầu đăng nhập iFlow",
     "iflow_oauth_hint": "Đăng nhập dịch vụ iFlow qua luồng OAuth, tự động lấy và lưu file xác thực.",
@@ -910,7 +915,7 @@
     "generating_link": "Đang tạo liên kết đăng nhập…",
     "waiting_background_hint": "Đóng cửa sổ không làm gián đoạn đăng nhập",
     "restart_login": "Bắt đầu lại",
-    "success_saved_hint": "Đã lưu credential — quản lý trong File xác thực.",
+    "success_saved_hint": "Đã lưu. Tài khoản đã xuất hiện trong danh sách.",
     "sign_up_prompt": "Chưa có tài khoản?",
     "copied": "Đã sao chép",
     "devin_oauth_cancel": "Hủy đăng nhập Devin",
@@ -1050,8 +1055,6 @@
     "wrap_lines": "Tự động xuống dòng dài"
   },
   "config_management": {
-    "title": "Bảng cấu hình",
-    "meta_fields": "{{count}} cài đặt",
     "meta_dirty": "{{count}} chưa lưu",
     "meta_dirty_source": "Chỉnh sửa nguồn chưa lưu",
     "meta_errors": "{{count}} lỗi xác thực",
@@ -1061,11 +1064,6 @@
       "save": "Lưu thay đổi"
     },
     "discard_confirm_message": "Hủy mọi thay đổi chưa lưu và khôi phục phiên bản máy chủ gần nhất?",
-    "mode": {
-      "label": "Chế độ trình chỉnh sửa",
-      "visual": "Trực quan",
-      "source": "Mã nguồn"
-    },
     "reload": "Tải lại",
     "reload_confirm_message": "Tải lại sẽ hủy các thay đổi chưa lưu của bạn. Bạn có muốn tiếp tục không?",
     "save": "Lưu",
@@ -1105,13 +1103,9 @@
         "no_results": "Không có cài đặt phù hợp"
       },
       "sections": {
-        "common": {
-          "title": "Chung",
-          "description": "Các cài đặt dùng nhiều nhất, dùng chung dữ liệu với các mục đầy đủ"
-        },
         "connectivity": {
           "title": "Truy cập & Xác thực",
-          "description": "Địa chỉ máy chủ, cổng, thư mục xác thực và API key"
+          "description": "Nơi proxy lắng nghe, nơi lưu thông tin xác thực và ai được quản lý nó"
         },
         "logging": {
           "title": "Ghi log & Chẩn đoán",
@@ -1264,7 +1258,6 @@
           "session_affinity": "Định tuyến Session Affinity",
           "ws_auth": "Xác thực WebSocket",
           "ws_auth_desc": "Bật xác thực WebSocket (/v1/ws)",
-          "proxy_url_sponsor_hint": "Chưa có proxy phù hợp?",
           "max_retry_interval_hint": "Đặt thành 0 hoặc số nguyên âm để bỏ qua thời gian chờ cooldown giữa các lượt thử lại."
         },
         "streaming": {
@@ -1291,14 +1284,17 @@
           "override_raw_rules_desc": "Luôn ghi đè giá trị tham số dưới dạng đoạn JSON thô, hữu ích cho response_format, schema và các trường phức tạp khác",
           "filter_rules": "Quy tắc lọc",
           "filter_rules_desc": "Lọc trước body yêu cầu upstream qua JSON Path, tự động loại bỏ tham số không tuân thủ/dư thừa (Làm sạch yêu cầu)"
+        },
+        "connect": {
+          "title": "Kết nối"
         }
       },
       "api_keys": {
-        "label": "Danh sách API Key (api-keys)",
+        "label": "Khóa API của ứng dụng",
         "add": "Thêm API Key",
         "generate": "Tạo",
         "empty": "Chưa có API key",
-        "hint": "Mỗi mục là một API key (nhất quán với phong cách trang 'Quản lý API Key')",
+        "hint": "Ứng dụng gửi một trong các khóa này làm khóa API. Thay đổi có hiệu lực sau khi lưu.",
         "edit_title": "Chỉnh sửa API Key",
         "add_title": "Thêm API Key",
         "input_label": "API Key",
@@ -1563,7 +1559,7 @@
     "precise_save_recovery_required": "Không thể đọc lại kết quả lưu. Đã tạm dừng chỉnh sửa. Lưu lại để khôi phục mốc cơ sở của bản nháp, hoặc tải lại cấu hình."
   },
   "quota_management": {
-    "title": "Quản lý Quota",
+    "title": "Hạn mức",
     "description": "Theo dõi trạng thái quota OAuth của credential Antigravity, Codex, Claude, Kimi và xAI.",
     "refresh_all_credentials": "Làm mới mọi credential",
     "sort_label": "Sắp xếp",
@@ -1977,32 +1973,13 @@
     "empty_src_desc": "Menu plugin này không cung cấp URL trang nhúng được."
   },
   "system_info": {
-    "title": "Thông tin Trung tâm Quản lý",
     "about_title": "prox · Trung tâm Quản lý CLI Proxy API",
-    "models_title": "Model khả dụng",
-    "models_desc": "Hiển thị phản hồi /models và tự động dùng API key đã lưu để xác thực.",
-    "models_loading": "Đang tải model khả dụng...",
-    "models_empty": "/models không trả về model nào",
-    "models_error": "Không thể tải danh sách model",
-    "models_count": "{{count}} model khả dụng",
     "version_check_button": "Kiểm tra cập nhật",
     "version_update_available": "Có bản cập nhật: {{version}}",
     "version_is_latest": "Bạn đang dùng phiên bản mới nhất",
     "version_check_error": "Kiểm tra cập nhật thất bại",
     "version_current_missing": "Không có phiên bản máy chủ; không thể so sánh",
-    "version_unknown": "Không rõ",
-    "quick_links_title": "Liên kết nhanh",
-    "quick_links_desc": "Truy cập repository dự án và tài liệu để được trợ giúp và cập nhật.",
-    "link_main_repo": "Repository chính",
-    "link_main_repo_desc": "Mã nguồn chương trình lõi CLI Proxy API",
-    "link_webui_repo": "Repository WebUI",
-    "link_webui_repo_desc": "Mã nguồn frontend Trung tâm Quản lý",
-    "link_docs": "Tài liệu",
-    "link_docs_desc": "Hướng dẫn và tutorial cấu hình",
-    "clear_login_title": "Dữ liệu đăng nhập cục bộ",
-    "clear_login_desc": "Xóa dữ liệu đăng nhập đã lưu cục bộ và đăng xuất.",
-    "clear_login_button": "Xóa dữ liệu đăng nhập",
-    "clear_login_confirm": "Xóa dữ liệu đăng nhập cục bộ và đăng xuất ngay?"
+    "version_unknown": "Không rõ"
   },
   "notification": {
     "request_log_updated": "Đã cập nhật cài đặt ghi log yêu cầu",
@@ -2050,11 +2027,6 @@
     "collapse": "Thu gọn",
     "subtitle": "Bảng điều khiển CLI Proxy API",
     "auth_files_count": "File xác thực: {{count}}"
-  },
-  "footer": {
-    "api_version": "Phiên bản CLI Proxy API",
-    "build_date": "Thời gian build",
-    "version": "Phiên bản giao diện quản lý"
   },
   "providersPage": {
     "header": {
@@ -2633,7 +2605,6 @@
     "guide_link": "Hướng dẫn lưu trữ và cập nhật"
   },
   "dashboard_live": {
-    "manage_routing": "Quản lý định tuyến",
     "updated": "Cập nhật {{time}}",
     "stale": "Dữ liệu gần nhất · làm mới thất bại",
     "model": "Mô hình",
@@ -2757,6 +2728,225 @@
     "group_serving": "Đang phục vụ",
     "group_fallback": "Dự phòng cho",
     "group_cooling": "Đang tạm nghỉ",
-    "archive_size": "{{size}} GB"
+    "archive_size": "{{size}} GB",
+    "manage_accounts": "Tài khoản"
+  },
+  "requests_page": {
+    "title": "Yêu cầu",
+    "tab_history": "Lịch sử",
+    "tab_server": "Nhật ký máy chủ",
+    "duration_minutes": "{{minutes}} phút {{seconds}} giây",
+    "reason_rate_limited": "Bị giới hạn tốc độ",
+    "reason_unauthorized": "Xác thực thất bại",
+    "reason_upstream_error": "Lỗi phía nhà cung cấp",
+    "reason_invalid_request": "Yêu cầu không hợp lệ",
+    "reason_cancelled": "Đã hủy",
+    "reason_stream_interrupted": "Luồng bị ngắt",
+    "outcome_failed": "Thất bại",
+    "outcome_success": "Thành công",
+    "detail_error": "Không tải được các lần thử của yêu cầu này.",
+    "loading_attempts": "Đang tải các lần thử…",
+    "no_attempts": "Không ghi nhận lần thử nào tới nhà cung cấp.",
+    "identifiers": "Mã định danh",
+    "copy_value": "Sao chép {{label}}",
+    "download_error": "Tải xuống thất bại. Hãy thử lại.",
+    "request_at": "Hoàn tất lúc {{time}}",
+    "loading": "Đang tải yêu cầu",
+    "unsupported_title": "Proxy này không ghi lại lịch sử yêu cầu",
+    "unsupported_desc": "Lịch sử yêu cầu cần backend có theo dõi yêu cầu. Nhật ký máy chủ vẫn hiển thị mọi yêu cầu.",
+    "open_server_log": "Mở nhật ký máy chủ",
+    "error_title": "Không tải được yêu cầu",
+    "error_desc": "Proxy không phản hồi. Hãy kiểm tra proxy đang chạy rồi thử lại.",
+    "summary_hour_other": "{{total}} yêu cầu trong giờ qua",
+    "summary_hours_other": "{{total}} yêu cầu trong {{hours}} giờ qua",
+    "summary_none_hour": "Không có yêu cầu nào trong giờ qua",
+    "summary_none_hours": "Không có yêu cầu nào trong {{hours}} giờ qua",
+    "success_rate": "{{rate}}% thành công",
+    "recorded_since": "ghi nhận từ {{time}}",
+    "refreshing": "Đang làm mới…",
+    "no_failures_hour": "Không có yêu cầu thất bại trong giờ qua",
+    "no_failures_hours": "Không có yêu cầu thất bại trong {{hours}} giờ qua",
+    "no_failures_desc": "Mọi yêu cầu trong khoảng này đều thành công.",
+    "show_all": "Hiện tất cả yêu cầu",
+    "no_requests_desc": "Yêu cầu sẽ xuất hiện ở đây ngay khi có client gọi proxy.",
+    "widen_window": "Xem 24 giờ qua",
+    "showing_of": "Đang hiện {{shown}} / {{total}}",
+    "showing_other": "Đang hiện {{shown}} yêu cầu",
+    "load_more_error": "Không tải được các yêu cầu cũ hơn.",
+    "load_older": "Tải yêu cầu cũ hơn",
+    "end_of_list": "Đã hiện tất cả yêu cầu trong khoảng này",
+    "summary_hour_one": "{{total}} yêu cầu trong giờ qua",
+    "summary_hours_one": "{{total}} yêu cầu trong {{hours}} giờ qua",
+    "showing_one": "Đang hiện {{shown}} yêu cầu"
+  },
+  "settings_page": {
+    "title": "Cài đặt",
+    "reload_hint": "Tải lại cấu hình từ proxy",
+    "nav": {
+      "label": "Các mục cài đặt",
+      "group_proxy": "Proxy",
+      "group_dashboard": "Bảng điều khiển",
+      "connect": "Kết nối",
+      "connectivity": "Truy cập",
+      "network": "Mạng",
+      "logging": "Nhật ký",
+      "streaming": "Truyền phát",
+      "advanced": "Nâng cao",
+      "payload": "Quy tắc payload",
+      "source": "config.yaml",
+      "appearance": "Giao diện",
+      "tools": "Công cụ nâng cao",
+      "about": "Giới thiệu"
+    },
+    "connect": {
+      "title": "Kết nối ứng dụng",
+      "description": "Trỏ ứng dụng tương thích OpenAI hoặc Anthropic tới prox và dùng một trong các khóa API bên dưới.",
+      "openai_label": "Tương thích OpenAI",
+      "openai_hint": "Base URL cho Codex, OpenAI SDK và hầu hết công cụ",
+      "anthropic_label": "Tương thích Anthropic",
+      "anthropic_hint": "Base URL cho Claude Code và Anthropic SDK",
+      "copy": "Sao chép Base URL {{name}}"
+    },
+    "source": {
+      "title": "config.yaml",
+      "description": "Toàn bộ cấu hình proxy dưới dạng YAML, gồm cả các thiết lập không có ở mục khác. Khi lưu, tệp được ghi đúng như ở đây."
+    },
+    "appearance": {
+      "title": "Giao diện",
+      "description": "Áp dụng ngay, chỉ trong trình duyệt này.",
+      "theme": "Chủ đề",
+      "language": "Ngôn ngữ"
+    },
+    "about": {
+      "title": "Giới thiệu",
+      "dashboard_version": "Bảng điều khiển",
+      "proxy_version": "Proxy",
+      "built": "Thời điểm build proxy",
+      "connection": "Đã kết nối tới",
+      "sign_out_title": "Đăng xuất",
+      "sign_out_description": "Đăng xuất kết thúc phiên này. Quên trình duyệt này còn xóa địa chỉ và khóa quản lý đã lưu.",
+      "forget_button": "Quên trình duyệt này",
+      "forget_title": "Quên trình duyệt này?",
+      "forget_confirm": "Bạn sẽ bị đăng xuất, địa chỉ proxy và khóa quản lý đã lưu sẽ bị xóa khỏi trình duyệt này.",
+      "log_out": "Đăng xuất"
+    },
+    "tools": {
+      "title": "Công cụ nâng cao",
+      "description": "Các trang hiếm khi cần. Công việc hằng ngày nằm ở tài khoản và hạn mức.",
+      "credential_files": "Tệp thông tin xác thực",
+      "credential_files_desc": "Tải lên, tải xuống hoặc sửa hàng loạt các tệp của từng tài khoản đã đăng nhập.",
+      "model_exclusions": "Loại trừ mô hình",
+      "model_exclusions_desc": "Ẩn các mô hình cụ thể khỏi tài khoản của nhà cung cấp OAuth.",
+      "model_aliases": "Bí danh mô hình",
+      "model_aliases_desc": "Đổi tên hoặc nhân bản các mô hình mà nhà cung cấp OAuth cung cấp.",
+      "plugins": "Plugin",
+      "plugins_desc": "Bật, cấu hình và cập nhật plugin đã cài.",
+      "plugin_store": "Cửa hàng plugin",
+      "plugin_store_desc": "Duyệt và cài đặt plugin."
+    },
+    "request_log": {
+      "title": "Nhật ký yêu cầu",
+      "description": "Ghi lại đầy đủ mọi yêu cầu và phản hồi, là nguồn của kho lưu trữ yêu cầu. Lưu ngay khi bạn bật/tắt.",
+      "toggle_hint": "Tắt mục này thì các yêu cầu mới sẽ không vào kho lưu trữ."
+    }
+  },
+  "accounts": {
+    "kind_subscription": "{{provider}} · Gói đăng ký",
+    "kind_service_account": "{{provider}} · Tài khoản dịch vụ",
+    "kind_api_key": "{{provider}} · Khóa API",
+    "kind_compat_one": "Tương thích OpenAI · {{count}} khóa",
+    "kind_compat_other": "Tương thích OpenAI · {{count}} khóa",
+    "usage_requests_one": "{{formatted}} yêu cầu",
+    "usage_requests_other": "{{formatted}} yêu cầu",
+    "usage_failed": "{{formatted}} lỗi",
+    "open_account": "Mở {{name}}, {{kind}}",
+    "status_problem": "Cần xử lý",
+    "status_cooling": "Đang tạm nghỉ · {{time}}",
+    "status_partial_one": "1 mô hình tạm nghỉ · {{time}}",
+    "status_partial_other": "{{count}} mô hình tạm nghỉ · {{time}}",
+    "status_ready": "Sẵn sàng",
+    "status_on": "Đang bật",
+    "status_reason": "Lý do: {{reason}}",
+    "lens_label": "Tài khoản nào phục vụ",
+    "lens_placeholder": "Chọn mô hình",
+    "tier_count_one": "{{count}} tài khoản",
+    "tier_count_other": "{{count}} tài khoản",
+    "loading": "Đang tải tài khoản…",
+    "load_failed": "Không tải được tài khoản: {{message}}",
+    "refresh_failed": "Đang hiển thị trạng thái gần nhất. Làm mới thất bại: {{message}}",
+    "empty_title": "Chưa có tài khoản",
+    "empty_desc": "Đăng nhập gói đăng ký hoặc thêm khóa API, prox sẽ bắt đầu gửi yêu cầu đến đó.",
+    "add": "Thêm tài khoản",
+    "subtitle": "Yêu cầu đi tới nhóm đầu tiên có thể phục vụ. Khi không tài khoản nào trong nhóm phục vụ được, nhóm kế tiếp sẽ tiếp quản.",
+    "policy": "Chính sách định tuyến",
+    "policy_summary_sticky": "{{strategy}} · giữ phiên",
+    "policy_open": "Chính sách định tuyến: {{summary}}",
+    "policy_description": "Cách prox chia yêu cầu trong một nhóm và thử lại khi tài khoản lỗi. Thay đổi được lưu cùng thứ tự tài khoản.",
+    "done": "Xong",
+    "more_tools": "Công cụ khác",
+    "tool_credential_files": "Tệp thông tin xác thực",
+    "tool_aliases": "Bí danh mô hình",
+    "tool_exclusions": "Loại trừ mô hình",
+    "remove_title": "Xóa {{name}}?",
+    "remove_credential": "Phiên đăng nhập đã lưu sẽ bị xóa. Bạn có thể đăng nhập lại bất cứ lúc nào.",
+    "remove_api_key": "Khóa sẽ bị xóa khỏi cấu hình.",
+    "remove": "Xóa",
+    "removed": "Đã xóa {{name}}",
+    "action_edit": "Sửa chi tiết…",
+    "action_sign_in_again": "Đăng nhập lại",
+    "action_clear_cooldown": "Xóa thời gian chờ",
+    "action_turn_on": "Bật",
+    "action_turn_off": "Tắt",
+    "action_remove": "Xóa…",
+    "cooldown_cleared": "Đã xóa thời gian chờ của {{name}}",
+    "turned_on": "Đã bật {{name}}",
+    "turned_off": "Đã tắt {{name}}",
+    "imported_one": "Đã nhập {{count}} tệp thông tin xác thực",
+    "imported_other": "Đã nhập {{count}} tệp thông tin xác thực",
+    "add_title": "Thêm tài khoản",
+    "add_subscriptions": "Đăng nhập bằng gói đăng ký",
+    "add_subscriptions_hint": "Dùng gói bạn đã trả tiền. prox tự giữ phiên đăng nhập luôn mới.",
+    "add_api_keys": "Thêm khóa API",
+    "add_api_keys_hint": "Khóa trả theo mức dùng từ nhà cung cấp, hoặc bất kỳ endpoint tương thích OpenAI.",
+    "add_other": "Cách khác:",
+    "add_import_file": "Nhập tệp thông tin xác thực",
+    "add_vertex": "Tài khoản dịch vụ Vertex",
+    "api_key_caption": {
+      "claude": "Anthropic API",
+      "codex": "OpenAI Responses API",
+      "gemini": "Google AI Studio",
+      "openaiCompatibility": "Bất kỳ endpoint kiểu OpenAI",
+      "xai": "xAI API",
+      "vertex": "Google Vertex AI",
+      "meta": "Meta Llama API",
+      "interactions": "Gemini Interactions API"
+    },
+    "sheet_ready": "Sẵn sàng nhận yêu cầu",
+    "sheet_on": "Đang bật",
+    "sheet_on_hint": "Proxy không báo thời gian chờ cho khóa API, nên khóa lỗi sẽ hiện trong lịch sử yêu cầu.",
+    "sheet_off": "Đã tắt",
+    "sheet_off_hint": "prox bỏ qua tài khoản này cho đến khi bạn bật lại.",
+    "sheet_problem": "Cần xử lý",
+    "sheet_problem_hint": "Proxy đánh dấu tài khoản này không khả dụng. Đăng nhập lại thường sẽ khắc phục.",
+    "sheet_cooling": "Đang tạm nghỉ · trở lại sau {{time}}",
+    "sheet_partial_one": "1 mô hình tạm nghỉ · trở lại sau {{time}}",
+    "sheet_partial_other": "{{count}} mô hình tạm nghỉ · sớm nhất trở lại sau {{time}}",
+    "sheet_whole_account": "Toàn bộ tài khoản",
+    "sheet_unknown_model": "Mô hình không rõ",
+    "sheet_back_in": "sau {{time}}",
+    "sheet_requests": "Yêu cầu",
+    "sheet_failed": "Lỗi",
+    "sheet_failed_share": "{{share}}% yêu cầu",
+    "sheet_order": "Thứ tự",
+    "sheet_order_of": "Nhóm {{position}} / {{count}}",
+    "sheet_models": "Mô hình phục vụ",
+    "sheet_models_loading": "Đang tải mô hình…",
+    "sheet_models_none": "Tài khoản này chưa có mô hình nào.",
+    "sheet_models_more": "+{{count}} nữa",
+    "sheet_quota": "Xem hạn mức và lần đặt lại →",
+    "sheet_advanced": "Cài đặt nâng cao",
+    "sheet_edit_key": "Sửa khóa",
+    "sheet_keys": "Khóa",
+    "sheet_models_count": "Mô hình"
   }
 }

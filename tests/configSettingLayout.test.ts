@@ -20,7 +20,7 @@ mock.module(
 const { I18nextProvider } = await import('react-i18next');
 const { default: i18n } = await import('@/i18n');
 const sections = {
-  common: (await import('@/features/config/components/sections/SectionCommon')).SectionCommon,
+  connect: (await import('@/features/config/components/sections/SectionConnect')).SectionConnect,
   connectivity: (await import('@/features/config/components/sections/SectionConnectivity'))
     .SectionConnectivity,
   network: (await import('@/features/config/components/sections/SectionNetwork')).SectionNetwork,
@@ -76,12 +76,10 @@ describe('two-column setting layout', () => {
   }
 
   test('long URL and master switches keep their deliberate full-width rows', () => {
-    const common = listsOf(render(sections.common, false)).flat();
     const network = listsOf(render(sections.network, false)).flat();
     const connectivity = listsOf(render(sections.connectivity, true)).flat();
-    const wideOf = (rows: typeof common, fieldId: string) =>
+    const wideOf = (rows: typeof network, fieldId: string) =>
       rows.find((row) => row.fieldId === fieldId)?.wide;
-    expect(wideOf(common, 'proxyUrl')).toBe(true);
     expect(wideOf(network, 'proxyUrl')).toBe(true);
     expect(wideOf(network, 'requestRetry')).toBe(false);
     expect(wideOf(connectivity, 'tlsEnable')).toBe(true);

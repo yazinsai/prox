@@ -5,7 +5,7 @@ import { providersApi } from '../src/services/api/providers';
 describe('provider workbench editing surface', () => {
   test('keeps normal credential editing without a raw group JSON editor', () => {
     const source = readFileSync(
-      new URL('../src/features/providers/ProvidersWorkbenchPage.tsx', import.meta.url),
+      new URL('../src/features/accounts/AccountsPage.tsx', import.meta.url),
       'utf8'
     );
     expect(source).not.toContain('ProviderGroupsEditor');

@@ -9,7 +9,7 @@
 // extra entry anywhere fails CI.
 
 export type VisualSectionId =
-  'connectivity' | 'network' | 'logging' | 'streaming' | 'advanced' | 'payload';
+  'connect' | 'connectivity' | 'network' | 'logging' | 'streaming' | 'advanced' | 'payload';
 
 export interface ConfigFieldSearchEntry {
   /** Stable anchor id; matches FieldAnchor's `fieldId` and the rendered DOM id. */
@@ -314,7 +314,7 @@ export const CONFIG_FIELD_SEARCH_INDEX: ConfigFieldSearchEntry[] = [
   },
   {
     fieldId: 'apiKeys',
-    sectionId: 'connectivity',
+    sectionId: 'connect',
     labelKey: L('api_keys.label'),
     yamlKeys: ['access', 'api-keys'],
     keywords: ['api key', 'apikey', 'token'],

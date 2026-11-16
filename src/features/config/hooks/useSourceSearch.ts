@@ -1,4 +1,4 @@
-// 源码模式的文档内搜索 —— 从旧 pages/ConfigPage.tsx 逐字提取。
+// 源码模式的文档内搜索（设置页 config.yaml 分区）。
 // 手写 indexOf 扫描 + 光标定位（大小写不敏感、回绕），不依赖 @codemirror/search 面板。
 
 import { useCallback, useRef, useState } from 'react';

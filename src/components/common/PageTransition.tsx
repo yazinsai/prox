@@ -446,7 +446,13 @@ export function PageTransition({
                   isAnimating,
                 }}
               >
-                {render(layer.location)}
+                {/* Same-path navigations (search or hash changes) keep the layer but must
+                    still reach the page, or its search params would stay stale. */}
+                {render(
+                  layer.status === 'current' && layer.location.pathname === location.pathname
+                    ? location
+                    : layer.location
+                )}
               </PageTransitionLayerContext.Provider>
             </div>
           );

@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
@@ -11,8 +10,8 @@ import zhTW from '@/i18n/locales/zh-TW.json';
 import ru from '@/i18n/locales/ru.json';
 import ko from '@/i18n/locales/ko.json';
 import vi from '@/i18n/locales/vi.json';
-import { OAuthSponsorSites } from '@/features/oauth/components/OAuthSponsorSites';
-import { OAuthPage } from '@/features/oauth/OAuthPage';
+import { API_KEY_BRANDS } from '@/features/accounts/addAccountOptions';
+import { AddAccountFlow } from '@/features/accounts/components/AddAccountFlow';
 import { resolveCallbackUrl, XAI_CALLBACK_URL } from '@/features/oauth/callbackUrl';
 import { resolveFlowView, splitAuthUrl } from '@/features/oauth/flowView';
 import { buildPluginOAuthProviderCards, OAUTH_PROVIDERS } from '@/features/oauth/providers';
@@ -120,66 +119,45 @@ describe('plugin OAuth tiles', () => {
   });
 });
 
-describe('OAuth provider gallery', () => {
+describe('add-account picker', () => {
   const locales = { en, 'zh-CN': zhCN, 'zh-TW': zhTW, ru, ko, vi } as const;
 
   for (const [lng, translation] of Object.entries(locales)) {
-    test(`renders every provider tile without raw keys (${lng})`, async () => {
+    test(`renders every sign-in and API key tile without raw keys (${lng})`, async () => {
       const i18n = createInstance();
       await i18n.init({ lng, resources: { [lng]: { translation } } });
       const markup = renderToStaticMarkup(
         createElement(
           I18nextProvider,
           { i18n },
-          createElement(MemoryRouter, null, createElement(OAuthPage))
+          createElement(
+            MemoryRouter,
+            null,
+            createElement(AddAccountFlow, {
+              target: { kind: 'picker' },
+              onTargetChange: () => {},
+              onPickApiKey: () => {},
+              onImportFiles: () => {},
+            })
+          )
         )
       );
-      for (const provider of OAUTH_PROVIDERS.filter((card) => !card.sponsor)) {
+      for (const provider of OAUTH_PROVIDERS) {
         const label =
           typeof provider.label === 'string' ? provider.label : i18n.t(provider.label.key);
         expect(markup).toContain(label);
       }
-      expect(markup).toContain('Vertex AI');
+      for (const brand of API_KEY_BRANDS) {
+        expect(markup).toContain(i18n.t(`accounts.api_key_caption.${brand}`));
+      }
+      expect(markup).toContain(i18n.t('accounts.add_vertex'));
       expect(markup).toContain(i18n.t('siwc.bind'));
-      expect(markup).not.toMatch(/auth_login\.|vertex_import\.|siwc\./);
-      // OAuth providers select the inline panel; file import and SIWC still open dialogs.
-      expect(markup.match(/aria-haspopup="dialog"/g)?.length).toBe(2);
-      expect(markup.match(/aria-controls=/g)?.length).toBe(OAUTH_PROVIDERS.length - 1);
-      expect(markup).toContain('>Kimi</button>');
-      expect(markup).not.toContain('role="group"');
-      expect(markup).toContain('aria-pressed="false"');
+      expect(markup).not.toMatch(/auth_login\.|vertex_import\.|siwc\.|accounts\./);
+      // Sponsor sign-up links stay out of the picker: it is for adding accounts.
+      expect(markup).not.toContain(KIMI_CHINESE_AFFILIATE_URL);
+      expect(markup).not.toContain(KIMI_INTERNATIONAL_AFFILIATE_URL);
     });
   }
-
-  test('shows both Kimi sites inside the selected flow options', async () => {
-    const i18n = createInstance();
-    await i18n.init({ lng: 'zh-CN', resources: { 'zh-CN': { translation: zhCN } } });
-    const markup = renderToStaticMarkup(
-      createElement(
-        I18nextProvider,
-        { i18n },
-        createElement(OAuthSponsorSites, {
-          sites: OAUTH_PROVIDERS.filter((card) => card.sponsor).map((card) => ({
-            id: card.id,
-            name: typeof card.label === 'string' ? card.label : i18n.t(card.label.key),
-            region: i18n.t(card.sponsor!.siteKey),
-            domain: card.domain ?? '',
-            signUpUrl: card.sponsor!.signUpUrl,
-          })),
-          selectedId: 'kimi',
-          onSelect: () => {},
-        })
-      )
-    );
-    // Region selection and signup links live inside the selected Kimi flow.
-    expect(markup.match(/role="group"/g)?.length).toBe(1);
-    const card = markup.slice(markup.indexOf('role="group"'));
-    expect(card).toContain('aria-label="Kimi 国内站"');
-    expect(card).toContain('aria-label="Kimi 国际站"');
-    expect(card).toContain('>国内站</span>');
-    expect(card).toContain('>国际站</span>');
-    expect(card.match(/aria-label="注册开放平台 · Kimi /g)?.length).toBe(2);
-  });
 
   test('keeps each visible Kimi site name inside its accessible name', () => {
     const sponsors = OAUTH_PROVIDERS.filter((provider) => provider.sponsor);
@@ -191,51 +169,8 @@ describe('OAuth provider gallery', () => {
         const name = messages[nameKey.replace('auth_login.', '')];
         const region = messages[provider.sponsor!.siteKey.replace('auth_login.', '')];
         expect(region).toBeTruthy();
-        // label-in-name：语音控制说出可见文字就能命中按钮
         expect(name.toLowerCase()).toContain(region.toLowerCase());
       }
-      expect(messages.sponsor_kimi_caption).toBeTruthy();
-      expect(messages.sponsor_sign_up).toBeTruthy();
-    }
-  });
-
-  test('overrides per-pool animations with equal specificity under reduced motion', () => {
-    const styles = readFileSync('src/features/oauth/components/SponsorCard.module.scss', 'utf8');
-    const reducedMotionStart = styles.indexOf('@media (prefers-reduced-motion: reduce)');
-    const poolAnimationStart = styles.indexOf(".pool[data-pool='#{$name}']");
-    expect(poolAnimationStart).toBeGreaterThanOrEqual(0);
-    expect(reducedMotionStart).toBeGreaterThan(poolAnimationStart);
-    // 属性选择器与每个光池的动画规则保持同等优先级；仅 .pool 无法覆盖动画。
-    expect(styles.slice(reducedMotionStart)).toMatch(
-      /\.pool\[data-pool\]\s*,[^{}]*\{\s*animation:\s*none;/
-    );
-  });
-
-  test('keeps both Kimi registration links as safe external links', async () => {
-    const i18n = createInstance();
-    await i18n.init({ lng: 'en', resources: { en: { translation: en } } });
-    const markup = renderToStaticMarkup(
-      createElement(
-        I18nextProvider,
-        { i18n },
-        createElement(OAuthSponsorSites, {
-          sites: OAUTH_PROVIDERS.filter((card) => card.sponsor).map((card) => ({
-            id: card.id,
-            name: typeof card.label === 'string' ? card.label : i18n.t(card.label.key),
-            region: i18n.t(card.sponsor!.siteKey),
-            domain: card.domain ?? '',
-            signUpUrl: card.sponsor!.signUpUrl,
-          })),
-          selectedId: 'kimi',
-          onSelect: () => {},
-        })
-      )
-    );
-    for (const url of [KIMI_CHINESE_AFFILIATE_URL, KIMI_INTERNATIONAL_AFFILIATE_URL]) {
-      const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/&/g, '&amp;');
-      expect(markup).toMatch(
-        new RegExp(`href="${escaped}" target="_blank" rel="noopener noreferrer"`)
-      );
     }
   });
 });

@@ -28,8 +28,8 @@ const server = {
 };
 
 describe('OAuth behavior configuration UI', () => {
-  test('keeps six canonical tabs and places every addition in its designated section', () => {
-    expect(CONFIG_SECTION_IDS).toHaveLength(6);
+  test('keeps seven sections and places every addition in its designated section', () => {
+    expect(CONFIG_SECTION_IDS).toHaveLength(7);
     const network = render(createElement(SectionNetwork, props));
     const advanced = render(createElement(SectionAdvanced, props));
     const additions = CONFIG_FIELD_SEARCH_INDEX.filter((entry) =>

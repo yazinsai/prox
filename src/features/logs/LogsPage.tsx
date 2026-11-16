@@ -52,7 +52,12 @@ const INITIAL_DISPLAY_LINES = INITIAL_VISIBLE_LINES;
 
 type TabType = 'logs' | 'errors';
 
-export function LogsPage() {
+interface LogsPageProps {
+  /** Inside another page's header: drop the page title, keep the log tabs and toolbar. */
+  embedded?: boolean;
+}
+
+export function LogsPage({ embedded = false }: LogsPageProps = {}) {
   const { t } = useTranslation();
   const { showNotification } = useNotificationStore();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
@@ -398,9 +403,9 @@ export function LogsPage() {
   }, [fullscreenLogs]);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-embedded={embedded || undefined}>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>{t('logs.title')}</h1>
+        {embedded ? null : <h1 className={styles.pageTitle}>{t('logs.title')}</h1>}
         <div className={styles.tabBar} role="group" aria-label={t('logs.title')}>
           <button
             type="button"

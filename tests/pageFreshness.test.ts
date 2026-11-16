@@ -14,11 +14,8 @@ test('every quota list load schedules fresh quota for all supported credentials'
   expect(quota).not.toContain('useDevinQuotaAutoLoad(');
 });
 
-test('dashboard and system bypass configuration and model TTLs on entry', () => {
+test('dashboard bypasses configuration and model TTLs on entry', () => {
   const dashboard = source('features/dashboard/hooks/useDashboardOverview.ts');
-  const system = source('pages/SystemPage.tsx');
   expect(dashboard).toContain('void fetchConfig(true).catch');
   expect(dashboard).toContain('fetchModelsFromStore(apiBase, apiKeys[0], true)');
-  expect(system).toContain('fetchConfig(true).catch');
-  expect(system).toContain('fetchModels({ forceRefresh: true });');
 });

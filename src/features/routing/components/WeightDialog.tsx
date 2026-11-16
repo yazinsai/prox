@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { RoutingMember, RoutingStrategy } from '@/types/routing';
 import { ROUTING_WEIGHT_MAX, clampWeight } from '../logic';
-import styles from '../RoutingPage.module.scss';
+import styles from '../RoutingBoard.module.scss';
 
 export interface WeightDialogProps {
   open: boolean;

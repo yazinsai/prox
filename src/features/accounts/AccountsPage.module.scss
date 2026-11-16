@@ -1,0 +1,204 @@
+@use '../../styles/mixins' as *;
+
+// Accounts: the page frame. The ladder itself keeps its styles beside the routing components.
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+  /* While the floating save bar is up, leave room to scroll the last row above it. */
+  padding-bottom: calc(
+    var(--routing-action-bar-height, 0px) + 16px + env(safe-area-inset-bottom, 0px)
+  );
+
+  h1,
+  p {
+    margin: 0;
+  }
+}
+
+.pageHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding-bottom: 4px;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  h1 {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.2;
+  }
+
+  p {
+    max-width: 60ch;
+    color: var(--text-tertiary);
+    text-wrap: pretty;
+  }
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @include mobile {
+    width: 100%;
+
+    > :last-child {
+      margin-left: auto;
+    }
+  }
+}
+
+.policyButton {
+  @include button-reset;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-hover) var(--ease-out-strong),
+    color var(--dur-hover) var(--ease-out-strong),
+    background-color var(--dur-hover) var(--ease-out-strong);
+
+  span {
+    @include text-ellipsis;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 2px;
+  }
+}
+
+.addButton {
+  @include button-reset;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: var(--primary-contrast);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) var(--ease-out-strong),
+    transform var(--dur-press) var(--ease-out-strong);
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 2px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .addButton:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .policyButton:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+  }
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.syncError {
+  padding: 10px 14px;
+  border: 1px solid var(--amber-30);
+  border-radius: 10px;
+  background: var(--amber-10);
+  color: var(--amber-text);
+  font-size: 12.5px;
+}
+
+.pageFoot {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding-top: 4px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+
+  a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--dur-hover) var(--ease-out-strong);
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--text-primary);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addButton,
+  .policyButton,
+  .pageFoot a {
+    transition: none;
+  }
+}

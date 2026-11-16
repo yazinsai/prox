@@ -1,13 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import type { VisualConfigValues } from '@/types/visualConfig';
-import { CONFIG_TAB_ICONS, SECTION_INDEX_LABELS } from '../../constants';
 import type { ConfigSectionProps } from '../../types';
 import { SectionCard } from '../SectionCard';
 import { SelectSetting, SettingList, TextSetting, ToggleSetting } from '../fields/FieldPrimitives';
 import { ProxyUrlField } from '../fields/sharedFields';
 import { getValidationMessage } from '../blocks/shared';
-
-const Icon = CONFIG_TAB_ICONS.network;
 
 type RoutingStrategy = VisualConfigValues['routingStrategy'];
 type DisableImageGeneration = VisualConfigValues['disableImageGeneration'];
@@ -58,8 +55,6 @@ export function SectionNetwork({
 
   return (
     <SectionCard
-      indexLabel={SECTION_INDEX_LABELS.network}
-      icon={<Icon size={16} />}
       title={t('config_management.visual.sections.network.title')}
       description={t('config_management.visual.sections.network.description')}
       animateIn={animateIn}

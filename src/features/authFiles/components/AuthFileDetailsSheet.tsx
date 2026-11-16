@@ -85,7 +85,7 @@ export function AuthFileDetailsSheet(props: AuthFileDetailsSheetProps) {
       if (editor?.saving) return;
 
       void Promise.resolve(confirmClose()).then((ok) => {
-        if (ok) void navigate('/config?field=routingStrategy');
+        if (ok) void navigate('/accounts?policy=1');
       });
     },
     [confirmClose, editor?.saving, navigate]
@@ -228,7 +228,7 @@ export function AuthFileDetailsSheet(props: AuthFileDetailsSheetProps) {
                           settingsLink: (
                             <Link
                               className={styles.settingsLink}
-                              to="/config?field=routingStrategy"
+                              to="/accounts?policy=1"
                               onClick={handleSettingsLinkClick}
                             />
                           ),

@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
@@ -11,7 +12,7 @@ import { NowCard } from './components/NowCard';
 import { TopModels } from './components/TopModels';
 import { Providers } from './components/Providers';
 import { ArchiveSummary } from './components/ArchiveSummary';
-import { RequestBrowser } from './components/RequestSheets';
+import { requestsPath } from '@/features/requests/params';
 import styles from './dashboard.module.scss';
 
 const EMPTY_MODELS: DashboardModel[] = [];
@@ -31,11 +32,8 @@ export function DashboardPage() {
 function DashboardContent() {
   const { t, i18n } = useTranslation();
   const connected = useAuthStore((state) => state.connectionStatus === 'connected');
+  const navigate = useNavigate();
   const [timeWindow, setTimeWindow] = useState<DashboardWindow>('1h');
-  const [requests, setRequests] = useState<{
-    view: 'all' | 'failed';
-    window: DashboardWindow;
-  } | null>(null);
   const data = useDashboardData(timeWindow);
   const archive = useRequestArchive();
   const refreshData = data.refresh;
@@ -61,7 +59,7 @@ function DashboardContent() {
   return (
     <div className={styles.page}>
       <header className={styles.pageHead}>
-        <h1>{t('nav.dashboard')}</h1>
+        <h1>{t('nav.overview')}</h1>
         <span className={styles.updated} data-stale={stale} role="status">
           <i className={styles.statusDot} aria-hidden="true" />
           {stale
@@ -88,7 +86,7 @@ function DashboardContent() {
         runtimeKnown={data.routes?.runtimeKnown ?? true}
         routesObservedAt={data.routes?.observedAt ?? null}
         routesReceivedAt={data.routesReceivedAt}
-        onShowFailures={() => setRequests({ view: 'failed', window: '1h' })}
+        onShowFailures={() => navigate(requestsPath({ status: 'failed', window: '1h' }))}
       />
 
       <div className={styles.columns}>
@@ -110,24 +108,12 @@ function DashboardContent() {
       </div>
 
       <footer className={styles.pageFoot}>
-        <button
-          type="button"
-          className={styles.footLink}
-          disabled={data.trafficState === 'unsupported'}
-          onClick={() => setRequests({ view: 'all', window: timeWindow })}
-        >
+        <Link className={styles.footLink} to={requestsPath({ window: timeWindow })}>
           <span>{t('dashboard_live.request_history')}</span>
           <span aria-hidden="true">→</span>
-        </button>
+        </Link>
         <ArchiveSummary stats={archive.stats} state={archive.state} refresh={archive.refresh} />
       </footer>
-
-      <RequestBrowser
-        models={models}
-        view={requests?.view ?? null}
-        window={requests?.window ?? timeWindow}
-        onClose={() => setRequests(null)}
-      />
     </div>
   );
 }

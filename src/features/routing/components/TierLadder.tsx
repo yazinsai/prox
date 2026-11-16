@@ -11,8 +11,9 @@ import type {
 } from '@/types/routing';
 import { activeCooldownSeconds, canStepMember, summarizeRoute, tierIndexOf } from '../logic';
 import { useDragAutoScroll } from '../useDragAutoScroll';
-import { MemberCard } from './MemberCard';
-import styles from '../RoutingPage.module.scss';
+import type { AccountStatus, AccountUsage } from '@/features/accounts/accountStatus';
+import { MemberCard, type MemberAction } from './MemberCard';
+import styles from '../RoutingBoard.module.scss';
 
 const TIER_STATE_CLASS: Record<RouteTierState, string> = {
   active: styles.tierActive,
@@ -35,6 +36,11 @@ export interface TierLadderProps {
   onMove: (key: string, target: RoutingDropTarget) => void;
   onStep: (key: string, direction: 'up' | 'down') => void;
   onEditWeights: (key: string) => void;
+  /** Account state per member key, shown while no model is picked. */
+  statuses?: ReadonlyMap<string, AccountStatus>;
+  usage?: ReadonlyMap<string, AccountUsage | null>;
+  memberActions?: (member: RoutingMember) => MemberAction[];
+  onOpenMember?: (key: string) => void;
 }
 
 const sameTarget = (left: RoutingDropTarget | null, right: RoutingDropTarget) =>
@@ -56,6 +62,10 @@ export function TierLadder({
   onMove,
   onStep,
   onEditWeights,
+  statuses,
+  usage,
+  memberActions,
+  onOpenMember,
 }: TierLadderProps) {
   const { t } = useTranslation();
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -149,7 +159,7 @@ export function TierLadder({
     const target: RoutingDropTarget = { kind: 'gap', index };
     const valid = isValidTarget(target);
     const hovered = sameTarget(hover, target);
-    const between = index > 0;
+    const between = index > 0 && index < tiers.length;
     const className = [
       styles.gap,
       dragKey && valid ? styles.gapOpen : '',
@@ -159,7 +169,10 @@ export function TierLadder({
       .join(' ');
     return (
       <li className={className} {...dropHandlers(target)} aria-hidden={!between || undefined}>
-        <span className={styles.rail} aria-hidden="true" />
+        {/* Nothing falls through past the last tier, so the rail stops there unless dragging. */}
+        {index < tiers.length || dragKey ? (
+          <span className={styles.rail} aria-hidden="true" />
+        ) : null}
         {dragKey && valid ? (
           <span className={styles.gapDrop}>{t('routing.drop_new_tier')}</span>
         ) : between ? (
@@ -187,7 +200,7 @@ export function TierLadder({
   return (
     <ol ref={ladderRef} className={styles.ladder}>
       <li className={styles.entry}>
-        <span className={styles.entryLabel}>{t('routing.configuration_title')}</span>
+        <span className={styles.entryLabel}>{t('accounts.lens_label')}</span>
         <div className={styles.entryControl}>{entryControl}</div>
         {outcomeLine ? (
           <p
@@ -232,11 +245,18 @@ export function TierLadder({
                   {index + 1}
                 </span>
                 <span className={styles.tierName}>{label}</span>
-                <span className={changed ? styles.tierPriorityChanged : styles.tierPriority}>
-                  {changed && original !== null
-                    ? t('routing.tier_priority_changed', { from: original, to: priority })
-                    : t('routing.tier_priority', { priority })}
-                </span>
+                {/* The raw number only matters while it is about to change. */}
+                {changed ? (
+                  <span className={styles.tierPriorityChanged}>
+                    {original !== null
+                      ? t('routing.tier_priority_changed', { from: original, to: priority })
+                      : t('routing.tier_priority', { priority })}
+                  </span>
+                ) : (
+                  <span className={styles.tierPriority}>
+                    {t('accounts.tier_count', { count: tierMembers.length })}
+                  </span>
+                )}
                 {route ? (
                   <span className={styles.tierState}>{tierStateText(route.state)}</span>
                 ) : null}
@@ -247,6 +267,10 @@ export function TierLadder({
                     key={member.key}
                     member={member}
                     route={memberRoute(member, routeMembers.get(member.key), route?.state)}
+                    status={model ? undefined : statuses?.get(member.key)}
+                    usage={usage?.get(member.key)}
+                    actions={memberActions?.(member)}
+                    onOpen={onOpenMember}
                     strategy={draft.settings.strategy}
                     weights={draft.weights[member.key] ?? []}
                     cooldownSeconds={activeCooldownSeconds(member, model, nowMs)}

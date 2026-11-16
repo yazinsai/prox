@@ -1057,6 +1057,15 @@
     flex: 0 0 auto;
   }
 
+  // Settings sits at the foot of the sidebar, just above the connection card.
+  .nav-section-footer {
+    margin-top: auto;
+  }
+
+  .nav-section-footer + .sidebar-connection {
+    margin-top: -16px;
+  }
+
   .nav-group {
     gap: 2px;
   }

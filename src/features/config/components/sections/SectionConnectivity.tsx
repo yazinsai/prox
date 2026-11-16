@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Collapsible } from '@/components/ui/Collapsible';
-import { CONFIG_TAB_ICONS, SECTION_INDEX_LABELS } from '../../constants';
 import type { ConfigSectionProps } from '../../types';
 import { SectionCard } from '../SectionCard';
 import {
@@ -10,14 +9,12 @@ import {
   TextSetting,
   ToggleSetting,
 } from '../fields/FieldPrimitives';
-import { ApiKeysField, HostField, PortField } from '../fields/sharedFields';
+import { HostField, PortField } from '../fields/sharedFields';
 import { getValidationMessage } from '../blocks/shared';
 import { StringListEditor } from '../blocks/StringListEditor';
 import { SectionDiscovery } from './SectionDiscovery';
 
-const Icon = CONFIG_TAB_ICONS.connectivity;
-
-/** 01 接入与认证：服务地址、端口、认证目录、API 密钥 + TLS / 远程管理折叠组。 */
+/** 接入与认证：服务地址、端口、认证目录 + TLS / 远程管理折叠组。客户端密钥在「连接」分区。 */
 export function SectionConnectivity({
   values,
   validationErrors,
@@ -30,8 +27,6 @@ export function SectionConnectivity({
 
   return (
     <SectionCard
-      indexLabel={SECTION_INDEX_LABELS.connectivity}
-      icon={<Icon size={16} />}
       title={t('config_management.visual.sections.connectivity.title')}
       description={t('config_management.visual.sections.connectivity.description')}
       animateIn={animateIn}
@@ -50,8 +45,6 @@ export function SectionConnectivity({
           disabled={disabled}
         />
       </SettingList>
-
-      <ApiKeysField {...fieldProps} />
 
       <SettingList>
         <TextSetting

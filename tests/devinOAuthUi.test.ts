@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import { createInstance } from 'i18next';
-import { OAuthPage } from '@/features/oauth/OAuthPage';
+import { AddAccountFlow } from '@/features/accounts/components/AddAccountFlow';
 import { OAuthFlowDialog } from '@/features/oauth/components/OAuthFlowDialog';
 import type { ProviderFlowState } from '@/features/oauth/hooks/useOAuthFlows';
 import { OAUTH_PROVIDERS, supportsManualCallback } from '@/features/oauth/providers';
@@ -18,12 +18,21 @@ const i18n = createInstance();
 await i18n.init({ lng: 'en', resources: { en: { translation: en } } });
 
 describe('Devin OAuth login UI', () => {
-  test('renders a gallery tile and a dialog with version and expiry guidance', () => {
+  test('renders a picker tile and a dialog with version and expiry guidance', () => {
     const page = renderToStaticMarkup(
       createElement(
         I18nextProvider,
         { i18n },
-        createElement(MemoryRouter, null, createElement(OAuthPage))
+        createElement(
+          MemoryRouter,
+          null,
+          createElement(AddAccountFlow, {
+            target: { kind: 'picker' },
+            onTargetChange: () => {},
+            onPickApiKey: () => {},
+            onImportFiles: () => {},
+          })
+        )
       )
     );
     expect(page).toContain('Devin');

@@ -3,18 +3,12 @@
 
 import type { VisualConfigValidationErrors } from '@/types/visualConfig';
 import {
-  COMMON_FIELD_IDS,
   CONFIG_SECTION_IDS,
-  CONFIG_TAB_IDS,
   FIELD_VALUE_KEYS,
   SECTION_VALIDATION_FIELDS,
-  type ConfigEditorMode,
   type ConfigTabId,
 } from './constants';
 import { CONFIG_FIELD_SEARCH_INDEX, type VisualSectionId } from './searchIndex';
-
-/** 可视化编辑器暴露的配置项总数（头部 meta 行的「N 项配置」）。 */
-export const CONFIG_FIELD_COUNT = CONFIG_FIELD_SEARCH_INDEX.length;
 
 /** 叶值键（= useVisualConfig dirtyFields 的键）→ fieldId 反查表。 */
 const VALUE_KEY_TO_FIELD_ID: ReadonlyMap<string, string> = (() => {
@@ -29,46 +23,32 @@ const FIELD_ID_TO_SECTION: ReadonlyMap<string, VisualSectionId> = new Map(
   CONFIG_FIELD_SEARCH_INDEX.map((entry) => [entry.fieldId, entry.sectionId])
 );
 
-const COMMON_FIELD_ID_SET: ReadonlySet<string> = new Set<string>(COMMON_FIELD_IDS);
-
-/** 常用 tab 渲染的字段对应的叶值键集合（校验错误归属常用 tab 时用）。 */
-const COMMON_VALUE_KEYS: ReadonlySet<string> = new Set(
-  COMMON_FIELD_IDS.flatMap((fieldId) => [...(FIELD_VALUE_KEYS[fieldId] ?? [])])
-);
-
-/** 脏字段集合 → 点亮脏点的 tabs。常用字段同时点亮 common 与其正典分区（两处都渲染它）。 */
+/** 脏字段集合 → 点亮脏点的分区（每个字段只有一个分区）。 */
 export function resolveDirtyTabs(dirtyFields: ReadonlySet<string>): ReadonlySet<ConfigTabId> {
   const tabs = new Set<ConfigTabId>();
   for (const valueKey of dirtyFields) {
     const fieldId = VALUE_KEY_TO_FIELD_ID.get(valueKey);
-    if (!fieldId) continue;
-    const sectionId = FIELD_ID_TO_SECTION.get(fieldId);
+    const sectionId = fieldId ? FIELD_ID_TO_SECTION.get(fieldId) : undefined;
     if (sectionId) tabs.add(sectionId);
-    if (COMMON_FIELD_ID_SET.has(fieldId)) tabs.add('common');
   }
   return tabs;
 }
 
-/** 每个 tab 的校验错误数（错误徽章）。payload 的校验以旗标计 1。 */
+/** 每个分区的校验错误数（错误徽章）。payload 的校验以旗标计 1。 */
 export function countSectionErrors(
   validationErrors: VisualConfigValidationErrors | undefined,
   hasPayloadValidationErrors: boolean
 ): Record<ConfigTabId, number> {
-  const counts = Object.fromEntries(CONFIG_TAB_IDS.map((tabId) => [tabId, 0])) as Record<
-    ConfigTabId,
-    number
-  >;
-  for (const sectionId of CONFIG_SECTION_IDS) {
-    counts[sectionId] = SECTION_VALIDATION_FIELDS[sectionId].reduce(
-      (total, field) => total + (validationErrors?.[field] ? 1 : 0),
-      0
-    );
-  }
+  const counts = Object.fromEntries(
+    CONFIG_SECTION_IDS.map((sectionId) => [
+      sectionId,
+      SECTION_VALIDATION_FIELDS[sectionId].reduce(
+        (total, field) => total + (validationErrors?.[field] ? 1 : 0),
+        0
+      ),
+    ])
+  ) as Record<ConfigTabId, number>;
   if (hasPayloadValidationErrors) counts.payload += 1;
-  counts.common = Object.entries(validationErrors ?? {}).reduce(
-    (total, [field, error]) => total + (error && COMMON_VALUE_KEYS.has(field) ? 1 : 0),
-    0
-  );
   return counts;
 }
 
@@ -179,14 +159,13 @@ export function resolveStatus(input: ConfigStatusInput): ConfigStatus {
 }
 
 export type HeaderMetaSegment = {
-  key: 'fields' | ConfigStatusKey | 'dirty_source' | 'errors';
+  key: ConfigStatusKey | 'dirty_source' | 'errors';
   labelKey: string;
   count?: number;
   tone: 'muted' | 'warning' | 'error' | 'ok';
 };
 
 export type HeaderMetaInput = {
-  fieldCount: number;
   status: ConfigStatus;
   dirtyCount: number;
   sourceDirty: boolean;
@@ -195,17 +174,10 @@ export type HeaderMetaInput = {
 
 /**
  * 头部 ▍mono meta 行直接消费页面状态机，避免 Header 与保存栏各自推导连接/加载状态。
- * 字段总数常驻；阻断状态优先，编辑状态再补充待保存和校验错误数量。
+ * 阻断状态优先，编辑状态再补充待保存和校验错误数量。
  */
 export function buildHeaderMeta(input: HeaderMetaInput): HeaderMetaSegment[] {
-  const segments: HeaderMetaSegment[] = [
-    {
-      key: 'fields',
-      labelKey: 'config_management.meta_fields',
-      count: input.fieldCount,
-      tone: 'muted',
-    },
-  ];
+  const segments: HeaderMetaSegment[] = [];
   const { status } = input;
 
   if (
@@ -254,15 +226,4 @@ export function buildHeaderMeta(input: HeaderMetaInput): HeaderMetaSegment[] {
     segments.push({ key: status.key, labelKey: 'config_management.meta_synced', tone: 'ok' });
   }
   return segments;
-}
-
-/** localStorage 读取：非法/陈旧值回退默认。 */
-export function readSavedMode(raw: string | null): ConfigEditorMode {
-  return raw === 'source' ? 'source' : 'visual';
-}
-
-export function readSavedSection(raw: string | null): ConfigTabId {
-  return raw !== null && (CONFIG_TAB_IDS as readonly string[]).includes(raw)
-    ? (raw as ConfigTabId)
-    : 'common';
 }

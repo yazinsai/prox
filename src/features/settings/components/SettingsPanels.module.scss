@@ -1,0 +1,395 @@
+@use '../../../styles/mixins' as *;
+
+/* Panels that are not config sections: appearance, about and tools. Same rows and hairlines as
+   the config setting lists, so every section reads as one surface. */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.mono,
+.fact dd.mono {
+  font-family: $font-mono;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--text-tertiary);
+}
+
+/* ---------- Appearance ---------- */
+
+.fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.fieldset + .fieldset {
+  margin-top: 8px;
+}
+
+.legend {
+  margin-bottom: 10px;
+  padding: 0 2px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.themeOption {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.themePreview {
+  position: relative;
+  display: flex;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--border-color);
+  transition: box-shadow var(--dur-hover) var(--ease-out-strong);
+}
+
+.themePreviewSidebar {
+  width: 28%;
+  border-right: 1px solid;
+}
+
+.themePreviewLines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14% 12%;
+
+  span {
+    height: 5px;
+    border-radius: 3px;
+  }
+
+  span:last-child {
+    width: 60%;
+  }
+}
+
+.themeLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+  transition: color var(--dur-hover) var(--ease-out-strong);
+}
+
+.themeOption:hover .themePreview {
+  box-shadow: 0 0 0 1px var(--border-hover);
+}
+
+.themeOption:has(input:checked) {
+  .themePreview {
+    box-shadow: 0 0 0 2px var(--text-primary);
+  }
+
+  .themeLabel {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+}
+
+.themeOption:has(input:focus-visible) .themePreview {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+}
+
+.languageList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--border-color);
+}
+
+.languageOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) var(--ease-out-strong),
+    color var(--dur-hover) var(--ease-out-strong);
+
+  &:nth-child(odd) {
+    border-right: 1px solid var(--border-color);
+  }
+
+  /* An odd count leaves the last language alone on its row; let it take the row. */
+  &:nth-child(odd):last-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+  }
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &:has(input:checked) {
+    color: var(--text-primary);
+    font-weight: 500;
+
+    .check {
+      opacity: 1;
+    }
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--text-primary);
+    outline-offset: -2px;
+  }
+}
+
+.languageName {
+  min-width: 0;
+}
+
+/* Check mark drawn with borders: a short and a long stroke rotated together. */
+.check {
+  width: 5px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  opacity: 0;
+}
+
+/* ---------- About ---------- */
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 24px;
+  min-height: 52px;
+  padding: 10px 18px;
+  box-shadow: 0 1px 0 var(--border-color);
+
+  dt {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  dd {
+    min-width: 0;
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.factWithAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.connection {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--text-quaternary);
+
+  &[data-status='connected'] {
+    background: var(--success-color);
+  }
+
+  &[data-status='connecting'] {
+    background: var(--amber-color);
+  }
+
+  &[data-status='error'] {
+    background: var(--error-color);
+  }
+}
+
+.signOut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 4px 2px 0;
+}
+
+.signOutCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+
+  h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  p {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+}
+
+.signOutActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.danger {
+  color: var(--error-color) !important;
+}
+
+/* ---------- Tools ---------- */
+
+.links {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 60px;
+  padding: 12px 18px;
+  box-shadow: 0 1px 0 var(--border-color);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--dur-hover) var(--ease-out-strong);
+
+  &:hover {
+    background: var(--bg-tertiary);
+    text-decoration: none;
+
+    .linkChevron {
+      color: var(--text-primary);
+      transform: translateX(2px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: -2px;
+  }
+}
+
+.linkCopy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.linkTitle {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.linkDescription {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.linkChevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition:
+    color var(--dur-hover) var(--ease-out-strong),
+    transform var(--dur-hover) var(--ease-out-strong);
+}
+
+@include mobile {
+  .themeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .languageList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .languageOption:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .fact {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 10px 14px;
+  }
+
+  .link {
+    padding: 12px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .themePreview,
+  .themeLabel,
+  .languageOption,
+  .link,
+  .linkChevron {
+    transition: none;
+  }
+
+  .link:hover .linkChevron {
+    transform: none;
+  }
+}

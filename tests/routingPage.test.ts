@@ -17,11 +17,9 @@ import { PolicyPanel } from '../src/features/routing/components/PolicyPanel';
 import type { AuthFileItem } from '../src/types/authFile';
 
 test('language changes do not trigger board reloads or reset the draft', () => {
-  const source = readFileSync('src/features/routing/RoutingPage.tsx', 'utf8');
-  const load = source.slice(
-    source.indexOf('  const load = useCallback'),
-    source.indexOf('  useEffect(() => {')
-  );
+  const source = readFileSync('src/features/accounts/AccountsPage.tsx', 'utf8');
+  const start = source.indexOf('  const load = useCallback');
+  const load = source.slice(start, source.indexOf('  useEffect(() => {', start));
   expect(load).toContain('[connected, fetchConfig, loadModels, apiBase]');
   expect(load).not.toContain("t('common.unknown_error')");
   expect(source).toContain("message: error || t('common.unknown_error')");
@@ -84,7 +82,7 @@ describe('routing board rendering', () => {
         onEditWeights: () => {},
       })
     );
-    expect(html).toContain(i18n.t('routing.configuration_title'));
+    expect(html).toContain(i18n.t('accounts.lens_label'));
     expect(html).toContain('首选');
     expect(html).toContain('备用 1');
     expect(html).not.toContain('正在承接请求');
@@ -140,7 +138,9 @@ describe('routing board rendering', () => {
     // Credentials report real runtime state and never carry the note.
     expect(cardMarkup(html, 'cred:main.json')).not.toContain('无冷却信息');
     const card = readFileSync('src/features/routing/components/MemberCard.tsx', 'utf8');
-    expect(card).toContain("const muted = state === 'disabled' || state === 'ineligible';");
+    expect(card).toContain(
+      "const muted = state === 'disabled' || state === 'ineligible' || status?.kind === 'off';"
+    );
   });
 
   test('a picked model highlights the tier and members that serve it', async () => {
@@ -202,21 +202,24 @@ describe('routing board rendering', () => {
     );
     expect(html).toContain('role="radiogroup"');
     expect(html).toMatch(/role="radio" aria-checked="true" tabindex="0"[^>]*>.*Weighted/);
-    expect(html).toContain('Requests are split across the tier by weight.');
+    expect(html).toContain('Requests are split across the group by weight.');
   });
 
   test('styles respect reduced motion and the route is registered behind navigation', () => {
-    const page = readFileSync('src/features/routing/RoutingPage.module.scss', 'utf8');
+    const page = readFileSync('src/features/routing/RoutingBoard.module.scss', 'utf8');
     const card = readFileSync('src/features/routing/components/MemberCard.module.scss', 'utf8');
     const bar = readFileSync('src/features/routing/components/RoutingSaveBar.module.scss', 'utf8');
     expect(page).toContain('@media (prefers-reduced-motion: reduce)');
     expect(card).toContain('@media (prefers-reduced-motion: reduce)');
     expect(bar).toContain('@media (prefers-reduced-motion: reduce)');
-    expect(readFileSync('src/router/MainRoutes.tsx', 'utf8')).toContain(
-      "{ path: '/routing', element: <RoutingPage /> }"
+    const routes = readFileSync('src/router/MainRoutes.tsx', 'utf8');
+    expect(routes).toContain("{ path: '/accounts', element: <AccountsPage /> }");
+    // Old routing links land on the accounts page, which now owns the arrangement.
+    expect(routes).toContain(
+      '{ path: \'/routing\', element: <Navigate to="/accounts" replace /> }'
     );
     expect(readFileSync('src/components/layout/MainLayout.tsx', 'utf8')).toContain(
-      "labelKey: 'nav.routing'"
+      "labelKey: 'nav.accounts'"
     );
   });
 });
@@ -225,7 +228,7 @@ describe('routing save bar', () => {
   test('floats over the policy column, outside the transition layer', () => {
     const bar = readFileSync('src/features/routing/components/RoutingSaveBar.tsx', 'utf8');
     const policy = readFileSync('src/features/routing/components/PolicyPanel.tsx', 'utf8');
-    const page = readFileSync('src/features/routing/RoutingPage.tsx', 'utf8');
+    const page = readFileSync('src/features/accounts/AccountsPage.tsx', 'utf8');
     // Portalled: sticky/fixed inside the page-transition layer does not track the viewport.
     expect(bar).toContain('createPortal(');
     // The bar measures the column the policy panel marks.

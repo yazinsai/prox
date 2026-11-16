@@ -96,9 +96,6 @@
     "refresh_all": "全部重新整理",
     "logout": "登出"
   },
-  "connection": {
-    "status": "連線狀態:"
-  },
   "nav": {
     "dashboard": "儀表板",
     "quick_start": "快速開始",
@@ -111,7 +108,12 @@
     "plugin_store": "插件商店",
     "config_management": "設定面板",
     "logs": "記錄檢視",
-    "system_info": "中心資訊"
+    "system_info": "中心資訊",
+    "overview": "概覽",
+    "quota": "配額",
+    "accounts": "帳戶",
+    "requests": "請求",
+    "settings": "設定"
   },
   "nav_groups": {
     "operate": "運行",
@@ -132,7 +134,12 @@
     "plugin_store": "探索並安裝插件",
     "logs": "請求追蹤與排查",
     "config_management": "閘道基礎設定",
-    "system_info": "運行與診斷資訊"
+    "system_info": "運行與診斷資訊",
+    "overview": "一切是否正常",
+    "quota": "配額會不會用完",
+    "accounts": "依順序由誰處理請求",
+    "requests": "發生了什麼以及原因",
+    "settings": "連線、設定與關於"
   },
   "dashboard": {
     "hero_verdict_good": "運行平穩",
@@ -232,9 +239,7 @@
     "proxy_url_label": "代理 URL:",
     "retry_count_label": "重試次數:",
     "logging_to_file_enable": "啟用記錄到檔案",
-    "request_log_title": "請求記錄",
     "request_log_enable": "啟用請求記錄",
-    "request_log_warning": "僅在需要排查問題時開啟，日常請保持關閉。",
     "ws_auth_enable": "啟用 /ws/* 驗證",
     "routing_strategy_round_robin": "round-robin（輪詢）",
     "routing_strategy_weighted_round_robin": "weighted-round-robin（加權輪詢）",
@@ -1017,11 +1022,11 @@
     "generating_link": "正在產生授權連結…",
     "waiting_background_hint": "關閉視窗不會中斷授權",
     "restart_login": "重新開始",
-    "success_saved_hint": "憑證已儲存，可在驗證檔案頁管理。",
+    "success_saved_hint": "已儲存，現在會顯示在你的帳戶中。",
     "sign_up_prompt": "還沒有帳號？",
     "copied": "已複製",
     "login_another_account": "登入另一個帳號",
-    "view_auth_files": "查看驗證檔案"
+    "view_auth_files": "返回帳戶"
   },
   "stats": {
     "success": "成功",
@@ -1120,8 +1125,6 @@
     "copy_failed": "複製失敗"
   },
   "config_management": {
-    "title": "設定面板",
-    "meta_fields": "{{count}} 項設定",
     "meta_dirty": "{{count}} 項待儲存",
     "meta_dirty_source": "原始碼有未儲存修改",
     "meta_errors": "{{count}} 項驗證錯誤",
@@ -1131,11 +1134,6 @@
       "save": "儲存變更"
     },
     "discard_confirm_message": "確定放棄所有未儲存的變更並還原到最近的伺服器版本嗎？",
-    "mode": {
-      "label": "編輯模式",
-      "visual": "視覺化",
-      "source": "原始碼"
-    },
     "reload": "重新載入",
     "reload_confirm_message": "重新載入將捨棄你目前未儲存的修改，確定繼續嗎？",
     "save": "儲存",
@@ -1339,13 +1337,9 @@
         "no_results": "沒有符合的設定項"
       },
       "sections": {
-        "common": {
-          "title": "常用",
-          "description": "最常調整的設定項，與完整分區共享同一份資料"
-        },
         "connectivity": {
           "title": "接入與認證",
-          "description": "服務位址、連接埠、認證目錄與 API 金鑰"
+          "description": "代理監聽的位址、憑證的存放位置，以及誰可以管理它"
         },
         "logging": {
           "title": "日誌與診斷",
@@ -1469,7 +1463,6 @@
           "title": "網路設定",
           "description": "代理、重試和路由設定",
           "proxy_url": "代理 URL",
-          "proxy_url_sponsor_hint": "沒有合適的代理？",
           "request_retry": "請求重試次數",
           "max_retry_credentials": "最大重試憑證數",
           "max_retry_credentials_hint": "留空表示不設定；設為 0 或負整數表示嘗試所有可用憑證。",
@@ -1525,14 +1518,17 @@
           "override_raw_rules_desc": "始終按原始 JSON 片段覆寫參數值，適合 response_format、schema 等複雜欄位",
           "filter_rules": "篩選規則",
           "filter_rules_desc": "透過 JSON Path 預篩選上游請求體，自動剔除不合規/冗餘參數（Request Sanitization）"
+        },
+        "connect": {
+          "title": "連線"
         }
       },
       "api_keys": {
-        "label": "用戶端 API 金鑰（access.api-keys）",
+        "label": "用戶端 API 金鑰",
         "add": "新增 API 金鑰",
         "generate": "產生",
         "empty": "暫無 API 金鑰",
-        "hint": "每個條目代表一個 API 金鑰（與「API 金鑰管理」頁面樣式一致）",
+        "hint": "用戶端使用其中一個作為 API 金鑰。儲存後生效。",
         "edit_title": "編輯 API 金鑰",
         "add_title": "新增 API 金鑰",
         "input_label": "API 金鑰",
@@ -1638,7 +1634,7 @@
     "search_empty_title": "沒有符合的帳號",
     "search_empty_desc": "請嘗試其他檔案名稱或電子郵件，或清除搜尋。",
     "search_clear": "清除搜尋",
-    "title": "配額管理",
+    "title": "配額",
     "description": "集中查看 OAuth 配額與剩餘情況",
     "refresh_all_credentials": "重新整理全部憑證",
     "sort_label": "排序",
@@ -2047,32 +2043,13 @@
     "empty_src_desc": "此插件選單未提供可嵌入的頁面位址。"
   },
   "system_info": {
-    "title": "管理中心資訊",
     "about_title": "prox · CLI Proxy API 管理中心",
-    "models_title": "可用模型清單",
-    "models_desc": "展示 /models 回傳的模型，並自動使用伺服器儲存的 API Key 進行驗證。",
-    "models_loading": "正在載入可用模型...",
-    "models_empty": "未從 /models 取得到模型資料",
-    "models_error": "取得模型清單失敗",
-    "models_count": "可用模型 {{count}} 個",
     "version_check_button": "檢查更新",
     "version_update_available": "有新版本可用：{{version}}",
     "version_is_latest": "目前已是最新版本",
     "version_check_error": "檢查更新失敗",
     "version_current_missing": "未取得到伺服器版本號，暫無法比對",
-    "version_unknown": "未知",
-    "quick_links_title": "快速連結",
-    "quick_links_desc": "存取專案儲存庫和文件，取得協助和更新。",
-    "link_main_repo": "主程式儲存庫",
-    "link_main_repo_desc": "CLI Proxy API 核心程式原始碼",
-    "link_webui_repo": "WebUI 儲存庫",
-    "link_webui_repo_desc": "管理中心前端介面原始碼",
-    "link_docs": "使用教學",
-    "link_docs_desc": "設定指南和使用說明",
-    "clear_login_title": "本地登入資訊",
-    "clear_login_desc": "清理本地儲存的登入資訊並登出。",
-    "clear_login_button": "清理登入資訊",
-    "clear_login_confirm": "確認清理本地登入資訊並登出？"
+    "version_unknown": "未知"
   },
   "notification": {
     "trusted_proxies_restart_required": "可信任代理設定已儲存，重新啟動後端後生效。",
@@ -2120,11 +2097,6 @@
     "collapse": "收起",
     "subtitle": "CLI Proxy API 管理控制台",
     "auth_files_count": "驗證檔案：{{count}} 個"
-  },
-  "footer": {
-    "api_version": "CLI Proxy API 版本",
-    "build_date": "建置時間",
-    "version": "管理中心版本"
   },
   "providersPage": {
     "behavior": {
@@ -2653,7 +2625,6 @@
     "guide_link": "封存與更新指南"
   },
   "dashboard_live": {
-    "manage_routing": "管理路由",
     "updated": "更新於 {{time}}",
     "stale": "上次已知資料 · 重新整理失敗",
     "model": "模型",
@@ -2777,6 +2748,225 @@
     "group_serving": "服務中",
     "group_fallback": "作為備援",
     "group_cooling": "冷卻中",
-    "archive_size": "{{size}} GB"
+    "archive_size": "{{size}} GB",
+    "manage_accounts": "帳戶"
+  },
+  "requests_page": {
+    "title": "請求",
+    "tab_history": "歷史",
+    "tab_server": "伺服器日誌",
+    "duration_minutes": "{{minutes}}分{{seconds}}秒",
+    "reason_rate_limited": "觸發限流",
+    "reason_unauthorized": "認證失敗",
+    "reason_upstream_error": "上游錯誤",
+    "reason_invalid_request": "無效請求",
+    "reason_cancelled": "已取消",
+    "reason_stream_interrupted": "串流已中斷",
+    "outcome_failed": "失敗",
+    "outcome_success": "成功",
+    "detail_error": "無法載入此請求的嘗試紀錄。",
+    "loading_attempts": "正在載入嘗試紀錄…",
+    "no_attempts": "沒有記錄到供應商嘗試。",
+    "identifiers": "識別碼",
+    "copy_value": "複製{{label}}",
+    "download_error": "下載失敗，請重試。",
+    "request_at": "完成於 {{time}}",
+    "loading": "正在載入請求",
+    "unsupported_title": "此代理不記錄請求歷史",
+    "unsupported_desc": "請求歷史需要支援請求觀測的後端。伺服器日誌仍會顯示每個請求。",
+    "open_server_log": "開啟伺服器日誌",
+    "error_title": "無法載入請求",
+    "error_desc": "代理沒有回應。請確認它正在執行，然後重試。",
+    "summary_hour_other": "最近 1 小時 {{total}} 個請求",
+    "summary_hours_other": "最近 {{hours}} 小時 {{total}} 個請求",
+    "summary_none_hour": "最近 1 小時沒有請求",
+    "summary_none_hours": "最近 {{hours}} 小時沒有請求",
+    "success_rate": "成功率 {{rate}}%",
+    "recorded_since": "自 {{time}} 起記錄",
+    "refreshing": "正在重新整理…",
+    "no_failures_hour": "最近 1 小時沒有失敗的請求",
+    "no_failures_hours": "最近 {{hours}} 小時沒有失敗的請求",
+    "no_failures_desc": "此時段內的請求全部成功。",
+    "show_all": "顯示全部請求",
+    "no_requests_desc": "用戶端呼叫代理後，請求會立即顯示在這裡。",
+    "widen_window": "查看最近 24 小時",
+    "showing_of": "顯示 {{shown}} / {{total}}",
+    "showing_other": "顯示 {{shown}} 個請求",
+    "load_more_error": "無法載入更早的請求。",
+    "load_older": "載入更早的請求",
+    "end_of_list": "此時段內的請求已全部顯示",
+    "summary_hour_one": "最近 1 小時 {{total}} 個請求",
+    "summary_hours_one": "最近 {{hours}} 小時 {{total}} 個請求",
+    "showing_one": "顯示 {{shown}} 個請求"
+  },
+  "settings_page": {
+    "title": "設定",
+    "reload_hint": "從代理重新載入設定",
+    "nav": {
+      "label": "設定分區",
+      "group_proxy": "代理",
+      "group_dashboard": "控制台",
+      "connect": "連線",
+      "connectivity": "存取",
+      "network": "網路",
+      "logging": "日誌",
+      "streaming": "串流",
+      "advanced": "進階",
+      "payload": "負載規則",
+      "source": "config.yaml",
+      "appearance": "外觀",
+      "tools": "進階工具",
+      "about": "關於"
+    },
+    "connect": {
+      "title": "連線用戶端",
+      "description": "將相容 OpenAI 或 Anthropic 的用戶端指向 prox，並使用下方任一 API 金鑰。",
+      "openai_label": "相容 OpenAI",
+      "openai_hint": "適用於 Codex、OpenAI SDK 與多數工具的 Base URL",
+      "anthropic_label": "相容 Anthropic",
+      "anthropic_hint": "適用於 Claude Code 與 Anthropic SDK 的 Base URL",
+      "copy": "複製{{name}} Base URL"
+    },
+    "source": {
+      "title": "config.yaml",
+      "description": "以 YAML 呈現的完整代理設定，包括其他分區未顯示的設定。儲存時依此處內容寫入檔案。"
+    },
+    "appearance": {
+      "title": "外觀",
+      "description": "立即生效，僅作用於此瀏覽器。",
+      "theme": "主題",
+      "language": "語言"
+    },
+    "about": {
+      "title": "關於",
+      "dashboard_version": "控制台",
+      "proxy_version": "代理",
+      "built": "代理建置時間",
+      "connection": "已連線到",
+      "sign_out_title": "登出",
+      "sign_out_description": "登出會結束目前的工作階段。忘記此瀏覽器還會刪除已儲存的位址與管理金鑰。",
+      "forget_button": "忘記此瀏覽器",
+      "forget_title": "忘記此瀏覽器？",
+      "forget_confirm": "你將登出，已儲存的代理位址與管理金鑰會從此瀏覽器中刪除。",
+      "log_out": "登出"
+    },
+    "tools": {
+      "title": "進階工具",
+      "description": "很少用到的頁面。日常工作在帳戶與額度頁完成。",
+      "credential_files": "憑證檔案",
+      "credential_files_desc": "上傳、下載或批次編輯各已登入帳戶背後的憑證檔案。",
+      "model_exclusions": "模型排除",
+      "model_exclusions_desc": "對某個 OAuth 提供者的帳戶隱藏特定模型。",
+      "model_aliases": "模型別名",
+      "model_aliases_desc": "重新命名或複製 OAuth 提供者提供的模型。",
+      "plugins": "外掛",
+      "plugins_desc": "啟用、設定與更新已安裝的外掛。",
+      "plugin_store": "外掛商店",
+      "plugin_store_desc": "瀏覽並安裝外掛。"
+    },
+    "request_log": {
+      "title": "請求日誌",
+      "description": "完整記錄每個請求與回應，請求封存以此為基礎。切換後立即儲存。",
+      "toggle_hint": "關閉後，新請求將不再進入封存。"
+    }
+  },
+  "accounts": {
+    "kind_subscription": "{{provider}} · 訂閱",
+    "kind_service_account": "{{provider}} · 服務帳號",
+    "kind_api_key": "{{provider}} · API 金鑰",
+    "kind_compat_one": "OpenAI 相容 · {{count}} 個金鑰",
+    "kind_compat_other": "OpenAI 相容 · {{count}} 個金鑰",
+    "usage_requests_one": "{{formatted}} 次請求",
+    "usage_requests_other": "{{formatted}} 次請求",
+    "usage_failed": "{{formatted}} 次失敗",
+    "open_account": "開啟 {{name}}（{{kind}}）",
+    "status_problem": "需要處理",
+    "status_cooling": "冷卻中 · {{time}}",
+    "status_partial_one": "1 個模型冷卻中 · {{time}}",
+    "status_partial_other": "{{count}} 個模型冷卻中 · {{time}}",
+    "status_ready": "可用",
+    "status_on": "已啟用",
+    "status_reason": "原因：{{reason}}",
+    "lens_label": "由哪個帳戶處理",
+    "lens_placeholder": "選擇模型",
+    "tier_count_one": "{{count}} 個帳戶",
+    "tier_count_other": "{{count}} 個帳戶",
+    "loading": "正在載入帳戶…",
+    "load_failed": "無法載入帳戶：{{message}}",
+    "refresh_failed": "顯示上次已知狀態。重新整理失敗：{{message}}",
+    "empty_title": "還沒有帳戶",
+    "empty_desc": "登入訂閱或新增 API 金鑰後，prox 就會開始向它傳送請求。",
+    "add": "新增帳戶",
+    "subtitle": "請求會交給第一個能處理的群組；群組內所有帳戶都不可用時，由下一組接手。",
+    "policy": "路由策略",
+    "policy_summary_sticky": "{{strategy}} · 工作階段保持",
+    "policy_open": "路由策略：{{summary}}",
+    "policy_description": "prox 如何在群組內分配請求，以及帳戶失敗時如何重試。修改會與帳戶順序一起儲存。",
+    "done": "完成",
+    "more_tools": "更多工具",
+    "tool_credential_files": "憑證檔案",
+    "tool_aliases": "模型別名",
+    "tool_exclusions": "模型排除",
+    "remove_title": "移除 {{name}}？",
+    "remove_credential": "已儲存的登入將被刪除，你可以隨時重新登入。",
+    "remove_api_key": "該金鑰將從設定中刪除。",
+    "remove": "移除",
+    "removed": "已移除 {{name}}",
+    "action_edit": "編輯詳情…",
+    "action_sign_in_again": "重新登入",
+    "action_clear_cooldown": "清除冷卻",
+    "action_turn_on": "啟用",
+    "action_turn_off": "停用",
+    "action_remove": "移除…",
+    "cooldown_cleared": "已清除 {{name}} 的冷卻",
+    "turned_on": "已啟用 {{name}}",
+    "turned_off": "已停用 {{name}}",
+    "imported_one": "已匯入 {{count}} 個憑證檔案",
+    "imported_other": "已匯入 {{count}} 個憑證檔案",
+    "add_title": "新增帳戶",
+    "add_subscriptions": "使用訂閱登入",
+    "add_subscriptions_hint": "使用你已付費的方案，prox 會自動保持登入有效。",
+    "add_api_keys": "新增 API 金鑰",
+    "add_api_keys_hint": "按量付費的服務商金鑰，或任何 OpenAI 相容端點。",
+    "add_other": "其他方式：",
+    "add_import_file": "匯入憑證檔案",
+    "add_vertex": "Vertex 服務帳號",
+    "api_key_caption": {
+      "claude": "Anthropic API",
+      "codex": "OpenAI Responses API",
+      "gemini": "Google AI Studio",
+      "openaiCompatibility": "任何 OpenAI 風格端點",
+      "xai": "xAI API",
+      "vertex": "Google Vertex AI",
+      "meta": "Meta Llama API",
+      "interactions": "Gemini Interactions API"
+    },
+    "sheet_ready": "可以處理請求",
+    "sheet_on": "已啟用",
+    "sheet_on_hint": "代理不會回報 API 金鑰的冷卻狀態，失敗的金鑰會出現在請求記錄中。",
+    "sheet_off": "已停用",
+    "sheet_off_hint": "在重新啟用之前，prox 會跳過這個帳戶。",
+    "sheet_problem": "需要處理",
+    "sheet_problem_hint": "代理將此帳戶標記為不可用，通常重新登入即可解決。",
+    "sheet_cooling": "冷卻中 · {{time}} 後恢復",
+    "sheet_partial_one": "1 個模型冷卻中 · {{time}} 後恢復",
+    "sheet_partial_other": "{{count}} 個模型冷卻中 · 最早 {{time}} 後恢復",
+    "sheet_whole_account": "整個帳戶",
+    "sheet_unknown_model": "未知模型",
+    "sheet_back_in": "{{time}} 後恢復",
+    "sheet_requests": "請求",
+    "sheet_failed": "失敗",
+    "sheet_failed_share": "佔請求的 {{share}}%",
+    "sheet_order": "順序",
+    "sheet_order_of": "第 {{position}} 組，共 {{count}} 組",
+    "sheet_models": "可處理的模型",
+    "sheet_models_loading": "正在載入模型…",
+    "sheet_models_none": "此帳戶沒有註冊模型。",
+    "sheet_models_more": "另外 {{count}} 個",
+    "sheet_quota": "查看配額與重置時間 →",
+    "sheet_advanced": "進階設定",
+    "sheet_edit_key": "編輯金鑰",
+    "sheet_keys": "金鑰",
+    "sheet_models_count": "模型"
   }
 }

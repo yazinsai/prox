@@ -33,52 +33,12 @@
 }
 
 .header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border-color);
 
   @include mobile {
-    grid-template-columns: minmax(0, 1fr);
     padding-bottom: 12px;
   }
-}
-
-.badges {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.indexBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-family: $font-mono;
-  font-size: 11px;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
-}
-
-.iconBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  color: var(--text-secondary);
-  flex: 0 0 auto;
 }
 
 .heading {

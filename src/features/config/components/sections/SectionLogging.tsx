@@ -1,12 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { CONFIG_TAB_ICONS, SECTION_INDEX_LABELS } from '../../constants';
 import type { ConfigSectionProps } from '../../types';
 import { SectionCard } from '../SectionCard';
 import { SettingList, TextSetting, ToggleSetting } from '../fields/FieldPrimitives';
 import { DebugToggle, LoggingToFileToggle } from '../fields/sharedFields';
 import { getValidationMessage } from '../blocks/shared';
-
-const Icon = CONFIG_TAB_ICONS.logging;
 
 /** 03 日志与诊断：调试、商业模式（重启生效）、日志输出与使用统计。 */
 export function SectionLogging({
@@ -21,8 +18,6 @@ export function SectionLogging({
 
   return (
     <SectionCard
-      indexLabel={SECTION_INDEX_LABELS.logging}
-      icon={<Icon size={16} />}
       title={t('config_management.visual.sections.logging.title')}
       description={t('config_management.visual.sections.logging.description')}
       animateIn={animateIn}

@@ -26,8 +26,8 @@ export function Providers({ providers, routesState, observedAt, receivedAt }: Pr
     >
       <header className={styles.cardHead}>
         <h2 id="dashboard-providers-title">{t('dashboard_live.providers_title')}</h2>
-        <Link to="/routing" className={styles.textButton}>
-          {t('dashboard_live.manage_routing')}
+        <Link to="/accounts" className={styles.textButton}>
+          {t('dashboard_live.manage_accounts')}
           <span aria-hidden="true"> →</span>
         </Link>
       </header>

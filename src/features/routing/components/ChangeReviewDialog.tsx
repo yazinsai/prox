@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { RoutingChange, RoutingMember } from '@/types/routing';
 import { SETTING_LABEL_KEYS, formatSettingValue, formatWeightValue } from '../format';
-import styles from '../RoutingPage.module.scss';
+import styles from '../RoutingBoard.module.scss';
 
 export interface ChangeReviewDialogProps {
   open: boolean;

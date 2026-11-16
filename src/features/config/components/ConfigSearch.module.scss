@@ -34,8 +34,10 @@
   position: absolute;
   z-index: 20;
   top: calc(100% + 6px);
-  left: 0;
   right: 0;
+  /* Labels and section names need more room than the box in the page header. */
+  width: max(100%, min(400px, calc(100vw - 32px)));
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 2px;

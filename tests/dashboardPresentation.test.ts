@@ -6,7 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import { readFileSync } from 'node:fs';
 import { ArchiveSummary } from '../src/features/dashboard/components/ArchiveSummary';
-import { RequestTable } from '../src/features/dashboard/components/RequestSheets';
+import { RequestList } from '../src/features/requests/components/RequestList';
 import { rankRequestBreakdown } from '../src/features/dashboard/requestBreakdown';
 import { NowCard } from '../src/features/dashboard/components/NowCard';
 import { TopModels } from '../src/features/dashboard/components/TopModels';
@@ -132,10 +132,10 @@ describe('dashboard request presentation', () => {
   };
 
   test('interrupted streams are labelled failures even after HTTP 200', () => {
-    const markup = render(createElement(RequestTable, { requests: [request], onSelect: () => {} }));
+    const markup = render(createElement(RequestList, { requests: [request], onSelect: () => {} }));
     expect(markup).toContain('Interrupted');
     expect(markup).toContain('data-failed="true"');
-    expect(markup).toContain('Open request request-fixture');
+    expect(markup).toContain('data-request-id="request-fixture"');
     expect(markup).toContain('2s');
     expect(markup).not.toContain('>200<');
   });

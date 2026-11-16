@@ -2,7 +2,7 @@ import { useId, useRef, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { ROUTING_STRATEGIES, type RoutingSettings, type RoutingStrategy } from '@/types/routing';
-import styles from '../RoutingPage.module.scss';
+import styles from '../RoutingBoard.module.scss';
 
 const strategyKey = (strategy: RoutingStrategy) => strategy.replace(/-/g, '_');
 
@@ -12,6 +12,8 @@ const CREDENTIALS_MAX = 1000;
 export interface PolicyPanelProps {
   settings: RoutingSettings;
   disabled?: boolean;
+  /** Inside a sheet: no card chrome or heading, the sheet supplies both. */
+  bare?: boolean;
   onChange: (next: RoutingSettings) => void;
 }
 
@@ -39,7 +41,12 @@ function StrategyMark({ strategy }: { strategy: RoutingStrategy }) {
   );
 }
 
-export function PolicyPanel({ settings, disabled = false, onChange }: PolicyPanelProps) {
+export function PolicyPanel({
+  settings,
+  disabled = false,
+  bare = false,
+  onChange,
+}: PolicyPanelProps) {
   const { t } = useTranslation();
   const id = useId();
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -71,12 +78,12 @@ export function PolicyPanel({ settings, disabled = false, onChange }: PolicyPane
 
   return (
     <aside
-      className={styles.policy}
+      className={bare ? styles.policyBare : styles.policy}
       aria-labelledby={`${id}-title`}
       // The floating save bar lines up with this column (see RoutingSaveBar).
       data-routing-policy-column=""
     >
-      <div className={styles.policyHead}>
+      <div className={bare ? styles.srOnly : styles.policyHead}>
         <h2 id={`${id}-title`} className={styles.policyTitle}>
           {t('routing.policy_title')}
         </h2>

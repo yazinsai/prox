@@ -150,7 +150,7 @@ export function RequestArchivePanelContent({ stats, state, onRefresh }: Props) {
             {t('common.refresh')}
           </Button>
         ) : null}
-        <Link to="/logs">
+        <Link to="/requests?tab=server">
           {t('request_archive.logs_link')} <span aria-hidden="true">→</span>
         </Link>
       </footer>

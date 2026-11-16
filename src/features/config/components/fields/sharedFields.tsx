@@ -1,13 +1,10 @@
-// 6 个高频字段的唯一渲染源：SectionCommon（常用 tab）与各正典分区共用这些组件，
-// 两处渲染结构性不可能漂移（旧简单模式靠共享 JSX 常量达成同一目的）。
-// 注意：只挂载激活 tab，所以设置行的 DOM id 不会重复。
+// Field components shared between sections. Only the active section is mounted, so a setting
+// row's DOM id is never duplicated.
 
 import { useTranslation } from 'react-i18next';
 import type { VisualConfigValues } from '@/types/visualConfig';
-import { SPONSORS } from '../../sponsors';
 import { ApiKeysCardEditor } from '../blocks/ApiKeysCardEditor';
 import { SettingCell, SettingList, TextSetting, ToggleSetting } from './FieldPrimitives';
-import fieldStyles from './Field.module.scss';
 
 export type SharedFieldProps = {
   values: VisualConfigValues;
@@ -61,32 +58,13 @@ export function PortField({
 
 export function ProxyUrlField({ values, disabled, onChange, wide }: SharedFieldProps) {
   const { t } = useTranslation();
-  // 代理 URL 较长，调用处传 wide 独占整行；说明位挂赞助跳转（数据见 sponsors.ts，空则不渲染）。
-  const sponsor = SPONSORS[0];
+  // Proxy URLs are long, so callers pass `wide` to give the field a full row.
   return (
     <TextSetting
       fieldId="proxyUrl"
       wide={wide}
       size="lg"
       label={t('config_management.visual.sections.network.proxy_url')}
-      description={
-        sponsor ? (
-          <>
-            {t('config_management.visual.sections.network.proxy_url_sponsor_hint')}{' '}
-            <a
-              className={fieldStyles.fieldSponsorLink}
-              href={sponsor.url}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-            >
-              {sponsor.logo ? (
-                <img className={fieldStyles.fieldSponsorLogo} src={sponsor.logo} alt="" />
-              ) : null}
-              {sponsor.name}
-            </a>
-          </>
-        ) : undefined
-      }
       placeholder="socks5://user:pass@127.0.0.1:1080/"
       value={values.proxyUrl}
       onChange={(proxyUrl) => onChange({ proxyUrl })}

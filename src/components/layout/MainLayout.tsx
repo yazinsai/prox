@@ -15,19 +15,14 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { PageTransition } from '@/components/common/PageTransition';
 import { MainRoutes } from '@/router/MainRoutes';
-import { authFilesApi, pluginsApi } from '@/services/api';
+import { pluginsApi } from '@/services/api';
 import {
-  IconSidebarAuthFiles,
-  IconSidebarConfig,
+  IconSidebarAccounts,
   IconSidebarDashboard,
-  IconSidebarLogs,
-  IconSidebarOauth,
   IconSidebarPlugins,
-  IconSidebarProviders,
   IconSidebarQuota,
-  IconSidebarRouting,
-  IconSidebarStore,
-  IconSidebarSystem,
+  IconSidebarRequests,
+  IconSidebarSettings,
   IconChevronDown,
 } from '@/components/ui/icons';
 import proxMark from '@/assets/prox-mark.svg';
@@ -35,11 +30,9 @@ import {
   useAuthStore,
   useLoginTransitionStore,
   useConfigStore,
-  useLanguageStore,
   useNotificationStore,
   useThemeStore,
 } from '@/stores';
-import { AUTH_FILES_CHANGED_EVENT } from '@/features/authFiles/authFilesEvents';
 import {
   collectPluginResourceEntries,
   PLUGIN_RESOURCES_REFRESH_EVENT,
@@ -47,23 +40,15 @@ import {
   type PluginResourceEntry,
 } from '@/features/plugins/pluginResources';
 import { triggerHeaderRefresh } from '@/hooks/useHeaderRefresh';
-import { LANGUAGE_LABEL_KEYS, LANGUAGE_ORDER } from '@/utils/constants';
-import { isSupportedLanguage } from '@/utils/language';
 import { isSidebarToggleShortcut } from '@/utils/sidebarShortcut';
 import type { Theme } from '@/types';
 
 const sidebarIcons: Record<string, ReactNode> = {
-  dashboard: <IconSidebarDashboard size={18} />,
-  aiProviders: <IconSidebarProviders size={18} />,
-  authFiles: <IconSidebarAuthFiles size={18} />,
-  oauth: <IconSidebarOauth size={18} />,
+  overview: <IconSidebarDashboard size={18} />,
   quota: <IconSidebarQuota size={18} />,
-  routing: <IconSidebarRouting size={18} />,
-  plugins: <IconSidebarPlugins size={18} />,
-  pluginStore: <IconSidebarStore size={18} />,
-  config: <IconSidebarConfig size={18} />,
-  logs: <IconSidebarLogs size={18} />,
-  system: <IconSidebarSystem size={18} />,
+  accounts: <IconSidebarAccounts size={18} />,
+  requests: <IconSidebarRequests size={18} />,
+  settings: <IconSidebarSettings size={18} />,
 };
 
 interface SidebarNavLinkItem {
@@ -94,7 +79,8 @@ const NAV_TOOLTIP_VIEWPORT_MARGIN = 8;
 
 interface SidebarNavGroup {
   id: string;
-  labelKey: string;
+  /** Unlabelled groups read as one list; plugin pages get a heading of their own. */
+  labelKey?: string;
   items: SidebarNavItem[];
 }
 
@@ -180,13 +166,6 @@ const headerIcons = {
     </svg>
   ),
 
-  language: (
-    <svg {...headerIconProps}>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M2 12h20" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
-  ),
   sun: (
     <svg {...headerIconProps}>
       <circle cx="12" cy="12" r="4" />
@@ -312,12 +291,9 @@ export function MainLayout() {
 
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
-  const language = useLanguageStore((state) => state.language);
-  const setLanguage = useLanguageStore((state) => state.setLanguage);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [authFilesCount, setAuthFilesCount] = useState<number | null>(null);
   const [railTooltip, setRailTooltip] = useState<{
     targetID: string;
     label: string;
@@ -325,24 +301,24 @@ export function MainLayout() {
     anchorTop: number;
     top: number;
   } | null>(null);
-  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [pluginResources, setPluginResources] = useState<PluginResourceEntry[]>([]);
   const [expandedPluginResourceIDs, setExpandedPluginResourceIDs] = useState<Set<string>>(
     () => new Set()
   );
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const authFilesCountRequestRef = useRef(0);
   const railTooltipRef = useRef<HTMLDivElement | null>(null);
   const focusedRailItemRef = useRef<HTMLElement | null>(null);
-  const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const themeMenuRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
 
   const fullBrandName = 'prox · CLI Proxy API Management Center';
   const abbrBrandName = 'prox';
   const arrivingFromLogin = useLoginTransitionStore((state) => state.phase === 'revealing');
-  const isLogsPage = location.pathname.startsWith('/logs');
+  // The server log scrolls inside a full-height viewport; every other view scrolls the page.
+  const isLogsPage =
+    location.pathname === '/requests' &&
+    new URLSearchParams(location.search).get('tab') === 'server';
   const isPluginResourcePage = location.pathname.startsWith('/plugin-pages');
   const showSidebarLabels = !sidebarCollapsed || sidebarOpen;
 
@@ -435,19 +411,11 @@ export function MainLayout() {
     };
   }, []);
 
-  const closeLanguageMenu = useCallback(() => setLanguageMenuOpen(false), []);
   const closeThemeMenu = useCallback(() => setThemeMenuOpen(false), []);
-  useMenuDismiss(languageMenuOpen, languageMenuRef, closeLanguageMenu);
   useMenuDismiss(themeMenuOpen, themeMenuRef, closeThemeMenu);
-
-  const toggleLanguageMenu = useCallback(() => {
-    setLanguageMenuOpen((prev) => !prev);
-    setThemeMenuOpen(false);
-  }, []);
 
   const toggleThemeMenu = useCallback(() => {
     setThemeMenuOpen((prev) => !prev);
-    setLanguageMenuOpen(false);
   }, []);
 
   const handleThemeSelect = useCallback(
@@ -456,17 +424,6 @@ export function MainLayout() {
       setThemeMenuOpen(false);
     },
     [setTheme]
-  );
-
-  const handleLanguageSelect = useCallback(
-    (nextLanguage: string) => {
-      if (!isSupportedLanguage(nextLanguage)) {
-        return;
-      }
-      setLanguage(nextLanguage);
-      setLanguageMenuOpen(false);
-    },
-    [setLanguage]
   );
 
   useEffect(() => {
@@ -489,39 +446,18 @@ export function MainLayout() {
     }
   }, [connectionStatus, supportsPlugin]);
 
-  const loadAuthFilesCount = useCallback(async () => {
-    const requestID = ++authFilesCountRequestRef.current;
-    if (connectionStatus !== 'connected') {
-      setAuthFilesCount(null);
-      return;
-    }
-
-    try {
-      const response = await authFilesApi.list();
-      if (requestID !== authFilesCountRequestRef.current) return;
-      setAuthFilesCount(Array.isArray(response?.files) ? response.files.length : null);
-    } catch {
-      if (requestID !== authFilesCountRequestRef.current) return;
-      setAuthFilesCount(null);
-    }
-  }, [connectionStatus]);
-
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void loadPluginResources();
-      void loadAuthFilesCount();
     }, 0);
 
     window.addEventListener(PLUGIN_RESOURCES_REFRESH_EVENT, loadPluginResources);
-    window.addEventListener(AUTH_FILES_CHANGED_EVENT, loadAuthFilesCount);
 
     return () => {
-      authFilesCountRequestRef.current += 1;
       window.clearTimeout(timer);
       window.removeEventListener(PLUGIN_RESOURCES_REFRESH_EVENT, loadPluginResources);
-      window.removeEventListener(AUTH_FILES_CHANGED_EVENT, loadAuthFilesCount);
     };
-  }, [apiBase, loadPluginResources, loadAuthFilesCount]);
+  }, [apiBase, loadPluginResources]);
 
   const pluginResourceGroups = pluginResources.reduce<
     Array<{ pluginID: string; pluginTitle: string; entries: PluginResourceEntry[] }>
@@ -574,103 +510,34 @@ export function MainLayout() {
       })
     : [];
 
+  // Four everyday questions up top; settings sits apart at the foot of the sidebar.
   const navGroups: SidebarNavGroup[] = [
     {
-      id: 'operate',
-      labelKey: 'nav_groups.operate',
+      id: 'main',
       items: [
         {
           path: '/',
-          labelKey: 'nav.dashboard',
-          metaKey: 'nav_meta.dashboard',
-          icon: sidebarIcons.dashboard,
+          labelKey: 'nav.overview',
+          metaKey: 'nav_meta.overview',
+          icon: sidebarIcons.overview,
         },
-      ],
-    },
-    {
-      id: 'gateway',
-      labelKey: 'nav_groups.gateway',
-      items: [
-        {
-          path: '/ai-providers',
-          labelKey: 'nav.ai_providers',
-          metaKey: 'nav_meta.ai_providers',
-          icon: sidebarIcons.aiProviders,
-        },
-        {
-          path: '/auth-files',
-          labelKey: 'nav.auth_files',
-          metaKey: 'nav_meta.auth_files',
-          badge: authFilesCount ?? undefined,
-          badgeLabel:
-            typeof authFilesCount === 'number'
-              ? t('sidebar.auth_files_count', { count: authFilesCount })
-              : undefined,
-          icon: sidebarIcons.authFiles,
-        },
-        {
-          path: '/oauth',
-          labelKey: 'nav.oauth',
-          metaKey: 'nav_meta.oauth',
-          icon: sidebarIcons.oauth,
-        },
-        {
-          path: '/routing',
-          labelKey: 'nav.routing',
-          metaKey: 'nav_meta.routing',
-          icon: sidebarIcons.routing,
-        },
-      ],
-    },
-    {
-      id: 'observe',
-      labelKey: 'nav_groups.observe',
-      items: [
         {
           path: '/quota',
-          labelKey: 'nav.quota_management',
-          metaKey: 'nav_meta.quota_management',
+          labelKey: 'nav.quota',
+          metaKey: 'nav_meta.quota',
           icon: sidebarIcons.quota,
         },
         {
-          path: '/logs',
-          labelKey: 'nav.logs',
-          metaKey: 'nav_meta.logs',
-          icon: sidebarIcons.logs,
+          path: '/accounts',
+          labelKey: 'nav.accounts',
+          metaKey: 'nav_meta.accounts',
+          icon: sidebarIcons.accounts,
         },
-      ],
-    },
-    {
-      id: 'control',
-      labelKey: 'nav_groups.control',
-      items: [
         {
-          path: '/config',
-          labelKey: 'nav.config_management',
-          metaKey: 'nav_meta.config_management',
-          icon: sidebarIcons.config,
-        },
-        ...(supportsPlugin
-          ? [
-              {
-                path: '/plugins',
-                labelKey: 'nav.plugins',
-                metaKey: 'nav_meta.plugins',
-                icon: sidebarIcons.plugins,
-              },
-              {
-                path: '/plugin-store',
-                labelKey: 'nav.plugin_store',
-                metaKey: 'nav_meta.plugin_store',
-                icon: sidebarIcons.pluginStore,
-              },
-            ]
-          : []),
-        {
-          path: '/system',
-          labelKey: 'nav.system_info',
-          metaKey: 'nav_meta.system_info',
-          icon: sidebarIcons.system,
+          path: '/requests',
+          labelKey: 'nav.requests',
+          metaKey: 'nav_meta.requests',
+          icon: sidebarIcons.requests,
         },
       ],
     },
@@ -684,7 +551,13 @@ export function MainLayout() {
         ]
       : []),
   ];
-  const navItems = navGroups.flatMap((group) => flattenNavItems(group.items));
+  const settingsNavItem: SidebarNavLinkItem = {
+    path: '/settings',
+    labelKey: 'nav.settings',
+    metaKey: 'nav_meta.settings',
+    icon: sidebarIcons.settings,
+  };
+  const navItems = [...navGroups.flatMap((group) => flattenNavItems(group.items)), settingsNavItem];
   const navOrder = navItems.map((item) => item.path);
   const getRouteOrder = (pathname: string) => {
     const trimmedPath =
@@ -729,7 +602,6 @@ export function MainLayout() {
     const results = await Promise.allSettled([
       fetchConfig(true),
       loadPluginResources(),
-      loadAuthFilesCount(),
       triggerHeaderRefresh(),
     ]);
     const rejected = results.find((result) => result.status === 'rejected');
@@ -964,17 +836,6 @@ export function MainLayout() {
           </Button>
         </div>
 
-        {location.pathname === '/' || location.pathname === '/dashboard' ? (
-          <div className="header-connection-meta">
-            {serverVersion ? <span>{serverVersion}</span> : null}
-            <span>
-              <i className={`connection-dot ${connectionStatus}`} aria-hidden="true" />
-              {t('common.' + connectionStatus)}
-            </span>
-            <span className="header-connection-host">{apiBase.replace(/^https?:\/\//, '')}</span>
-          </div>
-        ) : null}
-
         <div className="header-actions floating-actions">
           <Button
             variant="ghost"
@@ -984,40 +845,6 @@ export function MainLayout() {
           >
             {headerIcons.refresh}
           </Button>
-          <div className={`language-menu ${languageMenuOpen ? 'open' : ''}`} ref={languageMenuRef}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleLanguageMenu}
-              title={t('language.switch')}
-              aria-label={t('language.switch')}
-              aria-haspopup="menu"
-              aria-expanded={languageMenuOpen}
-            >
-              {headerIcons.language}
-            </Button>
-            {languageMenuOpen && (
-              <div
-                className="notification entering language-menu-popover"
-                role="menu"
-                aria-label={t('language.switch')}
-              >
-                {LANGUAGE_ORDER.map((lang) => (
-                  <button
-                    key={lang}
-                    type="button"
-                    className={`language-menu-option ${language === lang ? 'active' : ''}`}
-                    onClick={() => handleLanguageSelect(lang)}
-                    role="menuitemradio"
-                    aria-checked={language === lang}
-                  >
-                    <span>{t(LANGUAGE_LABEL_KEYS[lang])}</span>
-                    {language === lang ? <span className="language-menu-check">✓</span> : null}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <div className={`theme-menu ${themeMenuOpen ? 'open' : ''}`} ref={themeMenuRef}>
             <Button
               variant="ghost"
@@ -1124,7 +951,7 @@ export function MainLayout() {
           <div className="nav-section">
             {navGroups.map((group, idx) => (
               <div className="nav-group" key={group.id}>
-                {showSidebarLabels ? (
+                {showSidebarLabels && group.labelKey ? (
                   <div className="nav-group-label">{t(group.labelKey)}</div>
                 ) : (
                   idx > 0 && <div className="nav-group-divider" aria-hidden="true" />
@@ -1133,6 +960,7 @@ export function MainLayout() {
               </div>
             ))}
           </div>
+          <div className="nav-section nav-section-footer">{renderNavLink(settingsNavItem)}</div>
           <div className="sidebar-connection" title={apiBase}>
             <span className={`connection-dot ${connectionStatus}`} aria-hidden="true" />
             {showSidebarLabels ? (
