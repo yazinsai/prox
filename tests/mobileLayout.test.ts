@@ -3,14 +3,12 @@ import { readFileSync } from 'node:fs';
 
 const source = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 
-test('shared header blocks underlying page content and mobile spacing follows its height', () => {
+test('the top bar blocks underlying page content and pages start below it', () => {
   const layout = source('../src/styles/layout.scss');
-  const header = layout.slice(
-    layout.indexOf('.main-header {'),
-    layout.indexOf('.mobile-sidebar-actions,', layout.indexOf('.main-header {'))
-  );
-  expect(header).toContain('background: var(--bg-secondary)');
-  expect(header).not.toContain('background: transparent');
+  const bar = layout.slice(layout.indexOf('.topbar {'), layout.indexOf('.topbar-inner {'));
+  expect(bar).toContain('background: color-mix(in srgb, var(--bg-secondary) 86%, transparent)');
+  expect(bar).toContain('backdrop-filter');
+  expect(layout).toContain('padding: calc(var(--header-height) + 24px) var(--frame-pad) 40px');
   expect(layout).toContain('padding: calc(var(--header-height) + 12px) 8px 24px');
 });
 

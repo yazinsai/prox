@@ -93,53 +93,16 @@
     "error_ssl": "SSL/TLS Sertifika Doğrulaması Başarısız"
   },
   "header": {
-    "refresh_all": "Tümünü Yenile",
-    "logout": "Çıkış"
+    "refresh_all": "Tümünü Yenile"
   },
   "nav": {
-    "dashboard": "Pano",
-    "quick_start": "Hızlı Başlangıç",
-    "ai_providers": "AI Sağlayıcıları",
-    "auth_files": "Kimlik Dosyaları",
-    "oauth": "OAuth Girişi",
-    "routing": "Yönlendirme",
     "quota_management": "Kota Yönetimi",
-    "plugins": "Eklentiler",
-    "plugin_store": "Eklenti Mağazası",
-    "config_management": "Yapılandırma Paneli",
-    "logs": "Günlük Görüntüleyici",
-    "system_info": "Yönetim Merkezi Bilgisi",
     "overview": "Genel bakış",
     "quota": "Kota",
     "accounts": "Hesaplar",
     "requests": "İstekler",
-    "settings": "Ayarlar"
-  },
-  "nav_groups": {
-    "operate": "İşlet",
-    "gateway": "Ağ Geçidi",
-    "observe": "Gözle",
-    "plugin_pages": "Eklentiler",
-    "control": "Denetim"
-  },
-  "nav_meta": {
-    "dashboard": "İşletim Özeti",
-    "quick_start": "APIKEY.FUN Kurulumu",
-    "ai_providers": "Yukarı Akış Model Yönlendirmesi",
-    "auth_files": "Kimlik Dosyaları ve Kimlik Bilgileri",
-    "oauth": "OAuth Yetkilendirmesi",
-    "routing": "Öncelik katmanları ve yük devretme",
-    "quota_management": "API Anahtarları ve Sınırlar",
-    "plugins": "Eklenti Anahtarları ve Yapılandırma",
-    "plugin_store": "Eklentileri Keşfet ve Kur",
-    "logs": "İstek İzleme",
-    "config_management": "Ağ Geçidi Yapılandırması",
-    "system_info": "Çalışma Zamanı ve Tanılama",
-    "overview": "Her şey çalışıyor mu",
-    "quota": "Kota yetecek mi",
-    "accounts": "İstekleri sırayla kim karşılıyor",
-    "requests": "Ne oldu ve neden",
-    "settings": "Bağlantı, yapılandırma, hakkında"
+    "settings": "Ayarlar",
+    "main_navigation": "Ana gezinme"
   },
   "dashboard": {
     "hero_verdict_good": "Tüm Sistemler Dengede",
@@ -2063,14 +2026,6 @@
     "white": "Saf Beyaz",
     "dark": "Koyu",
     "auto": "Sistemi İzle"
-  },
-  "sidebar": {
-    "toggle_expand": "Kenar Çubuğunu Genişlet",
-    "toggle_collapse": "Kenar Çubuğunu Daralt",
-    "expand": "Genişlet",
-    "collapse": "Daralt",
-    "subtitle": "CLIProxyAPI Konsolu",
-    "auth_files_count": "Kimlik Doğrulama Dosyaları: {{count}}"
   },
   "providersPage": {
     "behavior": {

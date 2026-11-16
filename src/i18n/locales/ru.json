@@ -93,52 +93,16 @@
     "error_ssl": "Ошибка проверки SSL/TLS сертификата"
   },
   "header": {
-    "refresh_all": "Обновить всё",
-    "logout": "Выйти"
+    "refresh_all": "Обновить всё"
   },
   "nav": {
-    "dashboard": "Панель",
-    "quick_start": "Быстрый старт",
-    "ai_providers": "Поставщики AI",
-    "auth_files": "Файлы аутентификации",
-    "oauth": "OAuth вход",
-    "routing": "Маршрутизация",
     "quota_management": "Управление квотами",
-    "plugins": "Плагины",
-    "plugin_store": "Магазин плагинов",
-    "config_management": "Панель конфигурации",
-    "logs": "Просмотр логов",
-    "system_info": "Информация системы",
     "overview": "Обзор",
     "quota": "Квоты",
     "accounts": "Аккаунты",
     "requests": "Запросы",
-    "settings": "Настройки"
-  },
-  "nav_groups": {
-    "operate": "Работа",
-    "gateway": "Шлюз",
-    "observe": "Наблюдение",
-    "control": "Управление"
-  },
-  "nav_meta": {
-    "dashboard": "Обзор работы",
-    "quick_start": "Настройка APIKEY.FUN",
-    "ai_providers": "Маршрутизация моделей",
-    "auth_files": "Файлы и учётные данные",
-    "oauth": "Авторизация OAuth",
-    "routing": "Уровни приоритета и отказоустойчивость",
-    "quota_management": "API ключи и лимиты",
-    "plugins": "Переключатели и ресурсы плагинов",
-    "plugin_store": "Поиск и установка плагинов",
-    "logs": "Трассировка запросов",
-    "config_management": "Базовая конфигурация шлюза",
-    "system_info": "Состояние и диагностика",
-    "overview": "Всё ли работает",
-    "quota": "Хватит ли квоты",
-    "accounts": "Кто обслуживает запросы и в каком порядке",
-    "requests": "Что произошло и почему",
-    "settings": "Подключение, настройки, о программе"
+    "settings": "Настройки",
+    "main_navigation": "Основная навигация"
   },
   "dashboard": {
     "hero_verdict_good": "Всё стабильно",
@@ -2059,14 +2023,6 @@
     "white": "Чисто-белая",
     "dark": "Тёмная",
     "auto": "Следовать системе"
-  },
-  "sidebar": {
-    "toggle_expand": "Развернуть боковую панель",
-    "toggle_collapse": "Свернуть боковую панель",
-    "expand": "Развернуть",
-    "collapse": "Свернуть",
-    "subtitle": "Консоль управления CLI Proxy API",
-    "auth_files_count": "Файлов аутентификации: {{count}}"
   },
   "providersPage": {
     "behavior": {

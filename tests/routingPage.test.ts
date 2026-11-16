@@ -219,7 +219,7 @@ describe('routing board rendering', () => {
       '{ path: \'/routing\', element: <Navigate to="/accounts" replace /> }'
     );
     expect(readFileSync('src/components/layout/MainLayout.tsx', 'utf8')).toContain(
-      "labelKey: 'nav.accounts'"
+      "label: t('nav.accounts')"
     );
   });
 });

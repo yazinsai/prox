@@ -93,53 +93,16 @@
     "error_ssl": "SSL/TLS 憑證驗證失敗"
   },
   "header": {
-    "refresh_all": "全部重新整理",
-    "logout": "登出"
+    "refresh_all": "全部重新整理"
   },
   "nav": {
-    "dashboard": "儀表板",
-    "quick_start": "快速開始",
-    "ai_providers": "AI 供應商",
-    "auth_files": "驗證檔案",
-    "oauth": "OAuth 登入",
-    "routing": "路由編排",
     "quota_management": "配額管理",
-    "plugins": "插件管理",
-    "plugin_store": "插件商店",
-    "config_management": "設定面板",
-    "logs": "記錄檢視",
-    "system_info": "中心資訊",
     "overview": "概覽",
     "quota": "配額",
     "accounts": "帳戶",
     "requests": "請求",
-    "settings": "設定"
-  },
-  "nav_groups": {
-    "operate": "運行",
-    "gateway": "閘道",
-    "observe": "觀測",
-    "plugin_pages": "插件",
-    "control": "控制"
-  },
-  "nav_meta": {
-    "dashboard": "運行總覽",
-    "quick_start": "APIKEY.FUN 快速設定",
-    "ai_providers": "上游模型路由",
-    "auth_files": "Auth 檔案與憑證",
-    "oauth": "OAuth 授權登入",
-    "routing": "優先級分層與故障轉移",
-    "quota_management": "API Key 與限額",
-    "plugins": "插件啟停與設定",
-    "plugin_store": "探索並安裝插件",
-    "logs": "請求追蹤與排查",
-    "config_management": "閘道基礎設定",
-    "system_info": "運行與診斷資訊",
-    "overview": "一切是否正常",
-    "quota": "配額會不會用完",
-    "accounts": "依順序由誰處理請求",
-    "requests": "發生了什麼以及原因",
-    "settings": "連線、設定與關於"
+    "settings": "設定",
+    "main_navigation": "主導覽"
   },
   "dashboard": {
     "hero_verdict_good": "運行平穩",
@@ -2089,14 +2052,6 @@
     "white": "純白",
     "dark": "深色",
     "auto": "跟隨系統"
-  },
-  "sidebar": {
-    "toggle_expand": "展開側邊欄",
-    "toggle_collapse": "收起側邊欄",
-    "expand": "展開",
-    "collapse": "收起",
-    "subtitle": "CLI Proxy API 管理控制台",
-    "auth_files_count": "驗證檔案：{{count}} 個"
   },
   "providersPage": {
     "behavior": {

@@ -93,53 +93,16 @@
     "error_ssl": "SSL/TLS 인증서 확인에 실패했습니다"
   },
   "header": {
-    "refresh_all": "모두 새로 고침",
-    "logout": "로그아웃"
+    "refresh_all": "모두 새로 고침"
   },
   "nav": {
-    "dashboard": "대시보드",
-    "quick_start": "빠른 시작",
-    "ai_providers": "AI 공급자",
-    "auth_files": "인증 파일",
-    "oauth": "OAuth 로그인",
-    "routing": "라우팅",
     "quota_management": "할당량 관리",
-    "plugins": "플러그인",
-    "plugin_store": "플러그인 스토어",
-    "config_management": "설정 패널",
-    "logs": "로그 뷰어",
-    "system_info": "관리 센터 정보",
     "overview": "개요",
     "quota": "할당량",
     "accounts": "계정",
     "requests": "요청",
-    "settings": "설정"
-  },
-  "nav_groups": {
-    "operate": "운영",
-    "gateway": "게이트웨이",
-    "observe": "모니터링",
-    "plugin_pages": "플러그인",
-    "control": "제어"
-  },
-  "nav_meta": {
-    "dashboard": "운영 개요",
-    "quick_start": "APIKEY.FUN 설정",
-    "ai_providers": "업스트림 모델 라우팅",
-    "auth_files": "인증 파일 및 자격 증명",
-    "oauth": "OAuth 권한 부여",
-    "routing": "우선순위 계층과 장애 조치",
-    "quota_management": "API 키 및 한도",
-    "plugins": "플러그인 설정 및 전환",
-    "plugin_store": "플러그인 탐색 및 설치",
-    "logs": "요청 추적",
-    "config_management": "게이트웨이 설정",
-    "system_info": "런타임 및 진단",
-    "overview": "모든 것이 정상인지",
-    "quota": "할당량이 바닥나는지",
-    "accounts": "요청을 처리하는 계정과 순서",
-    "requests": "무슨 일이 있었고 왜인지",
-    "settings": "연결, 구성, 정보"
+    "settings": "설정",
+    "main_navigation": "주 메뉴"
   },
   "dashboard": {
     "hero_verdict_good": "모든 시스템 정상",
@@ -2063,14 +2026,6 @@
     "white": "순백",
     "dark": "다크",
     "auto": "시스템 설정 따름"
-  },
-  "sidebar": {
-    "toggle_expand": "사이드바 펼치기",
-    "toggle_collapse": "사이드바 접기",
-    "expand": "펼치기",
-    "collapse": "접기",
-    "subtitle": "CLI Proxy API 콘솔",
-    "auth_files_count": "인증 파일: {{count}}개"
   },
   "providersPage": {
     "behavior": {

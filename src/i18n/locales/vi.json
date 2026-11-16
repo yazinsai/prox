@@ -93,53 +93,16 @@
     "error_legacy_backend": "Backend này chấp nhận Management API v0 nhưng không cung cấp v8. Vui lòng nâng cấp CLIProxyAPI lên v8 hoặc mới hơn để sử dụng trang quản lý này."
   },
   "header": {
-    "refresh_all": "Làm mới tất cả",
-    "logout": "Đăng xuất"
+    "refresh_all": "Làm mới tất cả"
   },
   "nav": {
-    "dashboard": "Bảng điều khiển",
-    "quick_start": "Bắt đầu nhanh",
-    "ai_providers": "AI Provider",
-    "auth_files": "File xác thực",
-    "oauth": "Đăng nhập OAuth",
-    "routing": "Định tuyến",
     "quota_management": "Quản lý Quota",
-    "plugins": "Plugin",
-    "plugin_store": "Cửa hàng Plugin",
-    "config_management": "Bảng cấu hình",
-    "logs": "Trình xem Log",
-    "system_info": "Thông tin Trung tâm Quản lý",
     "overview": "Tổng quan",
     "quota": "Hạn mức",
     "accounts": "Tài khoản",
     "requests": "Yêu cầu",
-    "settings": "Cài đặt"
-  },
-  "nav_groups": {
-    "operate": "Vận hành",
-    "gateway": "Gateway",
-    "observe": "Giám sát",
-    "plugin_pages": "Plugin",
-    "control": "Điều khiển"
-  },
-  "nav_meta": {
-    "dashboard": "Tổng quan vận hành",
-    "quick_start": "Thiết lập APIKEY.FUN",
-    "ai_providers": "Định tuyến model upstream",
-    "auth_files": "File xác thực & credential",
-    "oauth": "Ủy quyền OAuth",
-    "routing": "Tầng ưu tiên và chuyển đổi dự phòng",
-    "quota_management": "API key & giới hạn",
-    "plugins": "Bật/tắt & cấu hình plugin",
-    "plugin_store": "Khám phá & cài đặt plugin",
-    "logs": "Truy vết yêu cầu",
-    "config_management": "Cấu hình gateway",
-    "system_info": "Runtime & chẩn đoán",
-    "overview": "Mọi thứ có ổn không",
-    "quota": "Có bị hết hạn mức không",
-    "accounts": "Ai phục vụ yêu cầu, theo thứ tự",
-    "requests": "Điều gì đã xảy ra và vì sao",
-    "settings": "Kết nối, cấu hình, giới thiệu"
+    "settings": "Cài đặt",
+    "main_navigation": "Điều hướng chính"
   },
   "dashboard": {
     "hero_verdict_good": "Mọi hệ thống ổn định",
@@ -2019,14 +1982,6 @@
     "white": "Trắng tinh",
     "dark": "Tối",
     "auto": "Theo hệ thống"
-  },
-  "sidebar": {
-    "toggle_expand": "Mở rộng thanh bên",
-    "toggle_collapse": "Thu gọn thanh bên",
-    "expand": "Mở rộng",
-    "collapse": "Thu gọn",
-    "subtitle": "Bảng điều khiển CLI Proxy API",
-    "auth_files_count": "File xác thực: {{count}}"
   },
   "providersPage": {
     "header": {
