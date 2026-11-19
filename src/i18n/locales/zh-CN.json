@@ -2040,7 +2040,9 @@
       "supportPromptCacheKey": "注入提示词缓存键",
       "supportPromptCacheKeyHint": "为兼容的请求派生并注入 prompt_cache_key。仅在上游支持此字段时启用。",
       "modelsDiscovery": "自动发现模型",
-      "modelsDiscoveryHint": "同时路由提供商 /models 接口列出的所有模型。默认每 6 小时刷新一次，刷新失败时保留上次的列表。"
+      "modelsDiscoveryHint": "同时路由提供商 /models 接口列出的所有模型。默认每 6 小时刷新一次，刷新失败时保留上次的列表。",
+      "normalizeNames": "规范化模型名称",
+      "normalizeNamesHint": "以统一名称路由自动发现的模型，例如用 gemini-3.8-flash 代替 gemini-3-8-flash，用 gpt-6.1-sol 代替 openai-gpt-61-sol。发往提供商的请求仍使用其原始 ID。"
     },
     "modelOptions": {
       "displayName": "显示名称",

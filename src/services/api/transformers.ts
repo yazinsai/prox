@@ -268,6 +268,7 @@ const normalizeModelsDiscovery = (value: unknown): ModelsDiscoveryOptions | unde
     );
     if (exclude.length) result.exclude = exclude;
   }
+  if (normalizeBoolean(value['normalize-names']) === true) result.normalizeNames = true;
   return result;
 };
 

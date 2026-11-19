@@ -12,6 +12,8 @@ export interface ModelsDiscoveryOptions {
   enabled: boolean;
   refreshInterval?: string;
   exclude?: string[];
+  /** Route discovered ids under normalized names ("gemini-3-8-flash" -> "gemini-3.8-flash"). */
+  normalizeNames?: boolean;
 }
 
 export interface ProviderBehaviorOptions {

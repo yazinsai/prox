@@ -199,11 +199,12 @@ const serializeOpenAIProvider = (provider: OpenAIProviderConfig) => {
   if (provider.supportPromptCacheKey !== undefined)
     payload['support-prompt-cache-key'] = provider.supportPromptCacheKey;
   if (provider.modelsDiscovery) {
-    const { enabled, refreshInterval, exclude } = provider.modelsDiscovery;
+    const { enabled, refreshInterval, exclude, normalizeNames } = provider.modelsDiscovery;
     payload['models-discovery'] = {
       enabled,
       ...(refreshInterval ? { 'refresh-interval': refreshInterval } : {}),
       ...(exclude?.length ? { exclude } : {}),
+      ...(normalizeNames ? { 'normalize-names': true } : {}),
     };
   }
   const headers = serializeHeaders(provider.headers);

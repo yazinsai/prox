@@ -2068,7 +2068,9 @@
       "supportPromptCacheKey": "注入提示詞快取鍵",
       "supportPromptCacheKeyHint": "為相容的請求衍生並注入 prompt_cache_key。僅在上游支援此欄位時啟用。",
       "modelsDiscovery": "自動探索模型",
-      "modelsDiscoveryHint": "同時路由供應商 /models 端點列出的所有模型。預設每 6 小時重新整理一次，重新整理失敗時保留上次的清單。"
+      "modelsDiscoveryHint": "同時路由供應商 /models 端點列出的所有模型。預設每 6 小時重新整理一次，重新整理失敗時保留上次的清單。",
+      "normalizeNames": "正規化模型名稱",
+      "normalizeNamesHint": "以一致的名稱路由自動探索的模型，例如以 gemini-3.8-flash 取代 gemini-3-8-flash，以 gpt-6.1-sol 取代 openai-gpt-61-sol。傳送給供應商的請求仍使用其原始 ID。"
     },
     "modelOptions": {
       "displayName": "顯示名稱",
