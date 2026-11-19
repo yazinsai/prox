@@ -636,6 +636,7 @@ export function QuotaPage() {
                     resolvedTheme={resolvedTheme}
                     canRefresh={canUseActions && !entry.file.disabled}
                     resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
+                    showEmails={showEmails}
                     entranceDelayMs={cardEntranceDelay(index)}
                     onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
                     onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}

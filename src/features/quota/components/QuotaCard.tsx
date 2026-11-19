@@ -33,6 +33,7 @@ export type QuotaCardProps = {
   resolvedTheme: ResolvedTheme;
   canRefresh: boolean;
   resetting: boolean;
+  showEmails: boolean;
   /** Initial cascade delay; null disables entrance motion for later mounts. */
   entranceDelayMs?: number | null;
   onRefresh: () => void;
@@ -46,6 +47,7 @@ export function QuotaCard(props: QuotaCardProps) {
     resolvedTheme,
     canRefresh,
     resetting,
+    showEmails,
     entranceDelayMs,
     onRefresh,
     onReset,
@@ -136,9 +138,17 @@ export function QuotaCard(props: QuotaCardProps) {
             <span className={styles.iconFallback}>{typeLabel.slice(0, 1).toUpperCase()}</span>
           )}
         </span>
-        <span className={styles.fileName} title={displayName}>
-          {displayName}
-        </span>
+        {showEmails ? (
+          <span className={styles.fileName} title={displayName}>
+            {displayName}
+          </span>
+        ) : (
+          <span
+            className={styles.redacted}
+            role="img"
+            aria-label={t('quota_management.pool_email_hidden')}
+          />
+        )}
       </header>
 
       <div className={styles.body}>

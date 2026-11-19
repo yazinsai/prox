@@ -308,3 +308,12 @@
     animation: none;
   }
 }
+
+.redacted {
+  flex: 1;
+  min-width: 0;
+  max-width: 160px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+}

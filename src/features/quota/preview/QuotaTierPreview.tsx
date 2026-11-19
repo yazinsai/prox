@@ -302,6 +302,7 @@ export function QuotaTierPreview() {
               resolvedTheme={resolvedTheme}
               canRefresh
               resetting={false}
+              showEmails
               entranceDelayMs={index * CARD_STAGGER_MS}
               onRefresh={simulateRefresh}
               onReset={() => undefined}
