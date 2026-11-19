@@ -2301,9 +2301,7 @@
       "supportPromptCacheKey": "Chèn prompt cache key",
       "supportPromptCacheKeyHint": "Tạo và chèn prompt_cache_key cho các yêu cầu tương thích. Chỉ bật khi upstream hỗ trợ trường này.",
       "modelsDiscovery": "Tự động phát hiện mô hình",
-      "modelsDiscoveryHint": "Định tuyến thêm mọi mô hình mà điểm cuối /models của nhà cung cấp liệt kê. Danh sách mặc định làm mới mỗi 6 giờ và được giữ lại khi làm mới thất bại.",
-      "normalizeNames": "Chuẩn hóa tên mô hình",
-      "normalizeNamesHint": "Định tuyến các mô hình được phát hiện dưới tên thống nhất, ví dụ gemini-3.8-flash thay cho gemini-3-8-flash hoặc gpt-6.1-sol thay cho openai-gpt-61-sol. Yêu cầu gửi đến nhà cung cấp vẫn dùng ID gốc."
+      "modelsDiscoveryHint": "Định tuyến thêm mọi mô hình mà điểm cuối /models của nhà cung cấp liệt kê. Danh sách mặc định làm mới mỗi 6 giờ và được giữ lại khi làm mới thất bại."
     },
     "modelOptions": {
       "displayName": "Tên hiển thị",

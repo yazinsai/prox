@@ -147,21 +147,6 @@ test('OpenAI model discovery toggles without dropping its interval and exclusion
   );
   expect(html).toContain('checked=""');
   expect(html).toContain('-modelsDiscovery-hint');
-  expect(html).toContain('-normalizeNames-hint');
-});
-test('OpenAI model discovery round-trips normalize-names', async () => {
-  const groups = backend('openai-compatibility', [
-    {
-      name: 'fixture',
-      'base-url': 'https://example.invalid',
-      keys: [{ 'api-key': 'fixture-key' }],
-      'models-discovery': { enabled: true, 'normalize-names': true },
-    },
-  ]);
-  const config = normalizeProviderGroups(groups(), true)[0] as OpenAIProviderConfig;
-  expect(config.modelsDiscovery).toEqual({ enabled: true, normalizeNames: true });
-  await providersApi.updateOpenAIProvider(config.name, 0, { ...config, disabled: false });
-  expect(groups()[0]['models-discovery']).toEqual({ enabled: true, 'normalize-names': true });
 });
 test('UI and form projection gate behavior by actual provider or sponsor protocol', () => {
   const options = {

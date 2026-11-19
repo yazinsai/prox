@@ -2042,9 +2042,7 @@
       "supportPromptCacheKey": "İstem Önbellek Anahtarı Ekle",
       "supportPromptCacheKeyHint": "Uyumlu İstekler için prompt_cache_key Türet ve Ekle. Yalnızca Yukarı Akış Bu Alanı Destekliyorsa Etkinleştir.",
       "modelsDiscovery": "Modelleri otomatik keşfet",
-      "modelsDiscoveryHint": "Sağlayıcının /models uç noktasında listelenen tüm modelleri de yönlendirir. Liste varsayılan olarak 6 saatte bir yenilenir ve yenileme başarısız olursa önceki liste korunur.",
-      "normalizeNames": "Model adlarını normalleştir",
-      "normalizeNamesHint": "Keşfedilen modelleri tutarlı adlarla yönlendirir; örneğin gemini-3-8-flash yerine gemini-3.8-flash, openai-gpt-61-sol yerine gpt-6.1-sol. İstekler sağlayıcıya yine kendi kimliğiyle gider."
+      "modelsDiscoveryHint": "Sağlayıcının /models uç noktasında listelenen tüm modelleri de yönlendirir. Liste varsayılan olarak 6 saatte bir yenilenir ve yenileme başarısız olursa önceki liste korunur."
     },
     "modelOptions": {
       "displayName": "Görünen Ad",

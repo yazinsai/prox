@@ -101,32 +101,6 @@ export function ProviderBehaviorEditor({
             </span>
           </label>
         ) : null}
-        {capabilities.modelsDiscovery && value.modelsDiscovery?.enabled ? (
-          <label className={styles.checkboxRow}>
-            <input
-              type="checkbox"
-              className={styles.checkboxBox}
-              checked={value.modelsDiscovery?.normalizeNames === true}
-              disabled={disabled}
-              aria-describedby={`${id}-normalizeNames-hint`}
-              onChange={(event) =>
-                onChange({
-                  modelsDiscovery: {
-                    ...value.modelsDiscovery,
-                    enabled: true,
-                    normalizeNames: event.target.checked,
-                  },
-                })
-              }
-            />
-            <span className={styles.checkboxText}>
-              <span>{t('providersPage.behavior.normalizeNames')}</span>
-              <small id={`${id}-normalizeNames-hint`}>
-                {t('providersPage.behavior.normalizeNamesHint')}
-              </small>
-            </span>
-          </label>
-        ) : null}
       </div>
     </Collapsible>
   );

@@ -2042,9 +2042,7 @@
       "supportPromptCacheKey": "Inject prompt cache key",
       "supportPromptCacheKeyHint": "Derive and inject prompt_cache_key for compatible requests. Enable only when the upstream supports this field.",
       "modelsDiscovery": "Discover models automatically",
-      "modelsDiscoveryHint": "Also route every model listed by the provider's /models endpoint. The list refreshes every 6 hours by default and is kept when a refresh fails.",
-      "normalizeNames": "Normalize model names",
-      "normalizeNamesHint": "Route discovered models under consistent names, such as gemini-3.8-flash instead of gemini-3-8-flash or gpt-6.1-sol instead of openai-gpt-61-sol. Requests still reach the provider under its own ID."
+      "modelsDiscoveryHint": "Also route every model listed by the provider's /models endpoint. The list refreshes every 6 hours by default and is kept when a refresh fails."
     },
     "modelOptions": {
       "displayName": "Display name",
