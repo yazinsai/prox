@@ -464,3 +464,24 @@ test('OpenAI group headers retain auth-index while edited credentials drop respo
     keys: [{ 'api-key': 'fixture', custom: 'keep', weight: 2 }],
   });
 });
+
+test('v8 auth_index annotations reach provider rows and never reach writes', async () => {
+  expect(
+    rows([{ name: 'team', keys: [{ 'api-key': 'fixture', auth_index: 'idx-1' }] }])[0]
+  ).toMatchObject({
+    authIndex: 'idx-1',
+  });
+  const group = {
+    name: 'compat',
+    'base-url': 'https://example.invalid',
+    keys: [{ 'api-key': 'fixture', auth_index: 'idx-2' }],
+  };
+  const b = backend('openai-compatibility', [group]);
+  const current = (await providersApi.getOpenAIProviders())[0];
+  expect(current.apiKeyEntries[0].authIndex).toBe('idx-2');
+  await providersApi.updateOpenAIProvider(current.name, 0, {
+    ...current,
+    apiKeyEntries: [{ ...current.apiKeyEntries[0], weight: 2 }],
+  });
+  expect(b.groups()[0].keys).toEqual([{ 'api-key': 'fixture', weight: 2 }]);
+});

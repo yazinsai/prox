@@ -494,6 +494,7 @@ const updateKey = async (
   );
   // Response metadata belongs to credentials, not arbitrary nested maps such as headers.
   delete keys[keyIndex]['auth-index'];
+  delete keys[keyIndex]['auth_index'];
   groups[index] = { ...nextGroup, keys };
   await putGroups(family, groups);
 };
@@ -609,6 +610,7 @@ export const providersApi = {
           serializeApiKeyEntry(entry)
         );
         delete key['auth-index'];
+        delete key['auth_index'];
         return key;
       });
     }
