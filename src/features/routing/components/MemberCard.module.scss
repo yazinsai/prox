@@ -58,7 +58,11 @@
 }
 
 .muted {
-  opacity: 0.5;
+  // Dimming the row itself traps its menu in an opacity stacking context below later tiers.
+  > :not(.menuWrap),
+  .menuButton {
+    opacity: 0.5;
+  }
 }
 
 .dragging {

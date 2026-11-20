@@ -240,3 +240,11 @@ describe('account rendering', () => {
     }
   });
 });
+
+test('dimmed account details leave the actions menu outside an opacity stacking context', () => {
+  const styles = readFileSync('src/features/routing/components/MemberCard.module.scss', 'utf8');
+  const muted = styles.slice(styles.indexOf('.muted {'), styles.indexOf('.dragging {'));
+  // Only the details and trigger fade: fading the card traps the dropdown beneath later tiers.
+  expect(muted).toMatch(/> :not\(\.menuWrap\),\s*\.menuButton\s*\{\s*opacity: 0\.5;/);
+  expect(muted).not.toMatch(/\.muted\s*\{\s*opacity:/);
+});
