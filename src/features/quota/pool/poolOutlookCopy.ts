@@ -92,12 +92,16 @@ export function describeOutlook(
         tone: 'neutral',
         title: t('quota_management.outlook_idle'),
         detail:
-          resetAt === null
-            ? t('quota_management.outlook_idle_detail', { hours: burnWindowHours })
-            : t('quota_management.outlook_idle_detail_reset', {
-                hours: burnWindowHours,
-                when: when(resetAt),
-              }),
+          summary.burnSource === 'window'
+            ? resetAt === null
+              ? t('quota_management.outlook_idle_detail_window')
+              : t('quota_management.outlook_idle_detail_window_reset', { when: when(resetAt) })
+            : resetAt === null
+              ? t('quota_management.outlook_idle_detail', { hours: burnWindowHours })
+              : t('quota_management.outlook_idle_detail_reset', {
+                  hours: burnWindowHours,
+                  when: when(resetAt),
+                }),
         note: null,
       };
     case 'runs-out': {

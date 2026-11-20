@@ -333,6 +333,23 @@ export function burnRate(history: PoolPoint[], now: number, windowHours: number)
   return spent / ((now - from) / HOUR_MS);
 }
 
+/**
+ * Average spend since the current window opened, percent per hour: what is
+ * used of the window over the time it has been open. A fallback pace for
+ * accounts the backend keeps no readings for (it records only providers that
+ * report quota in response headers). Null without a live window or before
+ * the window has run long enough to say.
+ */
+export function windowAverageBurn(account: PoolAccount, now: number): number | null {
+  const { remaining, periodMs, nextResetMs } = account;
+  if (account.source !== 'live' || remaining === null || !periodMs || nextResetMs === null) {
+    return null;
+  }
+  const elapsed = now - (nextResetMs - periodMs);
+  if (elapsed < MIN_BURN_COVERAGE_MS || elapsed > periodMs) return null;
+  return (100 - remaining) / (elapsed / HOUR_MS);
+}
+
 /* ---------------------------------------------------------- projection */
 
 /** How far ahead the outlook looks, whatever range the chart shows. */
@@ -525,8 +542,14 @@ export interface PoolSummary {
   knownCount: number;
   total: number | null;
   capacity: number;
-  /** Pool burn over the selected window, percent per hour; null without history. */
+  /** Pool burn, percent per hour; null when no pace can be measured or estimated. */
   burnPerHour: number | null;
+  /**
+   * Where the pace comes from: `recent` is recorded history over the selected
+   * burn window; `window` is the average since each window opened, used when
+   * no account in the pool has history.
+   */
+  burnSource: 'recent' | 'window' | null;
   /** Pace that spends every window exactly by its reset, percent per hour. */
   allowancePerHour: number | null;
   recorded: PoolPoint[];
@@ -564,8 +587,18 @@ export function summarizePool(accounts: PoolAccount[], options: PoolOptions): Po
   known.forEach((account) =>
     burns.set(account.key, burnRate(account.history, now, burnWindowHours))
   );
-  const measured = Array.from(burns.values()).filter((value): value is number => value !== null);
-  const burnPerHour = measured.length > 0 ? measured.reduce((sum, value) => sum + value, 0) : null;
+  const sumOf = (values: Iterable<number | null>) => {
+    const present = Array.from(values).filter((value): value is number => value !== null);
+    return present.length > 0 ? present.reduce((sum, value) => sum + value, 0) : null;
+  };
+  let burnPerHour = sumOf(burns.values());
+  let burnSource: PoolSummary['burnSource'] = burnPerHour === null ? null : 'recent';
+  if (burnPerHour === null) {
+    // No history anywhere in this pool: fall back to each window's average so far.
+    known.forEach((account) => burns.set(account.key, windowAverageBurn(account, now)));
+    burnPerHour = sumOf(burns.values());
+    if (burnPerHour !== null) burnSource = 'window';
+  }
 
   const periods = known.flatMap((account) =>
     account.periodMs && account.periodMs >= HOUR_MS ? [account.periodMs] : []
@@ -690,6 +723,7 @@ export function summarizePool(accounts: PoolAccount[], options: PoolOptions): Po
     total,
     capacity,
     burnPerHour,
+    burnSource,
     allowancePerHour,
     recorded: recorded.points,
     recordedJumps: recorded.jumps,

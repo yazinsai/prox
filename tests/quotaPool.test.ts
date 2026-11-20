@@ -16,6 +16,7 @@ import {
   projectAccount,
   projectPool,
   summarizePool,
+  windowAverageBurn,
   HOUR_MS,
   type PoolAccount,
 } from '../src/features/quota/pool/poolModel';
@@ -528,9 +529,10 @@ describe('pool outlook', () => {
     });
     expect(copyOf([burning(0, 0, 30)]).copy.detail).toContain('Refills');
     expect(copyOf([burning(50, 0, 30)]).summary.outlook.kind).toBe('idle');
-    expect(copyOf([account({ remaining: 50, nextResetMs: NOW + 9 * H })]).copy.title).toBe(
-      'No pace to forecast from yet'
-    );
+    // No history and a window opened moments ago: too soon even to average.
+    expect(
+      copyOf([account({ remaining: 90, nextResetMs: NOW + 168 * H - 5 * 60_000 })]).copy.title
+    ).toBe('No pace to forecast from yet');
     // A "none" what-if keeps the measured pace but projects no use: it lasts.
     expect(copyOf([burning(30, 2, 48)], 'none').summary.outlook.kind).toBe('lasts');
     expect(copyOf([account({ remaining: null, loaded: true })]).copy.title).toBe(
@@ -561,5 +563,74 @@ describe('pool outlook', () => {
     expect(dayLabelStep(75)).toBe(1);
     expect(dayLabelStep(24)).toBe(3);
     expect(dayLabelStep(10)).toBe(7);
+  });
+});
+
+describe('window-average pace without history', () => {
+  const originalLanguage = i18n.language;
+  beforeAll(async () => {
+    await i18n.changeLanguage('en');
+  });
+  afterAll(async () => {
+    await i18n.changeLanguage(originalLanguage);
+  });
+  const span = { startMs: NOW - 3 * 24 * H, endMs: NOW + 11 * 24 * H };
+  const options = { now: NOW, span, burnWindowHours: 3, futureUsage: 'same' as const };
+  // A weekly window opened 40h ago with 20% used: 0.5%/h so far.
+  const opened40h = account({ remaining: 80, nextResetMs: NOW + 128 * H });
+
+  test('averages what the open window has used over the time it has been open', () => {
+    expect(windowAverageBurn(opened40h, NOW)).toBeCloseTo(0.5, 6);
+    expect(windowAverageBurn({ ...opened40h, source: 'history' }, NOW)).toBeNull();
+    expect(windowAverageBurn({ ...opened40h, nextResetMs: null }, NOW)).toBeNull();
+    expect(
+      windowAverageBurn({ ...opened40h, nextResetMs: NOW + 168 * H - 60_000 }, NOW)
+    ).toBeNull();
+  });
+
+  test('forecasts a pool with no history from the window average', () => {
+    const summary = summarizePool([opened40h], options);
+    expect(summary.burnSource).toBe('window');
+    expect(summary.burnPerHour).toBeCloseTo(0.5, 6);
+    // 80% at 0.5%/h lasts 160h, past the reset in 128h.
+    expect(summary.outlook.kind).toBe('lasts');
+    expect(summary.recorded).toEqual([]);
+  });
+
+  test('keeps recorded pace when any account in the pool has history', () => {
+    const recorded = account({
+      key: 'recorded',
+      remaining: 70,
+      nextResetMs: NOW + 48 * H,
+      history: [
+        { atMs: NOW - 3 * H, value: 76 },
+        { atMs: NOW, value: 70 },
+      ],
+    });
+    const summary = summarizePool([recorded, { ...opened40h, key: 'other' }], options);
+    expect(summary.burnSource).toBe('recent');
+    expect(summary.burnPerHour).toBeCloseTo(2, 6);
+  });
+
+  test('labels the pace by its source', () => {
+    const summary = summarizePool([{ ...opened40h, remaining: 100 }], options);
+    expect(summary.outlook.kind).toBe('idle');
+    expect(describeOutlook(summary, NOW, 3, i18n.t).detail).toContain('Nothing used this window');
+    const html = renderToStaticMarkup(
+      createElement(QuotaPoolPanel, {
+        providerLabel: 'OpenCode Go',
+        accent: 'var(--text-primary)',
+        accountCount: 1,
+        summary: summarizePool([opened40h], options),
+        mode: 'remaining' as const,
+        burnWindowHours: 3,
+        span,
+        days: poolDays(span),
+        now: NOW,
+        showAccounts: false,
+        showEmails: false,
+      })
+    );
+    expect(html).toContain('Pace · this window');
   });
 });

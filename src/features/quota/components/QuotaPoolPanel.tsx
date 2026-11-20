@@ -129,7 +129,11 @@ export function QuotaPoolPanel(props: QuotaPoolPanelProps) {
               </dd>
             </div>
             <div className={styles.fact}>
-              <dt>{t('quota_management.fact_pace', { hours: burnWindowHours })}</dt>
+              <dt>
+                {summary.burnSource === 'window'
+                  ? t('quota_management.fact_pace_window')
+                  : t('quota_management.fact_pace', { hours: burnWindowHours })}
+              </dt>
               <dd
                 className={styles.factValue}
                 data-over={ratio !== null && ratio > OVER_ALLOWANCE ? 'true' : undefined}
