@@ -9,6 +9,7 @@
 #   backend  backend/ submodule (Go)        -> rebuild, swap binary, restart proxy
 #   indexer  tools/request-archive/*.py -> copy, restart indexer agent
 #   frontend this repo                  -> bun run build, copy management.html
+#   plugins  plugins/<id>/ (Go)         -> go build -buildmode=c-shared, install, reload config
 # Restarting the proxy clears its in-memory usage statistics, so the proxy is
 # never restarted unless the files that make up the binary have changed.
 # Docs, tests, and other non-binary files do not count as a backend change.
@@ -26,6 +27,9 @@ BINARY="$INSTALL_DIR/cli-proxy-api"
 INDEXER_SRC="$BACKEND_DIR/tools/request-archive"
 INDEXER_DST="$INSTALL_DIR/request-archive"
 PANEL="$STATIC_DIR/management.html"
+PLUGINS_SRC="$FRONTEND_DIR/plugins"
+PLUGINS_DIR="${CPA_PLUGINS_DIR:-$HOME/.config/cliproxyapi/plugins}"
+CONFIG_FILE="${CPA_CONFIG_FILE:-$HOME/.config/cliproxyapi/config.yaml}"
 STATE_DIR="$INSTALL_DIR/sync-state"
 BACKUP_ROOT="$INSTALL_DIR/backups"
 
@@ -33,7 +37,7 @@ BACKUP_ROOT="$INSTALL_DIR/backups"
 BACKEND_PATHS=(go.mod go.sum tools/archive-upstream-base cmd internal sdk
   ':(exclude,glob)**/*_test.go' ':(exclude,glob)**/testdata/**' ':(exclude,glob)**/*.md')
 # Files that affect the built dashboard.
-FRONTEND_PATHS=(. ':(exclude)backend' ':(exclude)tests' ':(exclude)scripts' ':(exclude).github'
+FRONTEND_PATHS=(. ':(exclude)backend' ':(exclude)plugins' ':(exclude)tests' ':(exclude)scripts' ':(exclude).github'
   ':(exclude,glob)**/*.md' ':(exclude)LICENSE')
 
 DRY_RUN=0
@@ -207,4 +211,52 @@ else
   fi
   write_state frontend.fingerprint "$frontend_fp"
   write_state frontend.sha256 "$(sha "$PANEL")"
+fi
+
+# --- plugins -----------------------------------------------------------------
+# Each plugins/<id>/ is a Go c-shared plugin. The proxy loads plugins from
+# content-addressed shadow copies and hot-swaps one only when its file path
+# changes, so every build is installed as <id>-v0.0.<timestamp>.dylib and older
+# copies are removed. The swap happens on a config reload, which this script
+# triggers through a marker comment in config.yaml; the proxy keeps running.
+plugins_changed=0
+for src in "$PLUGINS_SRC"/*/; do
+  [ -f "$src/go.mod" ] || continue
+  id=$(basename "$src")
+  fp=$(fingerprint "$FRONTEND_DIR" "plugins/$id" ':(exclude,glob)**/*_test.go' ':(exclude,glob)**/*.md')
+  installed="$PLUGINS_DIR/$(read_state "plugin-$id.file")"
+  if [ "$FORCE" = 0 ] && [ -f "$installed" ] && [ "$fp" = "$(read_state "plugin-$id.fingerprint")" ] &&
+    [ "$(sha "$installed")" = "$(read_state "plugin-$id.sha256")" ]; then
+    say plugins "$id unchanged"
+  elif [ "$DRY_RUN" = 1 ]; then
+    say plugins "$id changed or not yet synced: would build and install it"
+  else
+    (cd "$src" && go build -buildmode=c-shared -o "$WORK/$id.dylib" .) || die "plugin $id failed to build"
+    mkdir -p "$PLUGINS_DIR"
+    name="$id-v0.0.$(date +%s).dylib"
+    cp "$WORK/$id.dylib" "$PLUGINS_DIR/$name.tmp"
+    mv -f "$PLUGINS_DIR/$name.tmp" "$PLUGINS_DIR/$name"
+    for old in "$PLUGINS_DIR/$id.dylib" "$PLUGINS_DIR/$id"-v*.dylib; do
+      [ -f "$old" ] && [ "$old" != "$PLUGINS_DIR/$name" ] && rm -f "$old"
+    done
+    write_state "plugin-$id.fingerprint" "$fp"
+    write_state "plugin-$id.file" "$name"
+    write_state "plugin-$id.sha256" "$(sha "$PLUGINS_DIR/$name")"
+    say plugins "$id installed as $name"
+    plugins_changed=1
+  fi
+done
+if [ "$plugins_changed" = 1 ]; then
+  # The proxy skips reloads whose content hash is unchanged, so refresh a marker
+  # comment; the reload then hot-swaps the newly named plugin files.
+  marker="# sync-local plugins: $STAMP"
+  python3 - "$CONFIG_FILE" "$marker" <<'PY'
+import sys
+path, marker = sys.argv[1], sys.argv[2]
+lines = open(path).read().splitlines()
+lines = [line for line in lines if not line.startswith('# sync-local plugins: ')] + [marker]
+open(path + '.sync', 'w').write('\n'.join(lines) + '\n')
+PY
+  cat "$CONFIG_FILE.sync" >"$CONFIG_FILE" && rm -f "$CONFIG_FILE.sync"
+  say plugins "config reload triggered; the proxy hot-swaps changed plugins without restarting"
 fi

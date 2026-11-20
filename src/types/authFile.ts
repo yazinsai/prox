@@ -62,6 +62,8 @@ export interface AuthFileItem {
   quotaProvider?: string;
   /** Backend-selected quota plugin; authoritative when supplied by v8 credentials. */
   quotaPluginId?: string;
+  /** Display name of the quota plugin's provider, when the dashboard knows it. */
+  quotaProviderName?: string;
   runtimeOnly?: boolean | string;
   disabled?: boolean;
   unavailable?: boolean;

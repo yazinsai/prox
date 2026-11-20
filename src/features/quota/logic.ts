@@ -50,6 +50,43 @@ export const resolveQuotaProviderType = (file: AuthFileItem): QuotaProviderType 
     : (QUOTA_TAB_ORDER.find((type) => QUOTA_FILTER_MAP[type](file)) ?? null);
 
 /**
+ * Append config API-key quota credentials to the credential-file list. A file
+ * entry wins when both carry the same auth_index.
+ */
+export function mergeQuotaFiles(
+  files: AuthFileItem[],
+  apiKeyFiles: readonly AuthFileItem[]
+): AuthFileItem[] {
+  if (apiKeyFiles.length === 0) return files;
+  const seen = new Set(
+    files.map((file) => String(file.authIndex ?? '').trim()).filter((index) => index !== '')
+  );
+  const extra = apiKeyFiles.filter((file) => {
+    const index = String(file.authIndex ?? '').trim();
+    if (!index || seen.has(index)) return false;
+    seen.add(index);
+    return true;
+  });
+  return extra.length === 0 ? files : [...files, ...extra];
+}
+
+/**
+ * Tab and pool labels that differ from the generic provider label. The plugin
+ * group takes its provider's name when every card in it shares one.
+ */
+export function resolveQuotaTypeLabels(
+  entries: readonly QuotaFileEntry[]
+): Partial<Record<QuotaProviderType, string>> {
+  const names = new Set(
+    entries
+      .filter((entry) => entry.type === 'plugin')
+      .map((entry) => entry.file.quotaProviderName?.trim() ?? '')
+  );
+  const [name] = [...names];
+  return names.size === 1 && name ? { plugin: name } : {};
+}
+
+/**
  * 把文件列表归类为额度条目：不支持额度或已停用的文件被过滤，
  * 结果按 QUOTA_TAB_ORDER 分组排列（'全部' tab 的卡片顺序即由此决定）。
  */

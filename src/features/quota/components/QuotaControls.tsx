@@ -27,11 +27,19 @@ import styles from './QuotaControls.module.scss';
 export interface QuotaProviderTabsProps {
   types: string[];
   counts: Record<string, number>;
+  /** Overrides for the generic provider label, keyed by tab type. */
+  labels?: Record<string, string>;
   active: string;
   onChange: (type: string) => void;
 }
 
-export function QuotaProviderTabs({ types, counts, active, onChange }: QuotaProviderTabsProps) {
+export function QuotaProviderTabs({
+  types,
+  counts,
+  labels,
+  active,
+  onChange,
+}: QuotaProviderTabsProps) {
   const { t } = useTranslation();
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -53,7 +61,8 @@ export function QuotaProviderTabs({ types, counts, active, onChange }: QuotaProv
     >
       {types.map((type) => {
         const isActive = active === type;
-        const label = type === 'all' ? t('auth_files.filter_all') : getTypeLabel(t, type);
+        const label =
+          type === 'all' ? t('auth_files.filter_all') : (labels?.[type] ?? getTypeLabel(t, type));
         return (
           <button
             key={type}

@@ -82,7 +82,7 @@ export function QuotaCard(props: QuotaCardProps) {
         )
       : entry.type;
   const iconSrc = getAuthFileIcon(providerType, resolvedTheme);
-  const typeLabel = getTypeLabel(t, providerType);
+  const typeLabel = file.quotaProviderName?.trim() || getTypeLabel(t, providerType);
   const errorMessage = resolveQuotaErrorMessage(
     t,
     quota?.errorStatus,

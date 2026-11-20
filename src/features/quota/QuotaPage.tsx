@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { authFilesApi, quotaHistoryApi } from '@/services/api';
+import { apiKeyQuotaApi, authFilesApi, quotaHistoryApi } from '@/services/api';
 import type { QuotaHistory } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -55,6 +55,8 @@ import {
   classifyQuotaFiles,
   filterEntriesByTab,
   filterEntriesBySearch,
+  mergeQuotaFiles,
+  resolveQuotaTypeLabels,
   paginate,
   sortQuotaEntries,
   type QuotaFileEntry,
@@ -123,9 +125,13 @@ export function QuotaPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await authFilesApi.list();
+      // Config API keys with plugin quota are optional; never fail the page over them.
+      const [data, apiKeyFiles] = await Promise.all([
+        authFilesApi.list(),
+        apiKeyQuotaApi.listQuotaFiles().catch(() => [] as AuthFileItem[]),
+      ]);
       if (!isCurrent()) return;
-      setFiles(data?.files || []);
+      setFiles(mergeQuotaFiles(data?.files || [], apiKeyFiles));
       setFilesGeneration(sessionGeneration);
     } catch (err: unknown) {
       if (!isCurrent()) return;
@@ -194,6 +200,7 @@ export function QuotaPage() {
 
   const entries = useMemo(() => classifyQuotaFiles(files), [files]);
   const tabCounts = useMemo(() => buildTabCounts(entries), [entries]);
+  const typeLabels = useMemo(() => resolveQuotaTypeLabels(entries), [entries]);
   const tabEntries = useMemo(() => filterEntriesByTab(entries, tab), [entries, tab]);
   const filteredEntries = useMemo(
     () => filterEntriesBySearch(tabEntries, search),
@@ -465,6 +472,7 @@ export function QuotaPage() {
           <QuotaProviderTabs
             types={TAB_IDS}
             counts={tabCounts}
+            labels={typeLabels}
             active={tab}
             onChange={handleTabChange}
           />
@@ -519,7 +527,7 @@ export function QuotaPage() {
             {pools.map((pool) => (
               <QuotaPoolPanel
                 key={pool.type}
-                providerLabel={getTypeLabel(t, pool.type)}
+                providerLabel={typeLabels[pool.type] ?? getTypeLabel(t, pool.type)}
                 accent={POOL_ACCENTS[pool.type]}
                 accountCount={pool.count}
                 summary={pool.summary}
